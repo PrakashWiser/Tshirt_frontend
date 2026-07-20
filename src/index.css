@@ -1,0 +1,41 @@
+@import url("https://fonts.googleapis.com/css2?family=DM+Sans:wght@100..1000&display=swap");
+@import "tailwindcss";
+
+:root {
+  --background: #fffaed;
+  --primary-red: #fa0400;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: "DM Sans", system-ui, -apple-system, sans-serif;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --foreground: #ededed;
+  }
+}
+
+body {
+  font-family: var(--font-sans);
+  background: var(--background);
+}
+
+.bg_primary {
+  background-color: var(--primary-red);
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.ck-editor__editable {
+  min-height: 200px;
+  max-height: 400px;
+}
