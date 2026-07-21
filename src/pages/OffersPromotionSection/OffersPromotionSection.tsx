@@ -3,26 +3,11 @@ import {
     Filter,
     Download,
     Plus,
-    Tag,
-    TrendingUp,
-    Users,
-    Percent,
-    Calendar,
-    ArrowUpRight,
-    ArrowDownRight,
+
 } from "lucide-react";
 import { DataTable } from "../../components/Taple";
 import type { ColumnDef } from "../../components/Types";
-import {
-    ResponsiveContainer,
-    BarChart,
-    Bar,
-    XAxis,
-    YAxis,
-    CartesianGrid,
-    Tooltip,
-    Cell,
-} from "recharts";
+
 import CouponCreate from "./CreateCoupon";
 import { useAppDispatch, useAppSelector } from "../../hooks/hooks";
 import { addToast } from "../../store/slice/uiSlice";
@@ -30,16 +15,6 @@ import { clearCouponError, deleteCoupon, getAllCoupons, updateCouponStatus } fro
 import DotMenu from "../../components/DotMenu";
 import ConfirmDeleteModal from "../../components/ConfirmDeleteModal";
 import type { Coupon } from "../../types";
-
-interface Stat {
-    title: string;
-    value: string;
-    growth: string;
-    icon: React.ElementType;
-    color: string;
-    description: string;
-}
-
 
 
 interface TableRow {
@@ -53,57 +28,6 @@ interface TableRow {
     status: "Active" | "Paused" | "Expired";
     expiryDate: string;
 }
-
-interface ChartData {
-    name: string;
-    bookings: number;
-}
-
-const stats: Stat[] = [
-    {
-        title: "Active Campaigns",
-        value: "12",
-        growth: "+25%",
-        icon: Tag,
-        color: "text-blue-600",
-        description: "2 new this week",
-    },
-    {
-        title: "Revenue Generated",
-        value: "₹4.8L",
-        growth: "+18.5%",
-        icon: TrendingUp,
-        color: "text-green-600",
-        description: "From all campaigns",
-    },
-    {
-        title: "Total Bookings",
-        value: "1,247",
-        growth: "+32%",
-        icon: Users,
-        color: "text-purple-600",
-        description: "Last 30 days",
-    },
-    {
-        title: "Average Conversion",
-        value: "24.8%",
-        growth: "+4.2%",
-        icon: Percent,
-        color: "text-orange-500",
-        description: "Across all offers",
-    },
-];
-
-const chartData: ChartData[] = [
-    { name: "Summer Escape", bookings: 245 },
-    { name: "Weekend Getaway", bookings: 189 },
-    { name: "Goa Beach Special", bookings: 312 },
-    { name: "Monsoon Offer", bookings: 156 },
-    { name: "Early Bird", bookings: 278 },
-    { name: "Corporate Package", bookings: 134 },
-];
-
-
 
 
 
@@ -280,7 +204,6 @@ export default function OffersPromotionSection() {
     };
 
 
-    const CHART_COLORS = ["#3b82f6", "#60a5fa", "#93bbfc", "#bfdbfe", "#dbeafe", "#eff6ff"];
 
     if (openCreate) {
         return (
@@ -298,7 +221,7 @@ export default function OffersPromotionSection() {
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                     <div>
                         <h1 className="text-2xl md:text-3xl font-bold text-slate-900">
-                            Coupon & Offers 
+                            Coupon & Offers
                         </h1>
                         <p className="text-sm text-slate-500 mt-1">
                             Manage promotional Coupon and discount offers.
@@ -321,98 +244,6 @@ export default function OffersPromotionSection() {
                         </button>
                     </div>
                 </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                    {stats.map((stat) => {
-                        const Icon = stat.icon;
-                        const isPositive = stat.growth.startsWith("+");
-
-                        return (
-                            <div
-                                key={stat.title}
-                                className="bg-white border border-slate-200 rounded-2xl p-5 hover:shadow-lg transition-all duration-300 hover:-translate-y-0.5"
-                            >
-                                <div className="flex items-center justify-between">
-                                    <div className={`p-2.5 rounded-xl bg-slate-50 ${stat.color}`}>
-                                        <Icon size={20} />
-                                    </div>
-                                    <span
-                                        className={`flex items-center gap-0.5 text-xs font-semibold px-2 py-1 rounded-full ${isPositive ? "text-green-700 bg-green-50" : "text-red-700 bg-red-50"
-                                            }`}
-                                    >
-                                        {isPositive ? <ArrowUpRight size={14} /> : <ArrowDownRight size={14} />}
-                                        {stat.growth}
-                                    </span>
-                                </div>
-                                <h2 className="text-2xl md:text-3xl font-bold mt-3 text-slate-900">
-                                    {stat.value}
-                                </h2>
-                                <p className="text-sm text-slate-600 mt-0.5">{stat.title}</p>
-                                <p className="text-xs text-slate-400 mt-1.5">{stat.description}</p>
-                            </div>
-                        );
-                    })}
-                </div>
-
-                <div className="bg-white border border-slate-200 rounded-2xl p-6 hover:shadow-lg transition-shadow duration-300">
-                    <div className="flex items-center justify-between mb-6">
-                        <div>
-                            <h3 className="font-semibold text-lg text-slate-900">
-                                 Performance
-                            </h3>
-                            <p className="text-sm text-slate-500">Bookings generated per Offers</p>
-                        </div>
-                        <div className="flex items-center gap-2 text-sm text-slate-500 bg-slate-50 px-3 py-1.5 rounded-xl">
-                            <Calendar size={16} />
-                            Last 30 days
-                        </div>
-                    </div>
-                    <div className="h-[300px] md:h-[360px]">
-                        <ResponsiveContainer width="100%" height="100%">
-                            <BarChart data={chartData} layout="horizontal" margin={{ top: 10, right: 10, left: 0, bottom: 20 }}>
-                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e5e7eb" />
-                                <XAxis
-                                    dataKey="name"
-                                    tickLine={false}
-                                    axisLine={false}
-                                    style={{ fontSize: "12px", fill: "#94a3b8" }}
-                                    interval={0}
-                                    angle={-15}
-                                    textAnchor="end"
-                                    height={60}
-                                />
-                                <YAxis
-                                    tickLine={false}
-                                    axisLine={false}
-                                    style={{ fontSize: "12px", fill: "#94a3b8" }}
-                                    tickFormatter={(value) => `${value}`}
-                                />
-                                <Tooltip
-                                    cursor={{ fill: "rgba(59, 130, 246, 0.05)" }}
-                                    contentStyle={{
-                                        backgroundColor: "white",
-                                        border: "1px solid #e5e7eb",
-                                        borderRadius: "12px",
-                                        padding: "8px 12px",
-                                        fontSize: "13px",
-                                    }}
-                                    formatter={(value) => [`${value} bookings`, "Bookings"]}
-                                />
-                                <Bar dataKey="bookings" radius={[6, 6, 0, 0]} barSize={40}>
-                                    {chartData.map((_, index) => (
-                                        <Cell
-                                            key={`cell-${index}`}
-                                            fill={CHART_COLORS[index % CHART_COLORS.length]}
-                                            className="transition-opacity duration-300 hover:opacity-80"
-                                        />
-                                    ))}
-                                </Bar>
-                            </BarChart>
-                        </ResponsiveContainer>
-                    </div>
-                </div>
-
-
                 <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden hover:shadow-lg transition-shadow duration-300">
                     <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100">
                         <h3 className="font-semibold text-slate-900">All Coupons</h3>

@@ -7,6 +7,8 @@ interface DotMenuProps {
     onView?: () => void;
     onEdit?: () => void;
     onDelete?: () => void;
+    onCheckIn?: () => void;
+    onCheckOut?: () => void;
     className?: string;
 }
 
@@ -14,6 +16,8 @@ const DotMenu: React.FC<DotMenuProps> = ({
     onView,
     onEdit,
     onDelete,
+    onCheckIn,
+    onCheckOut,
     className,
 }) => {
     const [isOpen, setIsOpen] = useState(false);
@@ -133,6 +137,31 @@ const DotMenu: React.FC<DotMenuProps> = ({
                                         className="block w-full px-4 py-1.5 text-left text-sm text-red-600 hover:bg-gray-100"
                                     >
                                         Delete
+                                    </button>
+                                )}
+                                {onCheckIn && (
+                                    <button
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            setIsOpen(false);
+                                            onCheckIn();
+                                        }}
+                                        className="block w-full px-4 py-1.5 text-left text-sm text-green-600 hover:bg-gray-100"
+                                    >
+                                        Check In
+                                    </button>
+                                )}
+
+                                {onCheckOut && (
+                                    <button
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            setIsOpen(false);
+                                            onCheckOut();
+                                        }}
+                                        className="block w-full px-4 py-1.5 text-left text-sm text-blue-600 hover:bg-gray-100"
+                                    >
+                                        Check Out
                                     </button>
                                 )}
                             </div>

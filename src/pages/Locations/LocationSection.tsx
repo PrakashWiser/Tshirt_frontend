@@ -195,7 +195,6 @@ export default function LocationSection() {
                             {location.subLocations.length > 0 && (
                                 <div className="flex flex-wrap gap-1 mt-3">
                                     {location.subLocations
-                                        .filter((s) => s.isPopular)
                                         .slice(0, 3)
                                         .map((sub) => (
                                             <span

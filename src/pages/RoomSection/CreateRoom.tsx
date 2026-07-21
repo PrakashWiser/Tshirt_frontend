@@ -124,8 +124,8 @@ const fields: (properties: { propertyName: string; _id: string }[]) => FormField
         fullWidth: true,
         schema: [
             {
-                key: "paymentMode",
-                label: "Payment Mode",
+                key: "paymentType",
+                label: "Payment Type",
                 type: "select",
                 options: [
                     { label: "Advance Payment", value: "advance_payment" },
@@ -133,10 +133,28 @@ const fields: (properties: { propertyName: string; _id: string }[]) => FormField
                     { label: "Both", value: "both" },
                 ],
             },
-            { key: "allowOfflineBooking", label: "Allow Offline Booking", type: "boolean" },
-            { key: "instantBook", label: "Instant Book", type: "boolean" },
-            { key: "minNights", label: "Min Nights", type: "number", placeholder: "1" },
-            { key: "maxNights", label: "Max Nights", type: "number", placeholder: "30" },
+            {
+                key: "allowOfflineBooking",
+                label: "Allow Offline Booking",
+                type: "boolean",
+            },
+            {
+                key: "instantBook",
+                label: "Instant Book",
+                type: "boolean",
+            },
+            {
+                key: "minNights",
+                label: "Min Nights",
+                type: "number",
+                placeholder: "1",
+            },
+            {
+                key: "maxNights",
+                label: "Max Nights",
+                type: "number",
+                placeholder: "30",
+            },
         ],
     },
 

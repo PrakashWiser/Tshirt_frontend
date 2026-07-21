@@ -61,10 +61,9 @@ export default function CreateLocation({ selectedLocation,
         {
             name: "subLocations",
             label: "Sub Locations",
-            type: "textarea",
+            type: "tags",
             fullWidth: true,
-            placeholder:
-                "ECR, Mahabalipuram, Pondicherry",
+            placeholder: "Type a sub location and press Enter",
         },
         {
             name: "image",
@@ -88,14 +87,12 @@ export default function CreateLocation({ selectedLocation,
         formData.append(
             "subLocations",
             JSON.stringify(
-                values.subLocations
-                    .split(",")
-                    .map((item: string) => item.trim())
-                    .filter(Boolean)
-                    .map((name: string, index: number) => ({
+                (values.subLocations || []).map(
+                    (name: string, index: number) => ({
                         name,
                         isPopular: index === 0,
-                    }))
+                    })
+                )
             )
         );
 
@@ -134,9 +131,7 @@ export default function CreateLocation({ selectedLocation,
                     mapLink: selectedLocation?.mapLink || "",
                     isPopular: selectedLocation?.isPopular || false,
                     subLocations:
-                        selectedLocation?.subLocations
-                            ?.map((item: any) => item.name)
-                            .join(", ") || "",
+                        selectedLocation?.subLocations?.map((item: any) => item.name) || [],
                     image: selectedLocation?.image || "",
                 }}
                 submitText={selectedLocation ? "Update Location" : "Create Location"}

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Eye, EyeOff, LogIn } from "lucide-react";
+import { LogIn } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAppDispatch, useAppSelector } from "../../hooks/hooks";
 import InputField from "../../components/CommonInput";
@@ -14,7 +14,6 @@ function Login() {
     (state) => state.auth
   );
 
-  const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -97,7 +96,7 @@ function Login() {
             <div>
               <div className="relative">
                 <InputField
-                  type={showPassword ? "text" : "password"}
+                  type="password"
                   name="password"
                   placeholder="Enter password"
                   className=" text-white"
@@ -105,19 +104,6 @@ function Login() {
                   onChange={handleChange}
                   required
                 />
-                <button
-                  type="button"
-                  onClick={() =>
-                    setShowPassword(!showPassword)
-                  }
-                  className="absolute right-3 top-1/2 -translate-y-1/50 text-gray-400 hover:text-white"
-                >
-                  {showPassword ? (
-                    <EyeOff size={18} />
-                  ) : (
-                    <Eye size={18} />
-                  )}
-                </button>
               </div>
             </div>
 

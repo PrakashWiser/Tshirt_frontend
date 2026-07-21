@@ -87,12 +87,6 @@ export default function CreateProperty({ selectedProperty, onClose, loading }: C
             ],
         },
         {
-            name: "vendorId",
-            label: "Vendor ID",
-            type: "text",
-            placeholder: "Enter vendor id",
-        },
-        {
             name: "locationId",
             label: "Location",
             type: "select",
@@ -185,7 +179,6 @@ export default function CreateProperty({ selectedProperty, onClose, loading }: C
         const formData = new FormData();
         formData.append("propertyName", values.propertyName);
         formData.append("category", values.category);
-        formData.append("vendorId", values.vendorId || "");
         formData.append("locationId", values.locationId);
         formData.append("subLocationId", values.subLocationId || "");
         formData.append("description", values.description || "");
@@ -223,7 +216,6 @@ export default function CreateProperty({ selectedProperty, onClose, loading }: C
                 initialValues={{
                     propertyName: selectedProperty?.propertyName || "",
                     category: selectedProperty?.category || "",
-                    vendorId: selectedProperty?.vendorId || "",
                     locationId: selectedProperty?.locationId?._id || "",
                     subLocationId: selectedProperty?.subLocationId || "",
                     description: selectedProperty?.description || "",

@@ -157,6 +157,48 @@ export const updateBookingStatus = createAsyncThunk(
   },
 );
 
+export const checkInBooking = createAsyncThunk(
+  "booking/checkIn",
+  async (id: string, thunkAPI) => {
+    try {
+      const token = (thunkAPI.getState() as RootState).auth.accessToken;
+
+      const res = await FetchApi<any>({
+        endpoint: `/admin/bookings/${id}/check-in`,
+        method: "PATCH",
+        token,
+      });
+
+      return res.data;
+    } catch (err: any) {
+      return thunkAPI.rejectWithValue(
+        err?.message || "Failed to check in booking",
+      );
+    }
+  },
+);
+
+export const checkOutBooking = createAsyncThunk(
+  "booking/checkOut",
+  async (id: string, thunkAPI) => {
+    try {
+      const token = (thunkAPI.getState() as RootState).auth.accessToken;
+
+      const res = await FetchApi<any>({
+        endpoint: `/admin/bookings/${id}/check-out`,
+        method: "PATCH",
+        token,
+      });
+
+      return res.data;
+    } catch (err: any) {
+      return thunkAPI.rejectWithValue(
+        err?.message || "Failed to check out booking",
+      );
+    }
+  },
+);
+
 const bookingSlice = createSlice({
   name: "booking",
   initialState,
@@ -243,6 +285,36 @@ const bookingSlice = createSlice({
           action.payload?.message || "Booking status updated successfully";
       })
       .addCase(updateBookingStatus.rejected, (state, action: any) => {
+        state.isLoading = false;
+        state.error = action.payload;
+      })
+      
+      .addCase(checkInBooking.pending, (state) => {
+        state.isLoading = true;
+        state.error = null;
+        state.message = null;
+      })
+      .addCase(checkInBooking.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.message =
+          action.payload?.message || "Booking checked in successfully";
+      })
+      .addCase(checkInBooking.rejected, (state, action: any) => {
+        state.isLoading = false;
+        state.error = action.payload;
+      })
+
+      .addCase(checkOutBooking.pending, (state) => {
+        state.isLoading = true;
+        state.error = null;
+        state.message = null;
+      })
+      .addCase(checkOutBooking.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.message =
+          action.payload?.message || "Booking checked out successfully";
+      })
+      .addCase(checkOutBooking.rejected, (state, action: any) => {
         state.isLoading = false;
         state.error = action.payload;
       });

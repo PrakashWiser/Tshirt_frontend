@@ -4,7 +4,7 @@ import type { ColumnDef } from "../../components/Types";
 import Button from "../../components/Button";
 import { Download, Plus } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "../../hooks/hooks";
-import { clearBookingError, getAllBookings } from "../../store/slice/bookingSlice";
+import { checkInBooking, checkOutBooking, clearBookingError, getAllBookings } from "../../store/slice/bookingSlice";
 import CreateBooking from "./CreateBooking";
 import { addToast } from "../../store/slice/uiSlice";
 import ConfirmDeleteModal from "../../components/ConfirmDeleteModal";
@@ -189,12 +189,20 @@ export default function BookingsSection() {
                     const originalBooking: any = bookings.find(
                         (b: any) => b.bookingId === row.id
                     );
-
+                    const status = originalBooking?.status?.toLowerCase();
                     return (
                         <DotMenu
-                            onDelete={() => {
-                                handleDelete(originalBooking?._id);
-                            }}
+                            onCheckIn={
+                                status === "confirmed"
+                                    ? () => dispatch(checkInBooking(originalBooking._id))
+                                    : undefined
+                            }
+                            onCheckOut={
+                                status === "checked_in"
+                                    ? () => dispatch(checkOutBooking(originalBooking._id))
+                                    : undefined
+                            }
+                            onDelete={() => handleDelete(originalBooking._id)}
                         />
                     );
                 },
