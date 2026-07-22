@@ -22,8 +22,10 @@ import type { SidebarProps } from "../../types";
 import { useAppDispatch, useAppSelector } from "../../hooks/hooks";
 import CustomImage from "../Image";
 import { logoutUser } from "../../store/slice/authSlice";
+import { permissions } from "../../utils/dummyPermission";
 
 const MOBILE_BREAKPOINT = 1024;
+
 
 export default function Sidebar({
     sidebarOpen,
@@ -41,6 +43,7 @@ export default function Sidebar({
                     label: "Dashboard",
                     path: "/dashboard",
                     icon: LayoutDashboard,
+                    permission: "dashboard.view",
                 },
             ],
         },
@@ -51,21 +54,25 @@ export default function Sidebar({
                     label: "Locations",
                     path: "/locations",
                     icon: Building2,
+                    permission: "locations.view",
                 },
                 {
                     label: "Properties",
                     path: "/properties",
                     icon: House,
+                    permission: "properties.view",
                 },
                 {
                     label: "Rooms",
                     path: "/rooms",
                     icon: BedDouble,
+                    permission: "rooms.view",
                 },
                 {
                     label: "Bookings",
                     path: "/bookings",
                     icon: CalendarDays,
+                    permission: "bookings.view",
                 },
             ],
         },
@@ -76,16 +83,19 @@ export default function Sidebar({
                     label: "Payments",
                     path: "/payments",
                     icon: CreditCard,
+                    permission: "payments.view",
                 },
                 {
                     label: "Pricing Management",
                     path: "/pricing-management",
                     icon: DollarSign,
+                    permission: "pricing.manage",
                 },
                 {
                     label: "Coupon & Offers",
                     path: "/offers",
                     icon: Tag,
+                    permission: "offers.view",
                 },
             ],
         },
@@ -96,15 +106,16 @@ export default function Sidebar({
                     label: "Users",
                     path: "/users",
                     icon: Users,
+                    permission: "users.view",
                 },
                 {
                     label: "Vendors",
                     path: "/vendors",
                     icon: Store,
+                    permission: "vendors.view",
                 },
             ],
         },
-
         {
             title: "INSIGHTS",
             items: [
@@ -112,11 +123,13 @@ export default function Sidebar({
                     label: "Reviews",
                     path: "/reviews",
                     icon: Star,
+                    permission: "reviews.view",
                 },
                 {
                     label: "Reports",
                     path: "/reports",
                     icon: BarChart3,
+                    permission: "reports.view",
                 },
             ],
         },
@@ -127,15 +140,28 @@ export default function Sidebar({
                     label: "Roles & Permissions",
                     path: "/roles",
                     icon: Shield,
+                    permission: "roles.view",
                 },
                 {
                     label: "Audit Logs",
                     path: "/audit-logs",
                     icon: ClipboardList,
+                    permission: "auditlogs.view",
                 },
             ],
         },
     ];
+
+
+
+    const filteredSections = menuSections
+        .map((section) => ({
+            ...section,
+            items: section.items.filter((item) =>
+                permissions.includes(item.permission)
+            ),
+        }))
+        .filter((section) => section.items.length > 0);
 
     const handleLogout = () => {
         dispatch(logoutUser())
@@ -188,7 +214,7 @@ export default function Sidebar({
                 </div>
 
                 <div className="flex-1 overflow-y-auto scrollbar-hide py-4">
-                    {menuSections?.map((section) => (
+                    {filteredSections?.map((section) => (
                         <div key={section.title} className="mb-6">
                             {sidebarOpen && (
                                 <h3 className="px-5 mb-2 text-[11px] font-semibold tracking-wider text-slate-500">

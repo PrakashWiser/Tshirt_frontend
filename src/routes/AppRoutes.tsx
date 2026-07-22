@@ -7,6 +7,7 @@ import { useAppDispatch, useAppSelector } from '../hooks/hooks';
 import { getProfile } from '../store/slice/authSlice';
 import SessionExpiredPopup from '../components/SessionExpiredPopup';
 import ScrollToTop from '../components/Common/ScrollToTop';
+import VendorDetails from '../pages/VendorsSection/VendorDetails';
 
 const Login = React.lazy(() => import('../pages/Login/Login'));
 const DashboardHome = React.lazy(() => import('../pages/DashboardHome/DashboardHome'));
@@ -88,6 +89,7 @@ export default function AppRoutes() {
               <Route path="/pricing-management" element={<PricingRuleSection />} />
               <Route path="/users" element={<UserSection />} />
               <Route path="/vendors" element={<VendorsSection />} />
+              <Route path="/vendor/:id" element={<VendorDetails />} />
             </Route>
             <Route path="*" element={<AdminNotFound />} />
           </Route>

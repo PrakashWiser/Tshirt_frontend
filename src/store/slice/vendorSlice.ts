@@ -198,7 +198,10 @@ export const setVendorPermissions = createAsyncThunk(
 
 export const resetVendorPassword = createAsyncThunk(
   "vendor/resetPassword",
-  async (id: string, thunkAPI) => {
+  async (
+    { id, newPassword }: { id: string; newPassword: string },
+    thunkAPI,
+  ) => {
     try {
       const token = (thunkAPI.getState() as RootState).auth.accessToken;
 
@@ -206,6 +209,7 @@ export const resetVendorPassword = createAsyncThunk(
         endpoint: `/admin/vendors/${id}/reset-password`,
         method: "PATCH",
         token,
+        body: { newPassword },
       });
 
       return res.data;
@@ -216,7 +220,6 @@ export const resetVendorPassword = createAsyncThunk(
     }
   },
 );
-
 export const approveVendor = createAsyncThunk(
   "vendor/approve",
   async (id: string, thunkAPI) => {

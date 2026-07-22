@@ -15,7 +15,6 @@ export default function CreateVendor({ onClose, selectedVendor }: CreateVendorPr
     const { isLoading, error, permissions, message } = useAppSelector((state: any) => state.vendor);
     const [selectedPermissions, setSelectedPermissions] = useState<string[]>([]);
 
-
     useEffect(() => {
         dispatch(getVendorPermissions() as any);
     }, [dispatch]);
@@ -29,8 +28,6 @@ export default function CreateVendor({ onClose, selectedVendor }: CreateVendorPr
             dispatch(addToast({ type: "error", text: error }));
         }
     }, [message, error, dispatch, onClose]);
-
-
 
     useEffect(() => {
         if (selectedVendor?.vendorProfile?.permissions) {
@@ -203,6 +200,41 @@ export default function CreateVendor({ onClose, selectedVendor }: CreateVendorPr
         );
     };
 
+    const handleSelectAllCategory = (categoryPermissions: string[]) => {
+        const allSelected = categoryPermissions.every(perm => selectedPermissions.includes(perm));
+
+        if (allSelected) {
+            setSelectedPermissions(prev =>
+                prev.filter(perm => !categoryPermissions.includes(perm))
+            );
+        } else {
+            setSelectedPermissions(prev => {
+                const newPermissions = new Set(prev);
+                categoryPermissions.forEach(perm => newPermissions.add(perm));
+                return Array.from(newPermissions);
+            });
+        }
+    };
+
+    const handleSelectAllPermissions = () => {
+        if (selectedPermissions.length === permissions.length) {
+            setSelectedPermissions([]);
+        } else {
+            setSelectedPermissions([...permissions]);
+        }
+    };
+
+    const groupedPermissions = permissions.reduce((acc: Record<string, string[]>, permission: string) => {
+        const category = permission.split(".")[0];
+        if (!acc[category]) {
+            acc[category] = [];
+        }
+        acc[category].push(permission);
+        return acc;
+    }, {});
+
+    const isAllPermissionsSelected = permissions.length > 0 && selectedPermissions.length === permissions.length;
+
     return (
         <div className="min-h-screen bg-slate-50 py-8 px-4">
             <div className="mx-auto max-w-7xl">
@@ -222,70 +254,75 @@ export default function CreateVendor({ onClose, selectedVendor }: CreateVendorPr
                     </div>
                 </div>
 
-                <div className=" pb-6 -mt-4">
+                <div className="pb-6">
                     {permissions.length > 0 && (
-                        <div className="pt-4 mt-6">
-                            <div className="mb-4">
-                                <h3 className="text-sm font-semibold text-slate-900">
-                                    Grant Permissions
+                        <div>
+                            <div className="flex items-center justify-between mb-4 p-4 bg-white rounded-lg border border-slate-200">
+                                <h3 className="text-sm font-semibold text-slate-700">
+                                    Permissions
                                 </h3>
-                                <p className="text-sm text-slate-500">
-                                    Select the permissions to grant to this vendor
-                                </p>
+                                <button
+                                    type="button"
+                                    onClick={handleSelectAllPermissions}
+                                    className="px-4 py-2 text-sm font-medium text-white bg-black rounded-md hover:bg-gray-800 transition-colors"
+                                >
+                                    {isAllPermissionsSelected ? 'Deselect All' : 'Select All'}
+                                </button>
                             </div>
 
-                            {Object.entries(
-                                permissions.reduce((acc: Record<string, string[]>, permission: string) => {
-                                    const category = permission.split(".")[0];
+                            {Object.entries(groupedPermissions).map(([category, perms]) => {
+                                const categoryPermissions = perms as string[];
+                                const allCategorySelected = categoryPermissions.every(perm =>
+                                    selectedPermissions.includes(perm)
+                                );
 
-                                    if (!acc[category]) {
-                                        acc[category] = [];
-                                    }
+                                return (
+                                    <div
+                                        key={category}
+                                        className="rounded-lg border border-slate-200 p-4 mb-4 bg-white"
+                                    >
+                                        <div className="flex items-center justify-between mb-3">
+                                            <h4 className="text-sm font-semibold capitalize text-slate-700">
+                                                {category}
+                                            </h4>
+                                            <button
+                                                type="button"
+                                                onClick={() => handleSelectAllCategory(categoryPermissions)}
+                                                className="text-xs font-medium text-black hover:text-gray-600 transition-colors"
+                                            >
+                                                {allCategorySelected ? 'Deselect All' : 'Select All'}
+                                            </button>
+                                        </div>
 
-                                    acc[category].push(permission);
-
-                                    return acc;
-                                }, {})
-                            ).map(([category, perms]) => (
-                                <div
-                                    key={category}
-                                    className="rounded-lg border border-slate-200 p-4 mb-4"
-                                >
-                                    <h4 className="mb-3 text-sm font-semibold capitalize text-slate-700">
-                                        {category}
-                                    </h4>
-
-                                    <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-                                        {(perms as string[]).map((perm) => {
-                                            const action = perm.split(".")[1];
-
-                                            return (
-                                                <label
-                                                    key={perm}
-                                                    className="flex items-start gap-3 rounded-lg border border-slate-200 p-3 transition hover:bg-slate-50 cursor-pointer"
-                                                >
-                                                    <input
-                                                        type="checkbox"
-                                                        checked={selectedPermissions.includes(perm)}
-                                                        onChange={() => handlePermissionToggle(perm)}
-                                                        className="mt-0.5 h-4 w-4 rounded border-slate-300 text-black focus:ring-black"
-                                                    />
-
-                                                    <div>
-                                                        <p className="text-sm font-medium text-slate-700 capitalize">
-                                                            {action}
-                                                        </p>
-
-                                                        <p className="text-xs text-slate-500">
-                                                            {perm}
-                                                        </p>
-                                                    </div>
-                                                </label>
-                                            );
-                                        })}
+                                        <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                                            {categoryPermissions.map((perm) => {
+                                                const action = perm.split(".")[1];
+                                                return (
+                                                    <label
+                                                        key={perm}
+                                                        className="flex items-start gap-3 rounded-lg border border-slate-200 p-3 transition hover:bg-slate-50 cursor-pointer"
+                                                    >
+                                                        <input
+                                                            type="checkbox"
+                                                            checked={selectedPermissions.includes(perm)}
+                                                            onChange={() => handlePermissionToggle(perm)}
+                                                            className="mt-0.5 h-4 w-4 rounded border-slate-300 text-black focus:ring-black"
+                                                        />
+                                                        <div>
+                                                            <p className="text-sm font-medium text-slate-700 capitalize">
+                                                                {action}
+                                                            </p>
+                                                            <p className="text-xs text-slate-500">
+                                                                {perm}
+                                                            </p>
+                                                        </div>
+                                                    </label>
+                                                );
+                                            })}
+                                        </div>
                                     </div>
-                                </div>
-                            ))}
+                                );
+                            })}
                         </div>
                     )}
                 </div>
@@ -297,7 +334,6 @@ export default function CreateVendor({ onClose, selectedVendor }: CreateVendorPr
                     loading={isLoading}
                     onSubmit={handleSubmit}
                     onClose={onClose}
-
                 />
             </div>
         </div>
