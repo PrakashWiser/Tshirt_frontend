@@ -121,7 +121,7 @@ const DotMenu: React.FC<DotMenuProps> = ({
                             animate={{ opacity: 1, scale: 1 }}
                             exit={{ opacity: 0, scale: 0.95 }}
                             transition={{ duration: 0.15 }}
-                            className={`absolute w-44 border bg-white border-gray-200 rounded-md shadow-lg z-[9999] ${className}`}
+                            className={`absolute w-40 border bg-white border-gray-200 rounded-md shadow-lg z-[9999] ${className}`}
                             style={{
                                 top: position.top,
                                 left: position.left,

@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react';
-import { motion } from 'framer-motion';
 import { UserPlus } from 'lucide-react';
 import { createVendor, getVendorPermissions, setVendorPermissions, updateVendor } from '../../store/slice/vendorSlice';
 import { useAppDispatch, useAppSelector } from '../../hooks/hooks';
@@ -11,13 +10,10 @@ interface CreateVendorProps {
     selectedVendor?: any | null;
 }
 
-
-
 export default function CreateVendor({ onClose, selectedVendor }: CreateVendorProps) {
     const dispatch = useAppDispatch();
     const { isLoading, error, permissions, message } = useAppSelector((state: any) => state.vendor);
     const [selectedPermissions, setSelectedPermissions] = useState<string[]>([]);
-
 
 
     useEffect(() => {
@@ -34,12 +30,11 @@ export default function CreateVendor({ onClose, selectedVendor }: CreateVendorPr
         }
     }, [message, error, dispatch, onClose]);
 
+
+
     useEffect(() => {
-        if (selectedVendor?.permissions) {
-            const granted = selectedVendor.permissions
-                .filter((p: any) => p.granted)
-                .map((p: any) => p.id || p);
-            setSelectedPermissions(granted);
+        if (selectedVendor?.vendorProfile?.permissions) {
+            setSelectedPermissions(selectedVendor.vendorProfile.permissions);
         }
     }, [selectedVendor]);
 
@@ -211,7 +206,7 @@ export default function CreateVendor({ onClose, selectedVendor }: CreateVendorPr
     return (
         <div className="min-h-screen bg-slate-50 py-8 px-4">
             <div className="mx-auto max-w-7xl">
-                <div className="flex items-center justify-between px-6 py-4 mb-10">
+                <div className="flex items-center justify-between py-4 mb-10">
                     <div className="flex items-center gap-3">
                         <div className="rounded-lg bg-black p-2">
                             <UserPlus size={20} className="text-white" />
@@ -227,63 +222,83 @@ export default function CreateVendor({ onClose, selectedVendor }: CreateVendorPr
                     </div>
                 </div>
 
-                <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="rounded-2xl bg-white overflow-hidden"
-                >
-                    <ReusableForm
-                        fields={fields}
-                        initialValues={initialValues}
-                        submitText={selectedVendor ? 'Update Vendor' : 'Create Vendor'}
-                        loading={isLoading}
-                        onSubmit={handleSubmit}
-                        onClose={onClose}
+                <div className=" pb-6 -mt-4">
+                    {permissions.length > 0 && (
+                        <div className="pt-4 mt-6">
+                            <div className="mb-4">
+                                <h3 className="text-sm font-semibold text-slate-900">
+                                    Grant Permissions
+                                </h3>
+                                <p className="text-sm text-slate-500">
+                                    Select the permissions to grant to this vendor
+                                </p>
+                            </div>
 
-                    />
+                            {Object.entries(
+                                permissions.reduce((acc: Record<string, string[]>, permission: string) => {
+                                    const category = permission.split(".")[0];
 
-                    <div className="px-6 pb-6 -mt-4">
-                        {permissions.length > 0 && (
-                            <div className="pt-4 mt-6">
-                                <div className="mb-4">
-                                    <h3 className="text-sm font-semibold text-slate-900">Grant Permissions</h3>
-                                    <p className="text-sm text-slate-500">Select the permissions to grant to this vendor</p>
-                                </div>
+                                    if (!acc[category]) {
+                                        acc[category] = [];
+                                    }
 
-                                {Object.entries(
-                                    permissions.reduce((acc: Record<string, any[]>, p: any) => {
-                                        if (!acc[p.category]) acc[p.category] = [];
-                                        acc[p.category].push(p);
-                                        return acc;
-                                    }, {})
-                                ).map(([category, perms]) => (
-                                    <div key={category} className="rounded-lg border border-slate-200 p-4 mb-4">
-                                        <h4 className="mb-3 text-sm font-semibold capitalize text-slate-700">{category}</h4>
-                                        <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-                                            {(perms as any[]).map((perm) => (
+                                    acc[category].push(permission);
+
+                                    return acc;
+                                }, {})
+                            ).map(([category, perms]) => (
+                                <div
+                                    key={category}
+                                    className="rounded-lg border border-slate-200 p-4 mb-4"
+                                >
+                                    <h4 className="mb-3 text-sm font-semibold capitalize text-slate-700">
+                                        {category}
+                                    </h4>
+
+                                    <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                                        {(perms as string[]).map((perm) => {
+                                            const action = perm.split(".")[1];
+
+                                            return (
                                                 <label
-                                                    key={perm.id}
+                                                    key={perm}
                                                     className="flex items-start gap-3 rounded-lg border border-slate-200 p-3 transition hover:bg-slate-50 cursor-pointer"
                                                 >
                                                     <input
                                                         type="checkbox"
-                                                        checked={selectedPermissions.includes(perm.id)}
-                                                        onChange={() => handlePermissionToggle(perm.id)}
+                                                        checked={selectedPermissions.includes(perm)}
+                                                        onChange={() => handlePermissionToggle(perm)}
                                                         className="mt-0.5 h-4 w-4 rounded border-slate-300 text-black focus:ring-black"
                                                     />
+
                                                     <div>
-                                                        <p className="text-sm font-medium text-slate-700">{perm.name}</p>
-                                                        <p className="text-xs text-slate-500">{perm.description}</p>
+                                                        <p className="text-sm font-medium text-slate-700 capitalize">
+                                                            {action}
+                                                        </p>
+
+                                                        <p className="text-xs text-slate-500">
+                                                            {perm}
+                                                        </p>
                                                     </div>
                                                 </label>
-                                            ))}
-                                        </div>
+                                            );
+                                        })}
                                     </div>
-                                ))}
-                            </div>
-                        )}
-                    </div>
-                </motion.div>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </div>
+
+                <ReusableForm
+                    fields={fields}
+                    initialValues={initialValues}
+                    submitText={selectedVendor ? 'Update Vendor' : 'Create Vendor'}
+                    loading={isLoading}
+                    onSubmit={handleSubmit}
+                    onClose={onClose}
+
+                />
             </div>
         </div>
     );

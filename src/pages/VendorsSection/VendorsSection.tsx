@@ -347,7 +347,6 @@ export default function VendorsSection() {
                 />
             </div>
 
-            {/* Delete Confirmation Modal */}
             <ConfirmDeleteModal
                 isOpen={deleteModal}
                 title="Are you sure you want to delete this vendor?"
@@ -358,11 +357,9 @@ export default function VendorsSection() {
                 }}
             />
 
-            {/* Reject Reason Modal */}
             {rejectModal && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
                     <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl">
-                        {/* Modal Header */}
                         <div className="flex items-center justify-between mb-4">
                             <h3 className="text-lg font-semibold text-slate-900">Reject Vendor</h3>
                             <button
@@ -377,7 +374,6 @@ export default function VendorsSection() {
                             </button>
                         </div>
 
-                        {/* Modal Body */}
                         <div className="space-y-4">
                             <p className="text-sm text-slate-600">
                                 Please provide a reason for rejecting this vendor application.
@@ -401,7 +397,6 @@ export default function VendorsSection() {
                             </div>
                         </div>
 
-                        {/* Modal Footer */}
                         <div className="flex justify-end gap-3 mt-6 pt-4 border-t border-slate-200">
                             <Button
                                 variant="outline"

@@ -204,7 +204,7 @@ export function DataTable<T extends object>({
     searchPlaceholder = "Search...",
     defaultView = "table",
     renderGridCard,
-    gridClassName = "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4",
+    gridClassName = "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 4xl:grid-cols-4 gap-4",
     pageSize: initialPageSize = 10,
     pageSizeOptions = DEFAULT_PAGE_SIZE_OPTIONS,
     onRowClick,
