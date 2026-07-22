@@ -15,6 +15,7 @@ import { clearCouponError, deleteCoupon, getAllCoupons, updateCouponStatus } fro
 import DotMenu from "../../components/DotMenu";
 import ConfirmDeleteModal from "../../components/ConfirmDeleteModal";
 import type { Coupon } from "../../types";
+import { exportTableData } from "../../utils/exportToExcel";
 
 
 interface TableRow {
@@ -205,6 +206,14 @@ export default function OffersPromotionSection() {
 
 
 
+    const handleExport = () => {
+        exportTableData(
+            tableData as any,
+            columns,
+            "Coupon"
+        );
+    };
+
     if (openCreate) {
         return (
             <CouponCreate
@@ -232,7 +241,9 @@ export default function OffersPromotionSection() {
                             <Filter size={18} />
                             Filter
                         </button>
-                        <button className="flex items-center gap-2 px-4 py-2 border border-slate-200 rounded-md hover:bg-slate-50 transition-colors text-sm font-medium">
+                        <button
+                            onClick={handleExport}
+                            className="flex items-center gap-2 px-4 py-2 border border-slate-200 rounded-md hover:bg-slate-50 transition-colors text-sm font-medium">
                             <Download size={18} />
                             Export
                         </button>

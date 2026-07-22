@@ -11,6 +11,7 @@ import ConfirmDeleteModal from "../../components/ConfirmDeleteModal";
 import DotMenu from "../../components/DotMenu";
 import { deleteBooking } from "../../store/slice/bookingSlice";
 import { exportTableData } from "../../utils/exportToExcel";
+import { useNavigate } from "react-router-dom";
 
 
 
@@ -29,6 +30,7 @@ interface Booking {
 
 
 export default function BookingsSection() {
+    const navigate = useNavigate()
     const dispatch = useAppDispatch();
     const [open, setOpen] = useState(false);
     const { error, message, bookings } = useAppSelector((state) => state.booking);
@@ -185,28 +187,26 @@ export default function BookingsSection() {
                 key: "actions",
                 header: "ACTIONS",
                 accessor: "id",
-                render: (_, row) => {
-                    const originalBooking: any = bookings.find(
-                        (b: any) => b.bookingId === row.id
-                    );
-                    const status = originalBooking?.status?.toLowerCase();
+                render: (_, row: any) => {
+                    const status = row.statusRaw.toLowerCase();
+
                     return (
                         <DotMenu
                             onCheckIn={
                                 status === "confirmed"
-                                    ? () => dispatch(checkInBooking(originalBooking._id))
+                                    ? () => dispatch(checkInBooking(row._id))
                                     : undefined
                             }
                             onCheckOut={
                                 status === "checked_in"
-                                    ? () => dispatch(checkOutBooking(originalBooking._id))
+                                    ? () => dispatch(checkOutBooking(row._id))
                                     : undefined
                             }
-                            onDelete={() => handleDelete(originalBooking._id)}
+                            onDelete={() => handleDelete(row._id)}
                         />
                     );
                 },
-            },
+            }
         ],
         []
     );
@@ -214,7 +214,9 @@ export default function BookingsSection() {
     const bookingData = useMemo(() => {
         return (bookings || []).map((booking: any) => ({
             id: booking.bookingId,
+            _id: booking._id,
             guest: booking.customer?.name,
+            statusRaw: booking.status,
             property: booking.propertyId?.propertyName,
             room: booking.roomId?.roomName,
             checkIn: booking.checkInDate?.split("T")[0],
@@ -238,7 +240,6 @@ export default function BookingsSection() {
 
 
     const handleDelete = (id: string) => {
-        console.log(id);
         setDeleteId(id);
         setDeleteModal(true);
     };
@@ -262,6 +263,7 @@ export default function BookingsSection() {
         <>
             <div className="py-4">
                 <DataTable<Booking>
+                    onRowClick={(row: any) => navigate(`/bookings/${row._id}`)}
                     data={bookingData}
                     columns={columns}
                     rowKey="id"

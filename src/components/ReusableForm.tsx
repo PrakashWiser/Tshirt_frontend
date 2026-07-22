@@ -72,10 +72,35 @@ export default function ReusableForm({
                 ...prev,
                 [name]: value,
             };
+
             if (name === "locationId") {
                 updated.subLocationId = "";
             }
+            if (name === "stayType") {
+                updated.hourlyStay = {
+                    ...(prev.hourlyStay || {}),
+                    isAllowed: value === "hourly" || value === "both",
+                };
+            }
+            if (name === "capacity") {
+                const maxGuests = Number(value.maxGuests || 0);
+                let adults = Number(value.adults || 0);
+                let children = Number(value.children || 0);
 
+                if (adults > maxGuests) {
+                    adults = maxGuests;
+                }
+
+                if (adults + children > maxGuests) {
+                    children = Math.max(0, maxGuests - adults);
+                }
+
+                updated.capacity = {
+                    ...value,
+                    adults,
+                    children,
+                };
+            }
             return updated;
         });
 

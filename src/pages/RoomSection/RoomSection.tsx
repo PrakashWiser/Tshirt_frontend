@@ -116,7 +116,6 @@ export default function RoomSection() {
         category: room.category ?? "",
     }));
 
-    console.log(rooms);
     
 
     const columns: ColumnDef<RoomRow>[] = [

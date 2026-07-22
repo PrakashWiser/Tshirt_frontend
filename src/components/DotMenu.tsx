@@ -80,7 +80,10 @@ const DotMenu: React.FC<DotMenuProps> = ({
         <>
             <button
                 ref={buttonRef}
-                onClick={toggleMenu}
+                onClick={(e) => {
+                    e.stopPropagation();
+                    toggleMenu();
+                }}
                 className="w-8 h-8 flex items-center justify-center rounded-full bg-white border border-slate-200 shadow-sm hover:bg-slate-50 cursor-pointer"
             >
                 <MoreHorizontal size={16} />
@@ -130,7 +133,8 @@ const DotMenu: React.FC<DotMenuProps> = ({
 
                                 {onDelete && (
                                     <button
-                                        onClick={() => {
+                                        onClick={(e) => {
+                                            e.stopPropagation();
                                             setIsOpen(false);
                                             onDelete();
                                         }}

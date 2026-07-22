@@ -19,6 +19,7 @@ import RoomView from '../pages/RoomSection/RoomView';
 import PropertyView from '../pages/PropertySection/PropertyView';
 import ProfileSection from '../pages/Profile/Profile';
 import SessionExpiredPopup from '../components/SessionExpiredPopup';
+import BookingDetails from '../pages/Bookings/BookingDetails';
 
 const Login = React.lazy(() => import('../pages/Login/Login'));
 const DashboardHome = React.lazy(() => import('../pages/DashboardHome/DashboardHome'));
@@ -71,6 +72,7 @@ export default function AppRoutes() {
               <Route path="/rooms/view/:id" element={<RoomView />} />
               <Route path="/rooms/cache" element={<RedisCachePage />} />
               <Route path="/bookings" element={<Bookings />} />
+              <Route path="/bookings/:id" element={<BookingDetails />} />
               <Route path="/properties" element={<VillaSection />} />
               <Route path="/properties/view/:id" element={<PropertyView />} />
               <Route path="/locations" element={<LocationSection />} />
