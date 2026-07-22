@@ -3,29 +3,31 @@ import { BrowserRouter, Routes, Route, Navigate, Outlet } from 'react-router-dom
 import ProtectedRoute from './ProtectedRoute';
 import ToastContainer from '../components/ToastContainer';
 import AdminLayout from '../components/AdminLayout';
-import RoomSection from '../pages/RoomSection/RoomSection';
-import VillaSection from '../pages/PropertySection/PropertySection';
-import UserSection from '../pages/UserSection/UserSection';
-import PaymentSection from '../pages/PaymentSection/PaymentSection';
-import PricingRuleSection from '../pages/Pricingrulesection/Pricingrulesection';
 import { useAppDispatch, useAppSelector } from '../hooks/hooks';
 import { getProfile } from '../store/slice/authSlice';
-import OffersPromotionSection from '../pages/OffersPromotionSection/OffersPromotionSection';
-import ReviewsSentimentSection from '../pages/ReviewsSentimentSection/ReviewsSentimentSection';
-import AuditLogs from '../pages/AuditLogs/AuditLogs';
-import Roles from '../pages/Roles/Roles';
-import RedisCachePage from '../pages/RoomSection/RedisCachePage';
-import RoomView from '../pages/RoomSection/RoomView';
-import PropertyView from '../pages/PropertySection/PropertyView';
-import ProfileSection from '../pages/Profile/Profile';
 import SessionExpiredPopup from '../components/SessionExpiredPopup';
-import BookingDetails from '../pages/Bookings/BookingDetails';
+import ScrollToTop from '../components/Common/ScrollToTop';
 
 const Login = React.lazy(() => import('../pages/Login/Login'));
 const DashboardHome = React.lazy(() => import('../pages/DashboardHome/DashboardHome'));
 const AdminNotFound = React.lazy(() => import('../pages/AdminNotFound/AdminNotFoundt'));
 const Bookings = React.lazy(() => import('../pages/Bookings/Bookings'));
 const LocationSection = React.lazy(() => import('../pages/Locations/LocationSection'));
+const RoomSection = React.lazy(() => import('../pages/RoomSection/RoomSection'));
+const VillaSection = React.lazy(() => import('../pages/PropertySection/PropertySection'));
+const UserSection = React.lazy(() => import('../pages/UserSection/UserSection'));
+const PaymentSection = React.lazy(() => import('../pages/PaymentSection/PaymentSection'));
+const PricingRuleSection = React.lazy(() => import('../pages/Pricingrulesection/Pricingrulesection'));
+const OffersPromotionSection = React.lazy(() => import('../pages/OffersPromotionSection/OffersPromotionSection'));
+const ReviewsSentimentSection = React.lazy(() => import('../pages/ReviewsSentimentSection/ReviewsSentimentSection'));
+const AuditLogs = React.lazy(() => import('../pages/AuditLogs/AuditLogs'));
+const Roles = React.lazy(() => import('../pages/Roles/Roles'));
+const RedisCachePage = React.lazy(() => import('../pages/RoomSection/RedisCachePage'));
+const RoomView = React.lazy(() => import('../pages/RoomSection/RoomView'));
+const PropertyView = React.lazy(() => import('../pages/PropertySection/PropertyView'));
+const ProfileSection = React.lazy(() => import('../pages/Profile/Profile'));
+const BookingDetails = React.lazy(() => import('../pages/Bookings/BookingDetails'));
+const VendorsSection = React.lazy(() => import('../pages/VendorsSection/VendorsSection'));
 
 function ViewportSpinner() {
   return (
@@ -59,6 +61,7 @@ export default function AppRoutes() {
     <BrowserRouter>
       <ToastContainer />
       <SessionExpiredPopup />
+      <ScrollToTop />
       <Suspense fallback={<ViewportSpinner />}>
         <Routes>
           <Route>
@@ -84,6 +87,7 @@ export default function AppRoutes() {
               <Route path="/profile" element={<ProfileSection />} />
               <Route path="/pricing-management" element={<PricingRuleSection />} />
               <Route path="/users" element={<UserSection />} />
+              <Route path="/vendors" element={<VendorsSection />} />
             </Route>
             <Route path="*" element={<AdminNotFound />} />
           </Route>

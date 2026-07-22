@@ -1,11 +1,15 @@
-import * as XLSX from "xlsx";
 import type { ColumnDef } from "../components/Types";
 
-export function exportTableData<T>(
+type XLSXModule = typeof import("xlsx");
+
+export async function exportTableData<T>(
   data: T[],
   columns: ColumnDef<T>[],
   fileName: string,
 ) {
+  const xlsxModule = await import("xlsx");
+  const XLSX = (xlsxModule as { default?: XLSXModule }).default ?? xlsxModule;
+
   const exportRows = data.map((row) => {
     const item: Record<string, unknown> = {};
 

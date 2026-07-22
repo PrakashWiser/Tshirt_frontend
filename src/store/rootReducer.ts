@@ -8,6 +8,7 @@ import pricingRuleReducer from "./slice/pricingRuleSlice";
 import bookingReducer from "./slice/bookingSlice";
 import publicRoomReducer from "./slice/publicRoomSlice";
 import couponReducer from "./slice/couponSlice";
+import vendorReducer from "./slice/vendorSlice";
 
 const rootReducer = combineReducers({
   auth: authReducer,
@@ -19,6 +20,7 @@ const rootReducer = combineReducers({
   booking: bookingReducer,
   publicRoom: publicRoomReducer,
   coupon: couponReducer,
+  vendor: vendorReducer,
 });
 
 export default rootReducer;
