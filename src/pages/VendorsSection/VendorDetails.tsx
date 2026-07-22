@@ -29,7 +29,6 @@ import {
     rejectVendor,
     suspendVendor,
     activateVendor,
-    resetVendorPassword,
     clearVendorError,
     clearVendorData,
 } from "../../store/slice/vendorSlice";
@@ -321,19 +320,7 @@ export default function VendorDetails() {
         }
     };
 
-    const handleResetPassword = async () => {
-        if (!id) return;
-        setActionLoading("resetPassword");
-        try {
-            await dispatch(resetVendorPassword(id)).unwrap();
-            dispatch(addToast({ type: "success", text: "Password reset email sent successfully" }));
-            setShowResetPasswordModal(false);
-        } catch (err: any) {
-            dispatch(addToast({ type: "error", text: err || "Failed to reset password" }));
-        } finally {
-            setActionLoading(null);
-        }
-    };
+  
 
     const handleDelete = async () => {
         setActionLoading("delete");
@@ -832,13 +819,7 @@ export default function VendorDetails() {
                         >
                             Cancel
                         </Button>
-                        <LoadingButton
-                            loading={actionLoading === "resetPassword"}
-                            onClick={handleResetPassword}
-                            className="px-4 h-9 rounded-lg bg-amber-600 text-white text-sm font-medium hover:bg-amber-700 disabled:opacity-50 disabled:cursor-not-allowed"
-                        >
-                            Send Reset Link
-                        </LoadingButton>
+                       
                     </div>
                 </div>
             </CustomModal>
