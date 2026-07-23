@@ -49,14 +49,11 @@ export const setupTokenRefresh = ({
         refreshTokenAction,
       });
     } catch (error) {
-      store.dispatch(logoutAction());
+      window.dispatchEvent(new CustomEvent("session-expired-popup"));
     } finally {
       isRefreshing = false;
     }
   };
-
-  window.removeEventListener("session-expired", refreshNow);
-  window.addEventListener("session-expired", refreshNow);
 
   const expiresIn = Number(tokenExpiry) - Date.now();
   const refreshIn = expiresIn - 2 * 60 * 1000;
@@ -72,8 +69,6 @@ export const setupTokenRefresh = ({
   }
 
   return () => {
-    window.removeEventListener("session-expired", refreshNow);
-
     if (refreshTimeout) {
       clearTimeout(refreshTimeout);
       refreshTimeout = null;
