@@ -22,8 +22,7 @@ import type { SidebarProps } from "../../types";
 import { useAppDispatch, useAppSelector } from "../../hooks/hooks";
 import CustomImage from "../Image";
 import { logoutUser } from "../../store/slice/authSlice";
-import { permissions } from "../../utils/dummyPermission";
-
+import { usePermission } from "../../hooks/usePermission";
 const MOBILE_BREAKPOINT = 1024;
 
 
@@ -31,9 +30,11 @@ export default function Sidebar({
     sidebarOpen,
     setSidebarOpen,
 }: SidebarProps) {
-    const navigate = useNavigate();
-    const { user } = useAppSelector((state: any) => state.auth);
     const dispatch = useAppDispatch()
+    const navigate = useNavigate();
+    const { hasPermission } = usePermission();
+    const { user } = useAppSelector((state: any) => state.auth);
+
 
     const menuSections = [
         {
@@ -154,11 +155,12 @@ export default function Sidebar({
 
 
 
+
     const filteredSections = menuSections
         .map((section) => ({
             ...section,
             items: section.items.filter((item) =>
-                permissions.includes(item.permission)
+                hasPermission(item.permission)
             ),
         }))
         .filter((section) => section.items.length > 0);
@@ -272,7 +274,7 @@ export default function Sidebar({
                                         {user?.name || "Admin"}
                                     </p>
 
-                                    <p className="text-xs text-slate-400 truncate">
+                                    <p className="text-xs text-red-400 capitalize truncate ">
                                         {user?.role || "Administrator"}
                                     </p>
                                 </div>

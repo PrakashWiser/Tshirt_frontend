@@ -15,6 +15,7 @@ import {
 } from "../../store/slice/pricingRuleSlice";
 import type { PricingRule } from "../../types";
 import { exportTableData } from "../../utils/exportToExcel";
+import { usePermission } from "../../hooks/usePermission";
 
 
 const SCOPE_COLOR: Record<string, string> = {
@@ -33,6 +34,7 @@ const DAY_LABELS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
 export default function PricingRuleSection() {
     const dispatch = useAppDispatch();
+    const { hasPermission } = usePermission();
     const [openForm, setOpenForm] = useState(false);
     const [selectedRule, setSelectedRule] = useState<PricingRule | null>(null);
     const [deleteModal, setDeleteModal] = useState(false);
@@ -140,13 +142,14 @@ export default function PricingRuleSection() {
                             <Download size={16} />
                             Export
                         </Button>
-                        <Button
-                            onClick={() => { setSelectedRule(null); setOpenForm(true); }}
-                            className="flex items-center gap-2 px-4 h-9 rounded-lg bg-black text-white text-xs font-medium"
-                        >
-                            <Plus size={16} />
-                            Add Rule
-                        </Button>
+                        {hasPermission("pricing_rules.create") && (
+                            <Button
+                                onClick={() => { setSelectedRule(null); setOpenForm(true); }}
+                                className="flex items-center gap-2 px-4 h-9 rounded-lg bg-black text-white text-xs font-medium"
+                            >
+                                <Plus size={16} />
+                                Add Rule
+                            </Button>)}
                     </div>
                 }
                 gridClassName="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5"
@@ -163,6 +166,8 @@ export default function PricingRuleSection() {
                                 </div>
                             </div>
                             <DotMenu
+                                showEdit={hasPermission("pricing_rules.update")}
+                                showDelete={hasPermission("pricing_rules.delete")}
                                 onEdit={() => handleEdit(rule)}
                                 onDelete={() => handleDelete(rule._id)}
                             />

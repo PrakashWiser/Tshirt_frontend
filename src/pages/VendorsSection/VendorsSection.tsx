@@ -50,7 +50,6 @@ export default function VendorsSection() {
     const dispatch = useAppDispatch();
     const navigate = useNavigate();
     const { error, message, vendors, isLoading } = useAppSelector((state) => state.vendor);
-
     const [openCreate, setOpenCreate] = useState(false);
     const [selectedVendor, setSelectedVendor] = useState<any>(null);
     const [deleteModal, setDeleteModal] = useState(false);
@@ -266,6 +265,7 @@ export default function VendorsSection() {
                 const status = row?.vendorProfile?.approvalStatus?.toLowerCase();
                 return (
                     <DotMenu
+
                         onEdit={() => handleEdit(row)}
                         onApprove={status === "pending" ? () => handleApprove(row._id) : undefined}
                         onReject={status === "pending" ? () => handleRejectClick(row._id) : undefined}

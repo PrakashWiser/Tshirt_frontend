@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react';
 import { UserPlus } from 'lucide-react';
 import { createVendor, getVendorPermissions, setVendorPermissions, updateVendor } from '../../store/slice/vendorSlice';
 import { useAppDispatch, useAppSelector } from '../../hooks/hooks';
-import { addToast } from '../../store/slice/uiSlice';
 import ReusableForm, { type FormField } from '../../components/ReusableForm';
 
 interface CreateVendorProps {
@@ -12,22 +11,13 @@ interface CreateVendorProps {
 
 export default function CreateVendor({ onClose, selectedVendor }: CreateVendorProps) {
     const dispatch = useAppDispatch();
-    const { isLoading, error, permissions, message } = useAppSelector((state: any) => state.vendor);
+    const { isLoading, permissions } = useAppSelector((state: any) => state.vendor);
     const [selectedPermissions, setSelectedPermissions] = useState<string[]>([]);
 
     useEffect(() => {
         dispatch(getVendorPermissions() as any);
     }, [dispatch]);
 
-    useEffect(() => {
-        if (message) {
-            dispatch(addToast({ type: "success", text: message }));
-            onClose();
-        }
-        if (error) {
-            dispatch(addToast({ type: "error", text: error }));
-        }
-    }, [message, error, dispatch, onClose]);
 
     useEffect(() => {
         if (selectedVendor?.vendorProfile?.permissions) {

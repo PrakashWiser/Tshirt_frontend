@@ -11,6 +11,7 @@ import { clearLocationError, deleteLocation, getAllLocations } from "../../store
 import CustomImage from "../../components/Image";
 import ConfirmDeleteModal from "../../components/ConfirmDeleteModal";
 import { exportTableData } from "../../utils/exportToExcel";
+import { usePermission } from "../../hooks/usePermission";
 
 export interface SubLocation {
     _id: string;
@@ -40,6 +41,7 @@ export interface Location {
 
 export default function LocationSection() {
     const dispatch = useAppDispatch();
+    const { hasPermission } = usePermission();
     const [openForm, setOpenForm] = useState(false);
     const [selectedLocation, setSelectedLocation] = useState<Location | null>(null);
     const [deleteModal, setDeleteModal] = useState(false);
@@ -150,13 +152,15 @@ export default function LocationSection() {
                             <Download size={16} />
                             Export
                         </Button>
-                        <Button
-                            onClick={handleAddLocation}
-                            className="flex items-center gap-2 px-4 h-9 rounded-lg bg-black text-white text-xs font-medium"
-                        >
-                            <Plus size={16} />
-                            Add Location
-                        </Button>
+                        {hasPermission("locations.create") && (
+                            <Button
+                                className="flex items-center gap-2 px-4 h-9 rounded-lg bg-black text-white text-xs font-medium"
+                                onClick={handleAddLocation}
+                            >
+                                <Plus size={16} />
+                                Add Location
+                            </Button>
+                        )}
                     </div>
                 }
                 gridClassName="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5"
@@ -178,6 +182,8 @@ export default function LocationSection() {
                             </span>
                             <div className="absolute right-3 top-3">
                                 <DotMenu
+                                    showEdit={hasPermission("locations.update")}
+                                    showDelete={hasPermission("locations.delete")}
                                     onEdit={() => handleEdit(location)}
                                     onDelete={() => handleDelete(location._id)}
                                 />

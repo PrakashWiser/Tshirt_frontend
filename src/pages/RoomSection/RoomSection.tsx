@@ -21,6 +21,7 @@ import ConfirmDeleteModal from "../../components/ConfirmDeleteModal";
 import { exportTableData } from "../../utils/exportToExcel";
 import { useNavigate } from "react-router-dom";
 import CustomImage from "../../components/Image";
+import { usePermission } from "../../hooks/usePermission";
 
 interface RoomRow {
     _id: string;
@@ -41,6 +42,7 @@ export default function RoomSection() {
     const navigate = useNavigate();
     const [openForm, setOpenForm] = useState(false);
     const dispatch = useAppDispatch();
+    const { hasPermission } = usePermission();
     const [selectedRoom, setSelectedRoom] = useState<Room | null>(null);
     const { isLoading, error, message, rooms, } = useAppSelector((state) => state.rooms);
     const [deleteModal, setDeleteModal] = useState(false);
@@ -116,7 +118,7 @@ export default function RoomSection() {
         category: room.category ?? "",
     }));
 
-    
+
 
     const columns: ColumnDef<RoomRow>[] = [
         {
@@ -242,13 +244,14 @@ export default function RoomSection() {
                             <Download size={16} />
                             Export
                         </Button>
-                        <Button
-                            onClick={handleAddRoom}
-                            className="flex items-center gap-2 px-4 h-9 rounded-lg bg-black text-white text-xs font-medium"
-                        >
-                            <Plus size={16} />
-                            Add Room
-                        </Button>
+                        {hasPermission("rooms.create") && (
+                            <Button
+                                onClick={handleAddRoom}
+                                className="flex items-center gap-2 px-4 h-9 rounded-lg bg-black text-white text-xs font-medium"
+                            >
+                                <Plus size={16} />
+                                Add Room
+                            </Button>)}
                     </div>
                 }
                 defaultView="grid"
@@ -279,6 +282,8 @@ export default function RoomSection() {
                                 </div>
 
                                 <DotMenu
+                                    showEdit={hasPermission("rooms.update")}
+                                    showDelete={hasPermission("rooms.delete")}
                                     onView={() => handleView(row._id)}
                                     onEdit={() => originalRoom && handleEdit(originalRoom)}
                                     onDelete={() => handleDelete(row._id)}

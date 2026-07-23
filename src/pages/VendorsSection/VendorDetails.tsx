@@ -320,7 +320,7 @@ export default function VendorDetails() {
         }
     };
 
-  
+
 
     const handleDelete = async () => {
         setActionLoading("delete");
@@ -588,38 +588,19 @@ export default function VendorDetails() {
                             />
                         )}
                     </InfoCard>
-
-                    <InfoCard title="Bank Details">
-                        <InfoRow
-                            label="Account Holder Name"
-                            value={bankDetails?.accountHolderName || "—"}
-                        />
-                        <InfoRow
-                            label="Bank Name"
-                            value={
-                                <span className="flex items-center gap-1">
-                                    <Landmark size={14} />
-                                    {bankDetails?.bankName || "—"}
-                                </span>
-                            }
-                        />
-                        <InfoRow
-                            label="Account Number"
-                            value={
-                                <span className="font-mono text-sm">
-                                    {bankDetails?.accountNo || "—"}
-                                </span>
-                            }
-                        />
-                        <InfoRow
-                            label="IFSC Code"
-                            value={
-                                <span className="font-mono text-sm uppercase">
-                                    {bankDetails?.ifsc || "—"}
-                                </span>
-                            }
-                        />
+                    <InfoCard title="Permissions">
+                        {permissions.length > 0 ? (
+                            <div className="flex flex-wrap gap-2">
+                                {permissions.map((permission) => (
+                                    <PermissionTag key={permission} permission={permission} />
+                                ))}
+                            </div>
+                        ) : (
+                            <p className="text-sm text-slate-500">No permissions assigned</p>
+                        )}
                     </InfoCard>
+
+
 
 
                 </div>
@@ -677,16 +658,36 @@ export default function VendorDetails() {
                             />
                         )}
                     </InfoCard>
-                    <InfoCard title="Permissions">
-                        {permissions.length > 0 ? (
-                            <div className="flex flex-wrap gap-2">
-                                {permissions.map((permission) => (
-                                    <PermissionTag key={permission} permission={permission} />
-                                ))}
-                            </div>
-                        ) : (
-                            <p className="text-sm text-slate-500">No permissions assigned</p>
-                        )}
+                    <InfoCard title="Bank Details">
+                        <InfoRow
+                            label="Account Holder Name"
+                            value={bankDetails?.accountHolderName || "—"}
+                        />
+                        <InfoRow
+                            label="Bank Name"
+                            value={
+                                <span className="flex items-center gap-1">
+                                    <Landmark size={14} />
+                                    {bankDetails?.bankName || "—"}
+                                </span>
+                            }
+                        />
+                        <InfoRow
+                            label="Account Number"
+                            value={
+                                <span className="font-mono text-sm">
+                                    {bankDetails?.accountNo || "—"}
+                                </span>
+                            }
+                        />
+                        <InfoRow
+                            label="IFSC Code"
+                            value={
+                                <span className="font-mono text-sm uppercase">
+                                    {bankDetails?.ifsc || "—"}
+                                </span>
+                            }
+                        />
                     </InfoCard>
 
 
@@ -819,7 +820,7 @@ export default function VendorDetails() {
                         >
                             Cancel
                         </Button>
-                       
+
                     </div>
                 </div>
             </CustomModal>

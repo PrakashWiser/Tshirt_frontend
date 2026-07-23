@@ -12,6 +12,7 @@ import DotMenu from "../../components/DotMenu";
 import { deleteBooking } from "../../store/slice/bookingSlice";
 import { exportTableData } from "../../utils/exportToExcel";
 import { useNavigate } from "react-router-dom";
+import { usePermission } from "../../hooks/usePermission";
 
 
 
@@ -33,6 +34,7 @@ export default function BookingsSection() {
     const navigate = useNavigate()
     const dispatch = useAppDispatch();
     const [open, setOpen] = useState(false);
+    const { hasPermission } = usePermission();
     const { error, message, bookings } = useAppSelector((state) => state.booking);
     const [deleteModal, setDeleteModal] = useState(false);
     const [deleteId, setDeleteId] = useState<string | null>(null);
@@ -192,6 +194,8 @@ export default function BookingsSection() {
 
                     return (
                         <DotMenu
+                            showEdit={hasPermission("bookings.update")}
+                            showDelete={hasPermission("bookings.delete")}
                             onCheckIn={
                                 status === "confirmed"
                                     ? () => dispatch(checkInBooking(row._id))
@@ -285,13 +289,14 @@ export default function BookingsSection() {
                                 <Download size={16} />
                                 Export
                             </Button>
-                            <Button
-                                onClick={() => setOpen(true)}
-                                className="flex items-center gap-2 px-4 h-9 rounded-lg bg-black text-white text-xs font-medium"
-                            >
-                                <Plus size={16} />
-                                Add Booking
-                            </Button>
+                            {hasPermission("bookings.create") && (
+                                <Button
+                                    onClick={() => setOpen(true)}
+                                    className="flex items-center gap-2 px-4 h-9 rounded-lg bg-black text-white text-xs font-medium"
+                                >
+                                    <Plus size={16} />
+                                    Add Booking
+                                </Button>)}
                         </div>
                     }
                     searchPlaceholder="Search bookings..."

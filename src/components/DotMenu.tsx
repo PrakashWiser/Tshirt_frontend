@@ -14,8 +14,11 @@ import {
     PlayCircle,
     KeyRound
 } from "lucide-react";
+import { useAppSelector } from "../hooks/hooks";
 
 interface DotMenuProps {
+    showEdit?: boolean;
+    showDelete?: boolean;
     onView?: () => void;
     onEdit?: () => void;
     onDelete?: () => void;
@@ -31,6 +34,8 @@ interface DotMenuProps {
 }
 
 const DotMenu: React.FC<DotMenuProps> = ({
+    showDelete,
+    showEdit,
     onView,
     onEdit,
     onDelete,
@@ -46,6 +51,8 @@ const DotMenu: React.FC<DotMenuProps> = ({
     const [isOpen, setIsOpen] = useState(false);
     const buttonRef = useRef<HTMLButtonElement | null>(null);
     const menuRef = useRef<HTMLDivElement | null>(null);
+    const { user } = useAppSelector((state) => state.auth);
+    const isSuperAdmin = user?.role === "superadmin";
 
     const [position, setPosition] = useState({
         top: 0,
@@ -142,7 +149,7 @@ const DotMenu: React.FC<DotMenuProps> = ({
                                     </button>
                                 )}
 
-                                {onEdit && (
+                                {(isSuperAdmin || showEdit) && onEdit && (
                                     <button
                                         onClick={(e) => {
                                             e.stopPropagation();
@@ -155,8 +162,7 @@ const DotMenu: React.FC<DotMenuProps> = ({
                                         Update
                                     </button>
                                 )}
-
-                                {onDelete && (
+                                {(isSuperAdmin || showDelete) && onDelete && (
                                     <button
                                         onClick={(e) => {
                                             e.stopPropagation();

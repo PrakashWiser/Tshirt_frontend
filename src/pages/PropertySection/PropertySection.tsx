@@ -13,6 +13,7 @@ import CustomImage from "../../components/Image";
 import ConfirmDeleteModal from "../../components/ConfirmDeleteModal";
 import { exportTableData } from "../../utils/exportToExcel";
 import { useNavigate } from "react-router-dom";
+import { usePermission } from "../../hooks/usePermission";
 
 
 export interface PropertyResponse {
@@ -29,6 +30,7 @@ export default function VillaSection() {
     const [openForm, setOpenForm] = useState(false);
     const dispatch = useAppDispatch()
     const navigate = useNavigate();
+    const { hasPermission } = usePermission();
     const [deleteModal, setDeleteModal] = useState(false);
     const [deleteId, setDeleteId] = useState<string | null>(null);
     const [selectedRooms, setSelectedRooms] = useState<Property | null>(null);
@@ -157,13 +159,14 @@ export default function VillaSection() {
                             <Download size={16} />
                             Export
                         </Button>
-                        <Button
-                            onClick={handleAddLocation}
-                            className="flex items-center gap-2 px-4 h-9 rounded-lg bg-black text-white text-xs font-medium"
-                        >
-                            <Plus size={16} />
-                            Add Properties
-                        </Button>
+                        {hasPermission("properties.create") && (
+                            <Button
+                                onClick={handleAddLocation}
+                                className="flex items-center gap-2 px-4 h-9 rounded-lg bg-black text-white text-xs font-medium"
+                            >
+                                <Plus size={16} />
+                                Add Properties
+                            </Button>)}
                     </div>
                 }
                 gridClassName="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5"
@@ -187,6 +190,8 @@ export default function VillaSection() {
 
                             <div className="absolute right-3 top-3">
                                 <DotMenu
+                                    showEdit={hasPermission("locations.update")}
+                                    showDelete={hasPermission("locations.delete")}
                                     onView={() => handleView(property._id)}
                                     onEdit={() => handleEdit(property)}
                                     onDelete={() => handleDelete(property._id)}

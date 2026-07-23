@@ -10,6 +10,9 @@ export interface User {
   email: string;
   role: string;
   avatar: string;
+  vendorProfile?: {
+    permissions: string[];
+  };
 }
 
 interface AuthState {
@@ -20,6 +23,7 @@ interface AuthState {
   isLoading: boolean;
   error: string | null;
   message: string | null;
+  permissions: string[];
 }
 
 interface LoginPayload {
@@ -67,6 +71,7 @@ const initialState: AuthState = {
   isAuthenticated: false,
   isLoading: false,
   error: null,
+  permissions: [],
   message: null,
 };
 
@@ -202,6 +207,7 @@ const authSlice = createSlice({
       state.isAuthenticated = false;
       state.isLoading = false;
       state.error = null;
+      state.permissions =[]
       state.message = null;
       localStorage.removeItem("tokenExpiry");
       localStorage.removeItem("loginTimestamp");
@@ -240,6 +246,8 @@ const authSlice = createSlice({
       .addCase(getProfile.fulfilled, (state, action) => {
         state.isLoading = false;
         state.user = action.payload;
+        state.permissions =
+          action.payload.vendorProfile?.permissions ?? [];
       })
       .addCase(getProfile.rejected, (state, action) => {
         state.isLoading = false;
