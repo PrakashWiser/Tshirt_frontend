@@ -1,12 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import ToastContainer from './ToastContainer';
 import { useSelector } from 'react-redux';
+import type { RootState } from '../store/store';
 import Sidebar from './Common/Sidebar';
 import Header from './Common/Header';
 import Breadcrumbs from './Common/Breadcrumbs';
 
 export default function AdminLayout({ children }: { children?: React.ReactNode }) {
-  const { darkMode } = useSelector((state: any) => state.ui);
+  const { darkMode } = useSelector((state: RootState) => state.ui);
   const [sidebarOpen, setSidebarOpen] = useState(true);
 
   useEffect(() => {
