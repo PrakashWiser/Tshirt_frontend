@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Download, Plus, Tag } from "lucide-react";
-import { DataTable } from "../../components/Taple";
+import { DataTable } from "../../components/Table";
 import DotMenu from "../../components/DotMenu";
 import Button from "../../components/Button";
 import ConfirmDeleteModal from "../../components/ConfirmDeleteModal";
@@ -62,7 +62,7 @@ export default function PricingRuleSection() {
         }
     }, [message, error, dispatch]);
 
-    const columns = useMemo<import("../../components/Types").ColumnDef < PricingRule >[]>(
+    const columns = useMemo<import("../../components/TableTypes").ColumnDef < PricingRule >[]>(
         () => [
             { key: "title", header: "Title", accessor: "title" },
             { key: "ruleType", header: "Type", accessor: "ruleType" },

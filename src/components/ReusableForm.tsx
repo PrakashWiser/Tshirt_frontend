@@ -4,7 +4,7 @@ import ImageUploadField from "./ImageUploadField";
 import InputField from "./CommonInput";
 import MapPicker from "./MapPicker";
 import TagInput from "../components/Taginput";
-import PoliciesEditor from "../components/Policieseditor";
+import PoliciesEditor from "./PoliciesEditor";
 import JsonObjectEditor, { type SchemaField } from "../components/Jsonobjecteditor";
 import { getPositionFromMapLink } from "../utils/getPositionFromMapLink";
 

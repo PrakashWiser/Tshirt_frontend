@@ -56,9 +56,92 @@ export const FetchApi = async <T = any>({
     if (response.status === 401) {
       const isLoginPage = window.location.pathname === "/login";
       if (!skipAuthHandler && !isLoginPage && !sessionExpiredShown) {
-        sessionExpiredShown = true;
-        window.dispatchEvent(new CustomEvent("session-expired-popup"));
+        // Try to refresh the token once before showing the session popup.
+        const tryRefreshAndRetry = async () => {
+          // If there's already a refresh in progress, wait for it.
+          const globalAny: any = window as any;
+          let refreshed = false;
+
+          if (globalAny.__refreshPromise) {
+            try {
+              await globalAny.__refreshPromise;
+              refreshed = true;
+            } catch {
+              refreshed = false;
+            }
+          } else {
+            // Trigger a refresh attempt handled by AuthBootstrap (which has access to the store)
+            refreshed = await new Promise<boolean>((resolve) => {
+              const onResult = (e: Event) => {
+                const detail = (e as CustomEvent)?.detail;
+                window.removeEventListener("refresh-result", onResult);
+                resolve(Boolean(detail?.success));
+              };
+
+              window.addEventListener("refresh-result", onResult);
+              window.dispatchEvent(new CustomEvent("try-refresh"));
+            });
+          }
+
+          if (refreshed) {
+            // try the request once more with the potentially new token placed by AuthBootstrap
+            const newToken = (window as any).__newAccessToken ?? token;
+            const retryHeaders: Record<string, string> = { ...headers };
+            if (newToken) {
+              retryHeaders["Authorization"] = `Bearer ${newToken}`;
+            }
+
+            const retryResponse = await fetch(`${API_URL}${endpoint}`, {
+              method,
+              headers: retryHeaders,
+              body:
+                body instanceof FormData ? body : body ? JSON.stringify(body) : null,
+              credentials: "include",
+              signal: controller.signal,
+            });
+
+            clearTimeout(timeoutId);
+
+            const retryContentType = retryResponse.headers.get("content-type");
+            const retryRawText = await retryResponse.text();
+
+            if (retryResponse.status === 401) {
+              sessionExpiredShown = true;
+              window.dispatchEvent(new CustomEvent("session-expired-popup"));
+              throw new Error("UNAUTHORIZED");
+            }
+
+            if (!retryResponse.ok) {
+              let json: any = null;
+
+              try {
+                json = JSON.parse(retryRawText);
+              } catch {}
+
+              const errorMessage =
+                json?.data?.message ||
+                json?.data?.errors ||
+                json?.errors ||
+                json?.message ||
+                "Something went wrong";
+
+              throw new Error(errorMessage);
+            }
+
+            return retryContentType?.includes("application/json")
+              ? (JSON.parse(retryRawText) as T)
+              : (retryRawText as T);
+          }
+
+          // Refresh did not succeed — show session popup
+          sessionExpiredShown = true;
+          window.dispatchEvent(new CustomEvent("session-expired-popup"));
+          throw new Error("UNAUTHORIZED");
+        };
+
+        return await tryRefreshAndRetry();
       }
+
       throw new Error("UNAUTHORIZED");
     }
 

@@ -1,4 +1,4 @@
-export { DataTable } from "./Taple";
+export { DataTable } from "./Table";
 export { useDataTable } from "./useDataTable";
 export type {
   DataTableProps,
@@ -6,4 +6,4 @@ export type {
   ViewMode,
   SortState,
   ColumnAlign,
-} from "./Types";
+} from "./TableTypes";

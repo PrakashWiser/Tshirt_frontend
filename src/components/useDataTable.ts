@@ -6,7 +6,7 @@ import {
   type ChangeEvent,
   type RefObject,
 } from "react";
-import type { SortState, ViewMode } from "./Types";
+import type { SortState, ViewMode } from "./TableTypes";
 
 interface Options<T extends object> {
   data: T[];

@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Download, MapPin, Plus } from "lucide-react";
-import { DataTable } from "../../components/Taple";
-import type { ColumnDef } from "../../components/Types";
+import { DataTable } from "../../components/Table";
+import type { ColumnDef } from "../../components/TableTypes";
 import DotMenu from "../../components/DotMenu";
 import Button from "../../components/Button";
 import CreateLocation from "./CreateLocation";

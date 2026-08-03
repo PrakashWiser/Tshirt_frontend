@@ -1,6 +1,6 @@
 import { useMemo } from "react";
-import { DataTable } from "../../components/Taple";
-import type { ColumnDef } from "../../components/Types";
+import { DataTable } from "../../components/Table";
+import type { ColumnDef } from "../../components/TableTypes";
 import DotMenu from "../../components/DotMenu";
 import { Download, Plus } from "lucide-react";
 import Button from "../../components/Button";

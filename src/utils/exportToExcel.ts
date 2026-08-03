@@ -1,4 +1,4 @@
-import type { ColumnDef } from "../components/Types";
+import type { ColumnDef } from "../components/TableTypes";
 
 type XLSXModule = typeof import("xlsx");
 

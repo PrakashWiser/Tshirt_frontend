@@ -12,7 +12,7 @@ import {
 } from "lucide-react";
 import { useDataTable } from "./useDataTable";
 import { Pagination } from "./Pagination";
-import type { ColumnDef, DataTableProps, SortState } from "./Types";
+import type { ColumnDef, DataTableProps, SortState } from "./TableTypes";
 
 
 const TableSkeleton = memo(() => (

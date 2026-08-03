@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
-import { DataTable } from "../../components/Taple";
-import type { ColumnDef } from "../../components/Types";
+import { DataTable } from "../../components/Table";
+import type { ColumnDef } from "../../components/TableTypes";
 import Button from "../../components/Button";
 import { Download, UserPlus, X, Eye, EyeOff } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "../../hooks/hooks";

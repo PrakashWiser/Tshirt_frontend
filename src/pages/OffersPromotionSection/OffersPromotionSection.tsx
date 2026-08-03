@@ -4,8 +4,8 @@ import {
     Plus,
 
 } from "lucide-react";
-import { DataTable } from "../../components/Taple";
-import type { ColumnDef } from "../../components/Types";
+import { DataTable } from "../../components/Table";
+import type { ColumnDef } from "../../components/TableTypes";
 
 import CouponCreate from "./CreateCoupon";
 import { useAppDispatch, useAppSelector } from "../../hooks/hooks";

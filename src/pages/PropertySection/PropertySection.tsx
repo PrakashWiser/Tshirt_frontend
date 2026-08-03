@@ -1,6 +1,6 @@
 import { Download, MapPin, Plus, Star } from "lucide-react";
-import type { ColumnDef } from "../../components/Types";
-import { DataTable } from "../../components/Taple";
+import type { ColumnDef } from "../../components/TableTypes";
+import { DataTable } from "../../components/Table";
 import DotMenu from "../../components/DotMenu";
 import Button from "../../components/Button";
 import { useEffect, useState } from "react";
