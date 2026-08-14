@@ -6,7 +6,7 @@ import {
     Hash,
     Hotel,
     Users,
-    Store,
+    // Store,
     CreditCard,
     DollarSign,
     Tag,
@@ -105,11 +105,11 @@ export default function Sidebar({
                     path: "/users",
                     icon: Users,
                 },
-                {
-                    label: "Vendors",
-                    path: "/vendors",
-                    icon: Store,
-                },
+                // {
+                //     label: "Vendors",
+                //     path: "/vendors",
+                //     icon: Store,
+                // },
             ],
         },
         {
