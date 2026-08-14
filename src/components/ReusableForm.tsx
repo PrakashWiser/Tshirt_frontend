@@ -4,7 +4,9 @@ import ImageUploadField from "./ImageUploadField";
 import InputField from "./CommonInput";
 import MapPicker from "./MapPicker";
 import TagInput from "../components/Taginput";
-import PoliciesEditor from "./PoliciesEditor";
+import PoliciesEditor, {
+    type Policies,
+} from "./PoliciesEditor";
 import JsonObjectEditor, {
     type SchemaField,
 } from "../components/Jsonobjecteditor";
@@ -216,7 +218,7 @@ export default function ReusableForm({
                                     field.name
                                     ]
                                 }
-                                onChange={(val) =>
+                                onChange={(val: Policies) =>
                                     handleChange(
                                         field.name,
                                         val

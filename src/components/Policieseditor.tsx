@@ -1,4 +1,4 @@
-interface Policies {
+export interface Policies {
     smokingAllowed: boolean;
     petsAllowed: boolean;
     coupleFriendly: boolean;
