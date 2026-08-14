@@ -156,6 +156,12 @@ export default function CreateProperty({ selectedProperty, onClose, loading }: C
             fullWidth: true
         },
         {
+            name: "mapLink",
+            label: "Location Map",
+            type: "map",
+            fullWidth: true,
+        },
+        {
             name: "address",
             label: "Address Details",
             type: "json-object",
@@ -222,27 +228,6 @@ export default function CreateProperty({ selectedProperty, onClose, loading }: C
             ],
         },
         {
-            name: "coordinates",
-            label: "Coordinates",
-            type: "json-object",
-            fullWidth: true,
-            required: false,
-            schema: [
-                {
-                    key: "latitude",
-                    label: "Latitude",
-                    type: "number",
-                    placeholder: "e.g. 13.0827"
-                },
-                {
-                    key: "longitude",
-                    label: "Longitude",
-                    type: "number",
-                    placeholder: "e.g. 80.2707"
-                },
-            ],
-        },
-        {
             name: "images",
             label: "Property Images",
             type: "file",
@@ -268,7 +253,7 @@ export default function CreateProperty({ selectedProperty, onClose, loading }: C
         if (values.description) formData.append("description", values.description);
 
         if (Array.isArray(values.amenities)) {
-            values.amenities.forEach((id: string) => formData.append("amenities[]", id));
+            values.amenities.forEach((id: string) => formData.append("premiumAmenities[]", id));
         }
         if (Array.isArray(values.lifestyles)) {
             values.lifestyles.forEach((id: string) => formData.append("lifestyles[]", id));

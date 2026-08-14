@@ -13,6 +13,7 @@ import PropertyActionList from '../pages/PropertyAction/PropertyActionList';
 import PropertyList from '../pages/Property/PropertyList';
 import EnquiryList from '../pages/Enquiry/EnquiryList';
 import LifestyleList from '../pages/Lifestyle/LifestyleList';
+import PropertyView from '../pages/Property/PropertyView';
 
 const Login = React.lazy(() => import('../pages/Login/Login'));
 const DashboardHome = React.lazy(() => import('../pages/DashboardHome/DashboardHome'));
@@ -90,6 +91,10 @@ export default function AppRoutes() {
               <Route path="/properties" element={<PropertyList />} />
               <Route path="/bhk" element={<BhkSection />} />
               <Route path="/properties-action" element={<PropertyActionList />} />
+              <Route
+                path="/properties/:id"
+                element={<PropertyView />}
+              />
               <Route path="/amenity" element={<AmenitySection />} />
               <Route path="/life-style" element={<LifestyleList />} />
               <Route path="/enquiries" element={<EnquiryList />} />

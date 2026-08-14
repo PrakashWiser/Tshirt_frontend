@@ -16,8 +16,10 @@ import {
     CartesianGrid,
     Tooltip
 } from 'recharts';
-import { useDispatch, useSelector } from 'react-redux';
+import { useSelector } from 'react-redux';
 import { setBreadcrumbs } from '../../store/slice/uiSlice';
+import { useAppDispatch, useAppSelector } from '../../hooks/hooks';
+import { getDashboardStats } from '../../store/slice/statsSlice';
 
 const DUMMY_USERS = [
     { id: 1, name: 'John Doe', email: 'john@example.com', status: 'Active' },
@@ -107,7 +109,17 @@ const TOP_PROPERTIES = [
 ];
 
 export default function DashboardHome() {
-    const dispatch = useDispatch();
+    const dispatch = useAppDispatch();
+
+    const { stats } = useAppSelector(
+        (state) => state.stats
+    );
+
+    console.log(stats);
+
+    useEffect(() => {
+        dispatch(getDashboardStats());
+    }, [dispatch]);
 
     const { darkMode } = useSelector((state: any) => state.ui);
 
@@ -218,6 +230,8 @@ export default function DashboardHome() {
         { day: "Sat", occupancy: 95 },
         { day: "Sun", occupancy: 97 },
     ];
+
+
 
     return (
         <div className="space-y-8" id="dashboard-home-page">

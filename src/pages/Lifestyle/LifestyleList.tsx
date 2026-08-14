@@ -246,10 +246,10 @@ export default function LifestyleList() {
                         </Button>
                     </div>
                 }
-                gridClassName="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5"
+                gridClassName="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-5"
                 renderGridCard={(lifestyle) => (
                     <div key={lifestyle?._id} className="overflow-hidden bg-white border border-slate-200 rounded-2xl shadow-sm hover:shadow-md transition-all">
-                        <div className="relative h-48 bg-slate-50 flex items-center justify-center">
+                        <div className="relative h-40 bg-slate-50 flex items-center justify-center">
                             {lifestyle.image ? (
                                 <CustomImage
                                     src={lifestyle.image}

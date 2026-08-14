@@ -358,19 +358,22 @@ export default function ReusableForm({
                                 </label>
 
                                 <MapPicker
-                                    onSelect={(
-                                        link
-                                    ) =>
-                                        handleChange(
-                                            field.name,
-                                            link
-                                        )
+                                    onSelect={({ mapLink, latitude, longitude }) => {
+                                        handleChange("mapLink", mapLink);
+                                        handleChange("coordinates", {
+                                            latitude: Number(latitude),
+                                            longitude: Number(longitude),
+                                        });
+                                    }}
+                                    initialPosition={
+                                        formData.coordinates?.latitude &&
+                                            formData.coordinates?.longitude
+                                            ? {
+                                                lat: Number(formData.coordinates.latitude),
+                                                lng: Number(formData.coordinates.longitude),
+                                            }
+                                            : getPositionFromMapLink(formData[field.name])
                                     }
-                                    initialPosition={getPositionFromMapLink(
-                                        formData[
-                                        field.name
-                                        ]
-                                    )}
                                 />
                             </>
                         ) : (
