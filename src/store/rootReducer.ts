@@ -14,6 +14,7 @@ import enquiryReducer from "./slice/enquirySlice";
 import lifestyleReducer from "./slice/lifestyleSlice";
 import scheduleVisitReducer from "./slice/scheduleVisitSlice";
 import notificationReducer from "./slice/notificationSlice";
+import usersReducer from "./slice/usersSlice";
 
 const rootReducer = combineReducers({
   auth: authReducer,
@@ -31,6 +32,7 @@ const rootReducer = combineReducers({
   lifestyle: lifestyleReducer,
   scheduleVisit: scheduleVisitReducer,
   notifications: notificationReducer,
+  users: usersReducer,
 });
 
 export default rootReducer;

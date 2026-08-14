@@ -72,6 +72,7 @@ function Login() {
       <div className="relative z-10 w-full max-w-lg px-5">
         <div className="rounded-xl border border-white/20 bg-white/10 p-8 shadow-2xl backdrop-blur-xl">
           <div className="mb-8 flex flex-col items-center">
+            <img src="./logo.png" className="rounded-full" alt="landly admin" />
             <h1 className="text-2xl font-bold text-white">
               Landy Admin
             </h1>
