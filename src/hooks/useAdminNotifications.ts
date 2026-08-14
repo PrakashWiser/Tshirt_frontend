@@ -33,11 +33,17 @@ const useAdminNotifications = () => {
     };
     const handleAdminNotification = (data: any) => {
       console.log("🔔 NEW NOTIFICATION RECEIVED:", data);
+
       const notification = data?.notification;
       if (!notification) {
         console.warn("⚠️ Notification data not found:", data);
         return;
       }
+      const audio = new Audio("/sounds/notification.mp3");
+      audio.volume = 0.7;
+      audio.play().catch((error) => {
+        console.warn("Notification sound blocked:", error);
+      });
       dispatch(
         addNotification({
           id: notification?._id || notification?.id || `${Date.now()}`,

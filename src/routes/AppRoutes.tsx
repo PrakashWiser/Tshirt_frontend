@@ -13,7 +13,6 @@ import PropertyActionList from '../pages/PropertyAction/PropertyActionList';
 import PropertyList from '../pages/Property/PropertyList';
 import EnquiryList from '../pages/Enquiry/EnquiryList';
 import LifestyleList from '../pages/Lifestyle/LifestyleList';
-import useAdminNotifications from '../hooks/useAdminNotifications';
 
 const Login = React.lazy(() => import('../pages/Login/Login'));
 const DashboardHome = React.lazy(() => import('../pages/DashboardHome/DashboardHome'));
@@ -46,7 +45,7 @@ function AuthenticatedLayoutWrapper() {
 }
 
 export default function AppRoutes() {
-  useAdminNotifications();
+
   const dispatch = useAppDispatch();
   const { accessToken } = useAppSelector((state) => state.auth);
 
