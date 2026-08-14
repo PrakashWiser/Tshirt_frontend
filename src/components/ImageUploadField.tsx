@@ -71,7 +71,7 @@ export default function ImageUploadField({
 
             <div
                 onClick={() => inputRef.current?.click()}
-                className="w-full border-2 border-dashed border-slate-300 rounded-2xl p-8 cursor-pointer hover:border-[#fa0400] transition-colors"
+                className="w-full border-2 border-dashed border-slate-300 rounded-2xl p-8 cursor-pointer hover:border-[#3A29AA] transition-colors"
             >
                 <div className="flex flex-col items-center">
                     <UploadCloud

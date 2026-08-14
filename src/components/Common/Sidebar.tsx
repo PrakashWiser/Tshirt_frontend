@@ -317,14 +317,14 @@ export default function Sidebar({
                                         {user?.name || "Admin"}
                                     </p>
 
-                                    <p className="text-xs text-red-400 capitalize truncate">
+                                    <p className="text-xs text-white capitalize truncate">
                                         {user?.role || "Administrator"}
                                     </p>
                                 </div>
 
                                 <button
                                     onClick={handleLogout}
-                                    className="text-slate-400 hover:text-red-500 flex-shrink-0"
+                                    className="text-slate-400 hover:text-[#3A29AA] flex-shrink-0"
                                 >
                                     <LogOut size={18} />
                                 </button>

@@ -137,7 +137,7 @@ function Header({
                         <Bell size={20} />
 
                         {unreadCount > 0 && (
-                            <span className="absolute -top-0.5 -right-0.5 flex items-center justify-center min-w-[20px] h-[20px] px-1 rounded-full bg-red-500 text-white text-[10px] font-semibold leading-none">
+                            <span className="absolute -top-0.5 -right-0.5 flex items-center justify-center min-w-[20px] h-[20px] px-1 rounded-full bg-[#3A29AA] text-white text-[10px] font-semibold leading-none">
                                 {unreadCount > 99 ? "99+" : unreadCount}
                             </span>
                         )}
