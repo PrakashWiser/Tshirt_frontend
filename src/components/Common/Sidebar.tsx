@@ -88,26 +88,6 @@ export default function Sidebar({
             ],
         },
         {
-            title: "FINANCE",
-            items: [
-                {
-                    label: "Payments",
-                    path: "/payments",
-                    icon: CreditCard,
-                },
-                {
-                    label: "Pricing Management",
-                    path: "/pricing-management",
-                    icon: DollarSign,
-                },
-                {
-                    label: "Coupon & Offers",
-                    path: "/offers",
-                    icon: Tag,
-                },
-            ],
-        },
-        {
             title: "PEOPLE",
             items: [
                 {
@@ -132,6 +112,27 @@ export default function Sidebar({
                 },
             ],
         },
+        {
+            title: "FINANCE",
+            items: [
+                {
+                    label: "Payments",
+                    path: "/payments",
+                    icon: CreditCard,
+                },
+                {
+                    label: "Pricing Management",
+                    path: "/pricing-management",
+                    icon: DollarSign,
+                },
+                {
+                    label: "Coupon & Offers",
+                    path: "/offers",
+                    icon: Tag,
+                },
+            ],
+        },
+
         {
             title: "INSIGHTS",
             items: [

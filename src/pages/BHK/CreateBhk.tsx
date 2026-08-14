@@ -24,7 +24,7 @@ export default function CreateBHK({ bhk, onClose }: CreateBHKProps) {
             name: "name",
             label: "BHK Name",
             type: "text",
-            placeholder: "e.g. 2 BHK",
+            placeholder: "e.g. 2 ",
             required: true,
             fullWidth: false,
         },
