@@ -79,10 +79,10 @@ export default function CreateLifestyle({ selectedLifestyle, onClose }: CreateLi
         const multipartData = new FormData();
         multipartData.append("name", formData.name.trim());
         multipartData.append("description", formData.description.trim());
-        multipartData.append("lifeStyle", formData.status);
+        multipartData.append("status", formData.status);
 
         if (imageFile) {
-            multipartData.append("lifeStyleImage", imageFile);
+            multipartData.append("lifeStyle", imageFile);
         }
 
         try {
