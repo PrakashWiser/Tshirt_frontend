@@ -56,9 +56,7 @@ export const FetchApi = async <T = any>({
     if (response.status === 401) {
       const isLoginPage = window.location.pathname === "/login";
       if (!skipAuthHandler && !isLoginPage && !sessionExpiredShown) {
-        // Try to refresh the token once before showing the session popup.
         const tryRefreshAndRetry = async () => {
-          // If there's already a refresh in progress, wait for it.
           const globalAny: any = window as any;
           let refreshed = false;
 
@@ -70,7 +68,6 @@ export const FetchApi = async <T = any>({
               refreshed = false;
             }
           } else {
-            // Trigger a refresh attempt handled by AuthBootstrap (which has access to the store)
             refreshed = await new Promise<boolean>((resolve) => {
               const onResult = (e: Event) => {
                 const detail = (e as CustomEvent)?.detail;
@@ -84,7 +81,6 @@ export const FetchApi = async <T = any>({
           }
 
           if (refreshed) {
-            // try the request once more with the potentially new token placed by AuthBootstrap
             const newToken = (window as any).__newAccessToken ?? token;
             const retryHeaders: Record<string, string> = { ...headers };
             if (newToken) {
@@ -95,7 +91,11 @@ export const FetchApi = async <T = any>({
               method,
               headers: retryHeaders,
               body:
-                body instanceof FormData ? body : body ? JSON.stringify(body) : null,
+                body instanceof FormData
+                  ? body
+                  : body
+                    ? JSON.stringify(body)
+                    : null,
               credentials: "include",
               signal: controller.signal,
             });
@@ -133,7 +133,6 @@ export const FetchApi = async <T = any>({
               : (retryRawText as T);
           }
 
-          // Refresh did not succeed — show session popup
           sessionExpiredShown = true;
           window.dispatchEvent(new CustomEvent("session-expired-popup"));
           throw new Error("UNAUTHORIZED");

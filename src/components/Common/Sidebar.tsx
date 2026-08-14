@@ -25,7 +25,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import type { SidebarProps } from "../../types";
 import { useAppDispatch, useAppSelector } from "../../hooks/hooks";
 import CustomImage from "../Image";
-import { logoutUser } from "../../store/slice/authSlice";
+import { clearAuth } from "../../store/slice/authSlice";
 import { useState } from "react";
 
 const MOBILE_BREAKPOINT = 1024;
@@ -166,7 +166,7 @@ export default function Sidebar({
     ];
 
     const handleLogout = () => {
-        dispatch(logoutUser());
+        dispatch(clearAuth());
         navigate("/login");
     };
 
@@ -238,13 +238,43 @@ export default function Sidebar({
                         : "-translate-x-full lg:translate-x-0"
                     } lg:relative`}
             >
-                <div className="h-20 px-6 flex items-center justify-between border-b border-slate-800">
-                    <div className="flex items-center gap-3 overflow-hidden">
-                        <img
-                            src={"/logo.png"}
-                            alt="Logo"
-                            className={sidebarOpen ? "h-7 object-contain" : "h-10 w-10 object-contain"}
+                <div className="h-23 px-6 flex items-center justify-between border-b border-slate-800">
+                    <div className="flex items-center gap-5 overflow-hidden">
+                        <motion.img
+                            src="/logo.png"
+                            alt="Landly"
+                            className={
+                                sidebarOpen
+                                    ? "h-10 w-10 rounded-full object-contain"
+                                    : "h-7 w-7 rounded-full object-contain"
+                            }
+                            animate={{ rotate: 360 }}
+                            transition={{
+                                duration: 3,
+                                repeat: Infinity,
+                                ease: "linear",
+                            }}
                         />
+
+                        {sidebarOpen && (
+                            <div className="flex flex-col">
+                                <motion.span
+                                    className="text-xl font-bold tracking-tight"
+                                    initial={{ opacity: 0, x: -10 }}
+                                    animate={{ opacity: 1, x: 0 }}
+                                    transition={{
+                                        duration: 0.4,
+                                        ease: "easeOut",
+                                    }}
+                                >
+                                    Landly 
+                                </motion.span>
+
+                                <p className="text-center text-sm text-slate-300 capitalize">
+                                    manage Land, Enquiry
+                                </p>
+                            </div>
+                        )}
                     </div>
 
                     <button
@@ -332,7 +362,7 @@ export default function Sidebar({
                         )}
                     </div>
                 </div>
-            </aside>
+            </aside >
         </>
     );
 }

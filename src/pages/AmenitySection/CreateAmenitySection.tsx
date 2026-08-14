@@ -18,7 +18,7 @@ export default function CreateAmenity({ selectedAmenity, onClose }: CreateAmenit
 
     const [formData, setFormData] = useState({
         name: "",
-        status: 0,
+        status: 1,
         icon: "",
     });
 
