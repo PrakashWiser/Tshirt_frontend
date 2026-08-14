@@ -3,6 +3,7 @@ import type { ReactNode, CSSProperties } from "react";
 export type SortDirection = "asc" | "desc" | null;
 export type ViewMode = "table" | "grid";
 export type ColumnAlign = "left" | "center" | "right";
+export type PaginationMode = "server" | "client";
 
 export interface ColumnDef<T> {
   key: string;
@@ -19,6 +20,16 @@ export interface ColumnDef<T> {
 export interface SortState {
   key: string | null;
   direction: SortDirection;
+}
+
+export interface PaginationProps {
+  currentPage: number;
+  totalPages: number;
+  total: number;
+  limit: number;
+  onPageChange: (page: number) => void;
+  onLimitChange?: (limit: number) => void;
+  pageSizeOptions?: number[];
 }
 
 export interface DataTableProps<T extends object> {
@@ -39,6 +50,6 @@ export interface DataTableProps<T extends object> {
   stickyHeader?: boolean;
   className?: string;
   style?: CSSProperties;
+  paginationMode?: PaginationMode;
+  pagination?: PaginationProps;
 }
-
-

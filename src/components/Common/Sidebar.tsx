@@ -1,12 +1,14 @@
 import {
     LayoutDashboard,
     Building2,
-    BedDouble,
-    DollarSign,
-    CalendarDays,
+    Layers,
+    PlusSquare,
+    Hash,
+    Hotel,
     Users,
     Store,
     CreditCard,
+    DollarSign,
     Tag,
     Star,
     BarChart3,
@@ -14,7 +16,9 @@ import {
     ClipboardList,
     LogOut,
     X,
-    House,
+    MessageSquareText,
+    Sparkles,
+    CalendarCheck,
 } from "lucide-react";
 import { NavLink, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
@@ -22,7 +26,6 @@ import type { SidebarProps } from "../../types";
 import { useAppDispatch, useAppSelector } from "../../hooks/hooks";
 import CustomImage from "../Image";
 import { logoutUser } from "../../store/slice/authSlice";
-import { usePermission } from "../../hooks/usePermission";
 import { useState } from "react";
 
 const MOBILE_BREAKPOINT = 1024;
@@ -33,7 +36,6 @@ export default function Sidebar({
 }: SidebarProps) {
     const dispatch = useAppDispatch();
     const navigate = useNavigate();
-    const { hasPermission } = usePermission();
     const { user } = useAppSelector((state: any) => state.auth);
     const [hoveredItem, setHoveredItem] = useState<string | null>(null);
     const [tooltipPosition, setTooltipPosition] = useState({ x: 0, y: 0 });
@@ -46,7 +48,6 @@ export default function Sidebar({
                     label: "Dashboard",
                     path: "/dashboard",
                     icon: LayoutDashboard,
-                    permission: "dashboard.view",
                 },
             ],
         },
@@ -54,29 +55,36 @@ export default function Sidebar({
             title: "MANAGEMENT",
             items: [
                 {
-                    label: "Locations",
-                    path: "/locations",
+                    label: "Properties Action",
+                    path: "/properties-action",
+                    icon: PlusSquare,
+                },
+                {
+                    label: "Properties Types",
+                    path: "/properties-types",
+                    icon: Layers,
+                },
+                {
+                    label: "Amenity",
+                    path: "/amenity",
                     icon: Building2,
-                    permission: "locations.view",
+                },
+                {
+                    label: "LifeStyle",
+                    path: "/life-style",
+                    icon: Sparkles,
+                },
+                {
+                    label: "BHK",
+                    path: "/bhk",
+                    icon: Hash,
                 },
                 {
                     label: "Properties",
                     path: "/properties",
-                    icon: House,
-                    permission: "properties.view",
+                    icon: Hotel,
                 },
-                {
-                    label: "Rooms",
-                    path: "/rooms",
-                    icon: BedDouble,
-                    permission: "rooms.view",
-                },
-                {
-                    label: "Bookings",
-                    path: "/bookings",
-                    icon: CalendarDays,
-                    permission: "bookings.view",
-                },
+
             ],
         },
         {
@@ -86,19 +94,16 @@ export default function Sidebar({
                     label: "Payments",
                     path: "/payments",
                     icon: CreditCard,
-                    permission: "payments.view",
                 },
                 {
                     label: "Pricing Management",
                     path: "/pricing-management",
                     icon: DollarSign,
-                    permission: "pricing.manage",
                 },
                 {
                     label: "Coupon & Offers",
                     path: "/offers",
                     icon: Tag,
-                    permission: "offers.view",
                 },
             ],
         },
@@ -106,16 +111,24 @@ export default function Sidebar({
             title: "PEOPLE",
             items: [
                 {
+                    label: "Enquiries",
+                    path: "/enquiries",
+                    icon: MessageSquareText,
+                },
+                {
+                    label: "Schedule Visits",
+                    path: "/schedule-visits",
+                    icon: CalendarCheck,
+                },
+                {
                     label: "Users",
                     path: "/users",
                     icon: Users,
-                    permission: "users.view",
                 },
                 {
                     label: "Vendors",
                     path: "/vendors",
                     icon: Store,
-                    permission: "vendors.view",
                 },
             ],
         },
@@ -126,13 +139,11 @@ export default function Sidebar({
                     label: "Reviews",
                     path: "/reviews",
                     icon: Star,
-                    permission: "reviews.view",
                 },
                 {
                     label: "Reports",
                     path: "/reports",
                     icon: BarChart3,
-                    permission: "reports.view",
                 },
             ],
         },
@@ -143,26 +154,15 @@ export default function Sidebar({
                     label: "Roles & Permissions",
                     path: "/roles",
                     icon: Shield,
-                    permission: "roles.view",
                 },
                 {
                     label: "Audit Logs",
                     path: "/audit-logs",
                     icon: ClipboardList,
-                    permission: "auditlogs.view",
                 },
             ],
         },
     ];
-
-    const filteredSections = menuSections
-        .map((section) => ({
-            ...section,
-            items: section.items.filter((item) =>
-                hasPermission(item.permission)
-            ),
-        }))
-        .filter((section) => section.items.length > 0);
 
     const handleLogout = () => {
         dispatch(logoutUser());
@@ -240,7 +240,7 @@ export default function Sidebar({
                 <div className="h-20 px-6 flex items-center justify-between border-b border-slate-800">
                     <div className="flex items-center gap-3 overflow-hidden">
                         <img
-                            src={sidebarOpen ? "/logo.png" : "/fav.png"}
+                            src={"/logo.png"}
                             alt="Logo"
                             className={sidebarOpen ? "h-7 object-contain" : "h-10 w-10 object-contain"}
                         />
@@ -255,7 +255,7 @@ export default function Sidebar({
                 </div>
 
                 <div className="flex-1 overflow-y-auto scrollbar-hide py-4">
-                    {filteredSections?.map((section) => (
+                    {menuSections?.map((section) => (
                         <div key={section.title} className="mb-6">
                             {sidebarOpen && (
                                 <h3 className="px-5 mb-2 text-[11px] font-semibold tracking-wider text-slate-500">
@@ -302,7 +302,7 @@ export default function Sidebar({
                     <div className={`flex items-center gap-3 ${!sidebarOpen ? "justify-center" : ""}`}>
                         <CustomImage
                             src={
-                                user?.avatar ||
+                                user?.profilePhoto ||
                                 "https://ui-avatars.com/api/?name=Admin"
                             }
                             alt={user?.name || "Admin"}

@@ -83,7 +83,7 @@ export default function JsonObjectEditor({
                                             [field.key]: field.type === "number" ? Number(e.target.value) : e.target.value,
                                         })
                                     }
-                                    className="flex-1 border border-slate-200 rounded-lg px-3 py-1.5 text-sm text-slate-800 placeholder:text-slate-400 outline-none focus:border-slate-400"
+                                    className="flex-1 border border-slate-200 rounded-sm px-3 py-2 text-sm text-slate-800 placeholder:text-slate-400 outline-none focus:border-slate-400"
                                 />
                             )}
                         </div>

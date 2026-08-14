@@ -8,27 +8,26 @@ import { getProfile } from '../store/slice/authSlice';
 import SessionExpiredPopup from '../components/SessionExpiredPopup';
 import ScrollToTop from '../components/Common/ScrollToTop';
 import VendorDetails from '../pages/VendorsSection/VendorDetails';
+import AmenitySection from '../pages/AmenitySection/AmenitySection';
+import PropertyActionList from '../pages/PropertyAction/PropertyActionList';
+import PropertyList from '../pages/Property/PropertyList';
+import EnquiryList from '../pages/Enquiry/EnquiryList';
+import LifestyleList from '../pages/Lifestyle/LifestyleList';
+import useAdminNotifications from '../hooks/useAdminNotifications';
 
 const Login = React.lazy(() => import('../pages/Login/Login'));
 const DashboardHome = React.lazy(() => import('../pages/DashboardHome/DashboardHome'));
 const AdminNotFound = React.lazy(() => import('../pages/AdminNotFound/AdminNotFoundt'));
-const Bookings = React.lazy(() => import('../pages/Bookings/Bookings'));
-const LocationSection = React.lazy(() => import('../pages/Locations/LocationSection'));
-const RoomSection = React.lazy(() => import('../pages/RoomSection/RoomSection'));
-const VillaSection = React.lazy(() => import('../pages/PropertySection/PropertySection'));
+const PropertySection = React.lazy(() => import('../pages/PropertyTypeSection/PropertySectionType'));
+const BhkSection = React.lazy(() => import('../pages/BHK/BhkSection'));
 const UserSection = React.lazy(() => import('../pages/UserSection/UserSection'));
 const PaymentSection = React.lazy(() => import('../pages/PaymentSection/PaymentSection'));
-const PricingRuleSection = React.lazy(() => import('../pages/Pricingrulesection/Pricingrulesection'));
 const OffersPromotionSection = React.lazy(() => import('../pages/OffersPromotionSection/OffersPromotionSection'));
 const ReviewsSentimentSection = React.lazy(() => import('../pages/ReviewsSentimentSection/ReviewsSentimentSection'));
 const AuditLogs = React.lazy(() => import('../pages/AuditLogs/AuditLogs'));
 const Roles = React.lazy(() => import('../pages/Roles/Roles'));
-const RedisCachePage = React.lazy(() => import('../pages/RoomSection/RedisCachePage'));
-const RoomView = React.lazy(() => import('../pages/RoomSection/RoomView'));
-const PropertyView = React.lazy(() => import('../pages/PropertySection/PropertyView'));
 const ProfileSection = React.lazy(() => import('../pages/Profile/Profile'));
-const BookingDetails = React.lazy(() => import('../pages/Bookings/BookingDetails'));
-const VendorsSection = React.lazy(() => import('../pages/VendorsSection/VendorsSection'));
+const ScheduleVisitList = React.lazy(() => import('../pages/Schedule/ScheduleVisitList'));
 
 function ViewportSpinner() {
   return (
@@ -47,7 +46,7 @@ function AuthenticatedLayoutWrapper() {
 }
 
 export default function AppRoutes() {
-
+  useAdminNotifications();
   const dispatch = useAppDispatch();
   const { accessToken } = useAppSelector((state) => state.auth);
 
@@ -56,6 +55,22 @@ export default function AppRoutes() {
       dispatch(getProfile());
     }
   }, [accessToken, dispatch]);
+
+  useEffect(() => {
+    const enableInteraction = () => {
+      (window as Window & {
+        __USER_INTERACTED__?: boolean;
+      }).__USER_INTERACTED__ = true;
+    };
+
+    window.addEventListener("click", enableInteraction);
+    window.addEventListener("keydown", enableInteraction);
+
+    return () => {
+      window.removeEventListener("click", enableInteraction);
+      window.removeEventListener("keydown", enableInteraction);
+    };
+  }, []);
 
 
   return (
@@ -72,23 +87,21 @@ export default function AppRoutes() {
             <Route element={<AuthenticatedLayoutWrapper />}>
               <Route path="/" element={<Navigate to="/dashboard" replace />} />
               <Route path="/dashboard" element={<DashboardHome />} />
-              <Route path="/rooms" element={<RoomSection />} />
-              <Route path="/rooms/view/:id" element={<RoomView />} />
-              <Route path="/rooms/cache" element={<RedisCachePage />} />
-              <Route path="/bookings" element={<Bookings />} />
-              <Route path="/bookings/:id" element={<BookingDetails />} />
-              <Route path="/properties" element={<VillaSection />} />
-              <Route path="/properties/view/:id" element={<PropertyView />} />
-              <Route path="/locations" element={<LocationSection />} />
+              <Route path="/properties-types" element={<PropertySection />} />
+              <Route path="/properties" element={<PropertyList />} />
+              <Route path="/bhk" element={<BhkSection />} />
+              <Route path="/properties-action" element={<PropertyActionList />} />
+              <Route path="/amenity" element={<AmenitySection />} />
+              <Route path="/life-style" element={<LifestyleList />} />
+              <Route path="/enquiries" element={<EnquiryList />} />
               <Route path="/payments" element={<PaymentSection />} />
               <Route path="/offers" element={<OffersPromotionSection />} />
               <Route path="/reviews" element={<ReviewsSentimentSection />} />
               <Route path="/roles" element={<Roles />} />
               <Route path="/audit-logs" element={<AuditLogs />} />
               <Route path="/profile" element={<ProfileSection />} />
-              <Route path="/pricing-management" element={<PricingRuleSection />} />
+              <Route path="/schedule-visits" element={<ScheduleVisitList />} />
               <Route path="/users" element={<UserSection />} />
-              <Route path="/vendors" element={<VendorsSection />} />
               <Route path="/vendor/:id" element={<VendorDetails />} />
             </Route>
             <Route path="*" element={<AdminNotFound />} />

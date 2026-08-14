@@ -1,166 +1,115 @@
-import { memo, useMemo } from "react";
-import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from "lucide-react";
+import { memo } from "react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
 interface PaginationProps {
     page: number;
     totalPages: number;
     totalCount: number;
     pageSize: number;
-    pageSizeOptions: number[];
-    onPageChange: (p: number) => void;
-    onPageSizeChange: (s: number) => void;
+    pageSizeOptions?: number[];
+    onPageChange: (page: number) => void;
+    onPageSizeChange: (size: number) => void;
 }
 
-const SIBLING_COUNT = 1;
-const DOTS = "…";
-
-function buildPageRange(current: number, total: number): (number | string)[] {
-    const range = (lo: number, hi: number) =>
-        Array.from({ length: hi - lo + 1 }, (_, i) => lo + i);
-
-    if (total <= 7) return range(1, total);
-
-    const left = Math.max(current - SIBLING_COUNT, 1);
-    const right = Math.min(current + SIBLING_COUNT, total);
-    const showLeft = left > 2;
-    const showRight = right < total - 1;
-
-    if (!showLeft && showRight)
-        return [...range(1, right + 1), DOTS, total];
-    if (showLeft && !showRight)
-        return [1, DOTS, ...range(left - 1, total)];
-    return [1, DOTS, ...range(left, right), DOTS, total];
-}
-
-export const Pagination = memo(function Pagination({
+export const Pagination = memo(({
     page,
     totalPages,
     totalCount,
     pageSize,
-    pageSizeOptions,
+    pageSizeOptions = [10, 20, 50, 100],
     onPageChange,
     onPageSizeChange,
-}: PaginationProps) {
-    const pages = useMemo(() => buildPageRange(page, totalPages), [page, totalPages]);
-    const start = (page - 1) * pageSize + 1;
-    const end = Math.min(page * pageSize, totalCount);
+}: PaginationProps) => {
+    const startIndex = (page - 1) * pageSize + 1;
+    const endIndex = Math.min(page * pageSize, totalCount);
+
+    const getPageNumbers = () => {
+        const pages = [];
+        const maxVisible = 5;
+
+        if (totalPages <= maxVisible) {
+            for (let i = 1; i <= totalPages; i++) {
+                pages.push(i);
+            }
+        } else {
+            if (page <= 3) {
+                for (let i = 1; i <= 4; i++) pages.push(i);
+                pages.push(-1);
+                pages.push(totalPages);
+            } else if (page >= totalPages - 2) {
+                pages.push(1);
+                pages.push(-1);
+                for (let i = totalPages - 3; i <= totalPages; i++) pages.push(i);
+            } else {
+                pages.push(1);
+                pages.push(-1);
+                for (let i = page - 1; i <= page + 1; i++) pages.push(i);
+                pages.push(-1);
+                pages.push(totalPages);
+            }
+        }
+        return pages;
+    };
+
+    if (totalCount === 0) return null;
 
     return (
-        <div className="flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-slate-100">
-            {/* Count + page size */}
-            <div className="flex items-center gap-3 text-xs text-slate-500">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-1">
+            <div className="flex items-center gap-3 text-sm text-slate-500">
                 <span>
-                    {totalCount === 0
-                        ? "No results"
-                        : `${start}–${end} of ${totalCount}`}
+                    Showing {startIndex}–{endIndex} of {totalCount}
                 </span>
-                <div className="flex items-center gap-1.5">
-                    <span>Rows</span>
-                    <select
-                        value={pageSize}
-                        onChange={(e) => onPageSizeChange(Number(e.target.value))}
-                        className="h-7 px-1.5 rounded-lg border border-slate-200 bg-white text-xs text-slate-700 outline-none focus:ring-2 focus:ring-blue-500/25 cursor-pointer"
-                        aria-label="Rows per page"
-                    >
-                        {pageSizeOptions.map((s) => (
-                            <option key={s} value={s}>
-                                {s}
-                            </option>
-                        ))}
-                    </select>
-                </div>
+                <select
+                    value={pageSize}
+                    onChange={(e) => onPageSizeChange(Number(e.target.value))}
+                    className="px-2 py-1 border border-slate-200 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-black"
+                >
+                    {pageSizeOptions.map((size) => (
+                        <option key={size} value={size}>
+                            {size} / page
+                        </option>
+                    ))}
+                </select>
             </div>
 
-            {/* Page buttons */}
-            <div className="flex items-center gap-1" role="navigation" aria-label="Pagination">
-                <NavBtn
-                    onClick={() => onPageChange(1)}
-                    disabled={page === 1}
-                    aria-label="First page"
-                >
-                    <ChevronsLeft size={13} />
-                </NavBtn>
-                <NavBtn
+            <div className="flex items-center gap-1">
+                <button
                     onClick={() => onPageChange(page - 1)}
                     disabled={page === 1}
-                    aria-label="Previous page"
+                    className="p-2 rounded-lg border border-slate-200 hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                 >
-                    <ChevronLeft size={13} />
-                </NavBtn>
+                    <ChevronLeft size={16} />
+                </button>
 
-                {pages.map((p, i) =>
-                    p === DOTS ? (
-                        <span
-                            key={`dots-${i}`}
-                            className="w-7 h-7 flex items-center justify-center text-xs text-slate-400 select-none"
-                        >
-                            {DOTS}
+                {getPageNumbers().map((p, idx) =>
+                    p === -1 ? (
+                        <span key={`ellipsis-${idx}`} className="px-2 text-slate-400">
+                            …
                         </span>
                     ) : (
                         <button
                             key={p}
-                            type="button"
-                            onClick={() => onPageChange(p as number)}
-                            aria-label={`Page ${p}`}
-                            aria-current={page === p ? "page" : undefined}
-                            className={[
-                                "w-7 h-7 rounded-lg text-xs font-medium transition-colors duration-150",
-                                "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/40",
-                                page === p
-                                    ? "bg-[#0f172a] text-white"
-                                    : "text-slate-600 hover:bg-slate-100",
-                            ].join(" ")}
+                            onClick={() => onPageChange(p)}
+                            className={`w-8 h-8 rounded-lg text-sm font-medium transition-colors ${p === page
+                                    ? "bg-black text-white"
+                                    : "hover:bg-slate-100 text-slate-600"
+                                }`}
                         >
                             {p}
                         </button>
                     )
                 )}
 
-                <NavBtn
+                <button
                     onClick={() => onPageChange(page + 1)}
                     disabled={page === totalPages}
-                    aria-label="Next page"
+                    className="p-2 rounded-lg border border-slate-200 hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                 >
-                    <ChevronRight size={13} />
-                </NavBtn>
-                <NavBtn
-                    onClick={() => onPageChange(totalPages)}
-                    disabled={page === totalPages}
-                    aria-label="Last page"
-                >
-                    <ChevronsRight size={13} />
-                </NavBtn>
+                    <ChevronRight size={16} />
+                </button>
             </div>
         </div>
     );
 });
 
-function NavBtn({
-    children,
-    disabled,
-    onClick,
-    "aria-label": label,
-}: {
-    children: React.ReactNode;
-    disabled: boolean;
-    onClick: () => void;
-    "aria-label": string;
-}) {
-    return (
-        <button
-            type="button"
-            onClick={onClick}
-            disabled={disabled}
-            aria-label={label}
-            className={[
-                "w-7 h-7 rounded-lg flex items-center justify-center transition-colors duration-150",
-                "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/40",
-                disabled
-                    ? "text-slate-300 cursor-not-allowed"
-                    : "text-slate-500 hover:bg-slate-100 hover:text-slate-700",
-            ].join(" ")}
-        >
-            {children}
-        </button>
-    );
-}
+Pagination.displayName = "Pagination";

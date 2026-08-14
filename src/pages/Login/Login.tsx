@@ -66,17 +66,17 @@ function Login() {
 
   return (
     <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-slate-950">
-      <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1566073771259-6a8506099945')] bg-cover bg-center" />
+      <div className="absolute inset-0 bg-[url('https://assets.webdads2u.com/images/1786538115762-rectangle-1.png')] bg-cover bg-center" />
 
       <div className="absolute inset-0 bg-black/60 backdrop-blur-xs" />
       <div className="relative z-10 w-full max-w-lg px-5">
         <div className="rounded-xl border border-white/20 bg-white/10 p-8 shadow-2xl backdrop-blur-xl">
           <div className="mb-8 flex flex-col items-center">
             <h1 className="text-2xl font-bold text-white">
-              Villa Admin
+              Landy Admin
             </h1>
             <p className="mt-1 text-center text-sm text-slate-300 capitalize">
-              Sign in to manage villas, bookings and guests
+              Sign in to manage Land, bookings and guests
             </p>
           </div>
 

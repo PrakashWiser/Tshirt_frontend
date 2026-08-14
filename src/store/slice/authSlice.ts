@@ -9,10 +9,7 @@ export interface User {
   name: string;
   email: string;
   role: string;
-  avatar: string;
-  vendorProfile?: {
-    permissions: string[];
-  };
+  profilePhoto: string;
 }
 
 interface AuthState {
@@ -21,9 +18,10 @@ interface AuthState {
   refreshToken: string | null;
   isAuthenticated: boolean;
   isLoading: boolean;
+  updateProfilePhotoLoading: boolean;
+  updateProfileLoading: boolean;
   error: string | null;
   message: string | null;
-  permissions: string[];
 }
 
 interface LoginPayload {
@@ -42,8 +40,8 @@ interface AuthResponse {
 interface LoginApiResponse {
   success: boolean;
   statusCode: number;
-  message: string;
   data: {
+    message: string;
     accessToken: string;
     refreshToken: string;
     user: User;
@@ -64,14 +62,40 @@ interface LogoutResponse {
   message: string;
 }
 
+interface UpdateProfilePayload {
+  name: string;
+  email: string;
+}
+
+interface ChangePasswordPayload {
+  currentPassword: string;
+  newPassword: string;
+  confirmPassword: string;
+}
+
+interface UpdateProfileResponse {
+  success: boolean;
+  statusCode: number;
+  message: string;
+  data?: User;
+}
+
+interface ProfilePhotoResponse {
+  success: boolean;
+  statusCode: number;
+  message: string;
+  data?: User;
+}
+
 const initialState: AuthState = {
   user: null,
   accessToken: null,
   refreshToken: null,
   isAuthenticated: false,
   isLoading: false,
+  updateProfilePhotoLoading: false,
+  updateProfileLoading: false,
   error: null,
-  permissions: [],
   message: null,
 };
 
@@ -84,23 +108,16 @@ export const loginUser = createAsyncThunk<
 >("auth/loginUser", async (payload, thunkAPI) => {
   try {
     const response = await FetchApi<LoginApiResponse>({
-      endpoint: "/admin/auth/login",
+      endpoint: "/admin/login",
       method: "POST",
       body: payload,
     });
-
-    if (!response?.data?.user) {
-      return thunkAPI.rejectWithValue("Login failed");
-    }
-
-    const { user, accessToken, refreshToken } = response.data;
+    const { accessToken, refreshToken } = response.data;
     localStorage.setItem("tokenExpiry", String(Date.now() + 50 * 60 * 1000));
     localStorage.setItem("loginTimestamp", String(Date.now()));
-
     return {
       success: true,
-      message: response.message,
-      user,
+      message: response?.data?.message,
       accessToken,
       refreshToken,
     };
@@ -118,13 +135,12 @@ export const getProfile = createAsyncThunk<
   }
 >("auth/getProfile", async (_, thunkAPI) => {
   const token = thunkAPI.getState().auth.accessToken;
-
   try {
     const response = await FetchApi<{
       success: boolean;
       data: User;
     }>({
-      endpoint: "/admin/auth/me",
+      endpoint: "/admin/profile",
       method: "GET",
       token: token ?? "",
     });
@@ -147,14 +163,12 @@ export const refreshToken = createAsyncThunk<
 >("auth/refreshToken", async (_, thunkAPI) => {
   const state = thunkAPI.getState();
   const refreshTokenValue = state.auth.refreshToken;
-
   if (!refreshTokenValue) {
     return thunkAPI.rejectWithValue("No refresh token");
   }
-
   try {
     const response = await FetchApi<RefreshTokenResponse>({
-      endpoint: "/admin/auth/refresh-token",
+      endpoint: "/admin/refresh-token",
       method: "POST",
       token: refreshTokenValue,
       skipAuthHandler: true,
@@ -179,7 +193,6 @@ export const logoutUser = createAsyncThunk<
   }
 >("auth/logoutUser", async (_, thunkAPI) => {
   const token = thunkAPI.getState().auth.accessToken;
-
   try {
     const response = await FetchApi<LogoutResponse>({
       endpoint: "/admin/auth/logout",
@@ -192,6 +205,86 @@ export const logoutUser = createAsyncThunk<
     return thunkAPI.rejectWithValue(err?.message || "Logout failed");
   }
 });
+
+export const updateProfile = createAsyncThunk<
+  UpdateProfileResponse,
+  UpdateProfilePayload,
+  {
+    state: RootState;
+    rejectValue: string;
+  }
+>("auth/updateProfile", async (payload, thunkAPI) => {
+  const token = thunkAPI.getState().auth.accessToken;
+
+  try {
+    const response = await FetchApi<UpdateProfileResponse>({
+      endpoint: "/admin/profile",
+      method: "PUT",
+      token: token ?? "",
+      body: payload,
+    });
+
+    return response;
+  } catch (err: any) {
+    return thunkAPI.rejectWithValue(err?.message || "Failed to update profile");
+  }
+});
+
+export const updateProfilePhoto = createAsyncThunk<
+  ProfilePhotoResponse,
+  FormData,
+  {
+    state: RootState;
+    rejectValue: string;
+  }
+>("auth/updateProfilePhoto", async (formData, thunkAPI) => {
+  const token = thunkAPI.getState().auth.accessToken;
+  try {
+    const response = await FetchApi<ProfilePhotoResponse>({
+      endpoint: "/admin/profile-photo",
+      method: "PUT",
+      token: token ?? "",
+      body: formData,
+    });
+
+    return response;
+  } catch (err: any) {
+    return thunkAPI.rejectWithValue(
+      err?.message || "Failed to update profile photo",
+    );
+  }
+});
+
+export const changePassword = createAsyncThunk<
+  string,
+  ChangePasswordPayload,
+  {
+    state: RootState;
+    rejectValue: string;
+  }
+>("auth/changePassword", async (payload, thunkAPI) => {
+  const token = thunkAPI.getState().auth.accessToken;
+
+  try {
+    const response = await FetchApi<{
+      success: boolean;
+      statusCode: number;
+      message: string;
+    }>({
+      endpoint: "/admin/change-password",
+      method: "PUT",
+      token: token ?? "",
+      body: payload,
+    });
+
+    return response.message;
+  } catch (err: any) {
+    return thunkAPI.rejectWithValue(
+      err?.message || "Failed to change password",
+    );
+  }
+});
+
 const authSlice = createSlice({
   name: "auth",
   initialState,
@@ -205,9 +298,9 @@ const authSlice = createSlice({
       state.accessToken = null;
       state.refreshToken = null;
       state.isAuthenticated = false;
+      state.updateProfilePhotoLoading = false;
       state.isLoading = false;
       state.error = null;
-      state.permissions =[]
       state.message = null;
       localStorage.removeItem("tokenExpiry");
       localStorage.removeItem("loginTimestamp");
@@ -226,7 +319,6 @@ const authSlice = createSlice({
         (state, action: PayloadAction<AuthResponse>) => {
           resetSessionExpired();
           state.isLoading = false;
-          state.user = action.payload.user || null;
           state.accessToken = action.payload.accessToken || null;
           state.refreshToken = action.payload.refreshToken || null;
           state.isAuthenticated = true;
@@ -246,8 +338,6 @@ const authSlice = createSlice({
       .addCase(getProfile.fulfilled, (state, action) => {
         state.isLoading = false;
         state.user = action.payload;
-        state.permissions =
-          action.payload.vendorProfile?.permissions ?? [];
       })
       .addCase(getProfile.rejected, (state, action) => {
         state.isLoading = false;
@@ -273,6 +363,7 @@ const authSlice = createSlice({
         state.refreshToken = null;
         clearTokenRefresh();
       })
+
       .addCase(logoutUser.pending, (state) => {
         state.isLoading = true;
       })
@@ -291,6 +382,59 @@ const authSlice = createSlice({
       .addCase(logoutUser.rejected, (state, action) => {
         state.isLoading = false;
         state.error = action.payload || "Logout failed";
+      })
+
+      .addCase(updateProfile.pending, (state) => {
+        state.updateProfileLoading = true;
+        state.error = null;
+        state.message = null;
+      })
+      .addCase(updateProfile.fulfilled, (state, action) => {
+        state.updateProfileLoading = false;
+        state.error = null;
+        state.message = action.payload.message;
+
+        if (action.payload.data) {
+          state.user = action.payload.data;
+        }
+      })
+      .addCase(updateProfile.rejected, (state, action) => {
+        state.updateProfileLoading = false;
+        state.error = action.payload || "Failed to update profile";
+      })
+
+      .addCase(updateProfilePhoto.pending, (state) => {
+        state.updateProfilePhotoLoading = true;
+        state.error = null;
+        state.message = null;
+      })
+      .addCase(updateProfilePhoto.fulfilled, (state, action) => {
+        state.updateProfilePhotoLoading = false;
+        state.error = null;
+        state.message = action.payload.message;
+        if (action.payload.data) {
+          state.user = action.payload.data;
+        }
+      })
+      .addCase(updateProfilePhoto.rejected, (state, action) => {
+        state.updateProfilePhotoLoading = false;
+        state.error = action.payload || "Failed to update profile photo";
+      })
+
+      .addCase(changePassword.pending, (state) => {
+        state.isLoading = true;
+        state.error = null;
+        state.message = null;
+      })
+      .addCase(changePassword.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.error = null;
+        state.message = action.payload;
+      })
+
+      .addCase(changePassword.rejected, (state, action) => {
+        state.isLoading = false;
+        state.error = action.payload || "Failed to change password";
       });
   },
 });

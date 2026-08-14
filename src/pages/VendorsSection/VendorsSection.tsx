@@ -7,10 +7,7 @@ import { useAppDispatch, useAppSelector } from "../../hooks/hooks";
 import {
     getVendors,
     deleteVendor,
-    approveVendor,
     rejectVendor,
-    suspendVendor,
-    activateVendor,
     resetVendorPassword,
     clearVendorError,
 } from "../../store/slice/vendorSlice";
@@ -102,15 +99,7 @@ export default function VendorsSection() {
         setDeleteId(null);
     };
 
-    const handleApprove = (id: string) => dispatch(approveVendor(id));
-    const handleSuspend = (id: string) => dispatch(suspendVendor(id));
-    const handleActivate = (id: string) => dispatch(activateVendor(id));
 
-    const handleRejectClick = (id: string) => {
-        setRejectId(id);
-        setRejectReason("");
-        setRejectModal(true);
-    };
 
     const handleRejectConfirm = async () => {
         if (!rejectId || !rejectReason.trim()) {
@@ -132,13 +121,6 @@ export default function VendorsSection() {
         }
     };
 
-    const handleResetPasswordClick = (id: string) => {
-        setResetPasswordId(id);
-        setNewPassword("");
-        setConfirmPassword("");
-        setPasswordErrors({});
-        setResetPasswordModal(true);
-    };
 
     const validatePassword = () => {
         const errors: { newPassword?: string; confirmPassword?: string } = {};
@@ -262,16 +244,10 @@ export default function VendorsSection() {
             header: "ACTIONS",
             accessor: "_id",
             render: (_, row: any) => {
-                const status = row?.vendorProfile?.approvalStatus?.toLowerCase();
                 return (
                     <DotMenu
 
                         onEdit={() => handleEdit(row)}
-                        onApprove={status === "pending" ? () => handleApprove(row._id) : undefined}
-                        onReject={status === "pending" ? () => handleRejectClick(row._id) : undefined}
-                        onSuspend={status === "active" || status === "approved" ? () => handleSuspend(row._id) : undefined}
-                        onActivate={status === "suspended" ? () => handleActivate(row._id) : undefined}
-                        onResetPassword={() => handleResetPasswordClick(row._id)}
                         onDelete={() => handleDelete(row._id)}
                     />
                 );

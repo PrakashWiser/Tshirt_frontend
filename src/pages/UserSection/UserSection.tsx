@@ -160,7 +160,7 @@ export default function UserSection() {
                     </Button>
 
                     <Button
-                        className="flex items-center gap-2 px-4 h-9 rounded-lg bg-black text-white text-xs font-medium"
+                        className="flex items-center gap-2 px-4 h-9 rounded-lg  text-white text-xs font-medium"
                     >
                         <Plus size={16} />
                         Add User
@@ -179,7 +179,7 @@ export default function UserSection() {
                 <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm hover:shadow-md transition-all">
                     <div className="flex items-start justify-between">
                         <div className="flex gap-3">
-                            <div className="w-10 h-10 rounded-full bg-black text-white flex items-center justify-center text-sm font-semibold">
+                            <div className="w-10 h-10 rounded-full bg-[#3A29AA] text-white flex items-center justify-center text-sm font-semibold">
                                 {getInitials(user.name)}
                             </div>
 

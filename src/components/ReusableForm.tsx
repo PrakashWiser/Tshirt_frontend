@@ -5,7 +5,10 @@ import InputField from "./CommonInput";
 import MapPicker from "./MapPicker";
 import TagInput from "../components/Taginput";
 import PoliciesEditor from "./PoliciesEditor";
-import JsonObjectEditor, { type SchemaField } from "../components/Jsonobjecteditor";
+import JsonObjectEditor, {
+    type SchemaField,
+} from "../components/Jsonobjecteditor";
+import SelectField from "./SelectField";
 import { getPositionFromMapLink } from "../utils/getPositionFromMapLink";
 
 export interface FieldOption {
@@ -29,7 +32,8 @@ export interface FormField {
     | "map"
     | "tags"
     | "policies"
-    | "json-object";
+    | "json-object"
+    | "multi-select";
     multiple?: boolean;
     placeholder?: string;
     fullWidth?: boolean;
@@ -58,9 +62,10 @@ export default function ReusableForm({
     onSubmit,
     onClose,
     loading,
-    onFieldChange
+    onFieldChange,
 }: ReusableFormProps) {
-    const [formData, setFormData] = useState(initialValues);
+    const [formData, setFormData] =
+        useState<Record<string, any>>(initialValues);
 
     useEffect(() => {
         setFormData(initialValues);
@@ -76,23 +81,41 @@ export default function ReusableForm({
             if (name === "locationId") {
                 updated.subLocationId = "";
             }
+
             if (name === "stayType") {
                 updated.hourlyStay = {
                     ...(prev.hourlyStay || {}),
-                    isAllowed: value === "hourly" || value === "both",
+                    isAllowed:
+                        value === "hourly" ||
+                        value === "both",
                 };
             }
+
             if (name === "capacity") {
-                const maxGuests = Number(value.maxGuests || 0);
-                let adults = Number(value.adults || 0);
-                let children = Number(value.children || 0);
+                const maxGuests = Number(
+                    value.maxGuests || 0
+                );
+
+                let adults = Number(
+                    value.adults || 0
+                );
+
+                let children = Number(
+                    value.children || 0
+                );
 
                 if (adults > maxGuests) {
                     adults = maxGuests;
                 }
 
-                if (adults + children > maxGuests) {
-                    children = Math.max(0, maxGuests - adults);
+                if (
+                    adults + children >
+                    maxGuests
+                ) {
+                    children = Math.max(
+                        0,
+                        maxGuests - adults
+                    );
                 }
 
                 updated.capacity = {
@@ -101,13 +124,16 @@ export default function ReusableForm({
                     children,
                 };
             }
+
             return updated;
         });
 
         onFieldChange?.(name, value);
     };
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = (
+        e: React.FormEvent
+    ) => {
         e.preventDefault();
         onSubmit(formData);
     };
@@ -118,122 +144,269 @@ export default function ReusableForm({
             className="bg-white border border-slate-200 rounded-2xl p-6"
         >
             {title && (
-                <h2 className="text-xl font-semibold mb-6">{title}</h2>
+                <h2 className="text-xl font-semibold mb-6">
+                    {title}
+                </h2>
             )}
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                 {fields.map((field) => (
                     <div
                         key={field.name}
-                        className={field.fullWidth ? "md:col-span-2" : ""}
+                        className={
+                            field.fullWidth
+                                ? "md:col-span-2"
+                                : ""
+                        }
                     >
-                        {field.type === "checkbox" ? (
+                        {field.type ===
+                            "checkbox" ? (
                             <div className="flex items-center gap-3 mt-8">
                                 <input
                                     type="checkbox"
-                                    checked={formData[field.name] || false}
-                                    onChange={(e) => handleChange(field.name, e.target.checked)}
+                                    checked={
+                                        formData[
+                                        field.name
+                                        ] || false
+                                    }
+                                    onChange={(e) =>
+                                        handleChange(
+                                            field.name,
+                                            e.target.checked
+                                        )
+                                    }
                                     className="h-4 w-4 accent-[#fa0400] cursor-pointer"
                                 />
+
                                 <label className="text-sm font-medium text-slate-700 cursor-pointer">
                                     {field.label}
                                 </label>
                             </div>
-
-                        ) : field.type === "tags" ? (
+                        ) : field.type ===
+                            "tags" ? (
                             <TagInput
                                 label={field.label}
-                                value={formData[field.name] || []}
-                                onChange={(tags) => handleChange(field.name, tags)}
-                                placeholder={field.placeholder}
-                                suggestions={field.suggestions}
-                                required={field.required}
+                                value={
+                                    formData[
+                                    field.name
+                                    ] || []
+                                }
+                                onChange={(tags) =>
+                                    handleChange(
+                                        field.name,
+                                        tags
+                                    )
+                                }
+                                placeholder={
+                                    field.placeholder
+                                }
+                                suggestions={
+                                    field.suggestions
+                                }
+                                required={
+                                    field.required
+                                }
                             />
-
-                        ) : field.type === "policies" ? (
+                        ) : field.type ===
+                            "policies" ? (
                             <PoliciesEditor
                                 label={field.label}
-                                value={formData[field.name]}
-                                onChange={(val) => handleChange(field.name, val)}
+                                value={
+                                    formData[
+                                    field.name
+                                    ]
+                                }
+                                onChange={(val) =>
+                                    handleChange(
+                                        field.name,
+                                        val
+                                    )
+                                }
                             />
-
-                        ) : field.type === "json-object" ? (
+                        ) : field.type ===
+                            "json-object" ? (
                             <JsonObjectEditor
                                 label={field.label}
-                                value={formData[field.name] || {}}
-                                onChange={(val) => handleChange(field.name, val)}
-                                schema={field.schema}
-                                required={field.required}
+                                value={
+                                    formData[
+                                    field.name
+                                    ] || {}
+                                }
+                                onChange={(val) =>
+                                    handleChange(
+                                        field.name,
+                                        val
+                                    )
+                                }
+                                schema={
+                                    field.schema
+                                }
+                                required={
+                                    field.required
+                                }
                             />
-
-                        ) : field.type === "textarea" ? (
+                        ) : field.type ===
+                            "textarea" ? (
                             <>
                                 <label className="block mb-2 text-sm font-medium text-slate-700">
                                     {field.label}
-                                    {field.required && <span className="text-red-500 ml-0.5">*</span>}
+                                    {field.required && (
+                                        <span className="text-red-500 ml-0.5">
+                                            *
+                                        </span>
+                                    )}
                                 </label>
+
                                 <textarea
                                     rows={4}
-                                    value={formData[field.name] || ""}
-                                    onChange={(e) => handleChange(field.name, e.target.value)}
-                                    placeholder={field.placeholder}
+                                    value={
+                                        formData[
+                                        field.name
+                                        ] || ""
+                                    }
+                                    onChange={(e) =>
+                                        handleChange(
+                                            field.name,
+                                            e.target.value
+                                        )
+                                    }
+                                    placeholder={
+                                        field.placeholder
+                                    }
                                     className="w-full border border-slate-200 rounded-xl px-4 py-2 h-30 outline-0 text-sm"
                                 />
                             </>
-
-                        ) : field.type === "select" ? (
-                            <>
-                                <label className="block mb-2 text-sm font-medium text-slate-700">
-                                    {field.label}
-                                    {field.required && <span className="text-red-500 ml-0.5">*</span>}
-                                </label>
-                                <select
-                                    value={formData[field.name] || ""}
-                                    onChange={(e) => handleChange(field.name, e.target.value)}
-                                    className="w-full border border-slate-200 rounded-sm px-4 py-2 outline-0 text-sm"
-                                >
-                                    <option value="">Select</option>
-                                    {field.options?.map((option) => (
-                                        <option key={option.value} value={option.value}>
-                                            {option.label}
-                                        </option>
-                                    ))}
-                                </select>
-                            </>
-
-                        ) : field.type === "file" ? (
-                            <ImageUploadField
-                                label={field.label}
-                                multiple={field.multiple}
-                                accept={field.name.includes("Video") ? "video/*" : "image/*"}
-                                value={formData[field.name]}
-                                onChange={(file) => handleChange(field.name, file)}
+                        ) : field.type ===
+                            "select" ||
+                            field.type ===
+                            "multi-select" ? (
+                            <SelectField
+                                name={
+                                    field.label
+                                }
+                                value={
+                                    field.type ===
+                                        "multi-select"
+                                        ? formData[
+                                        field
+                                            .name
+                                        ] || []
+                                        : formData[
+                                        field
+                                            .name
+                                        ] || ""
+                                }
+                                options={
+                                    field.options ||
+                                    []
+                                }
+                                placeholder={
+                                    field.type ===
+                                        "multi-select"
+                                        ? "Select options"
+                                        : "Select"
+                                }
+                                searchable
+                                multiple={
+                                    field.type ===
+                                    "multi-select"
+                                }
+                                onChange={(value) =>
+                                    handleChange(
+                                        field.name,
+                                        value
+                                    )
+                                }
                             />
-
-                        ) : field.type === "map" ? (
+                        ) : field.type ===
+                            "file" ? (
+                            <ImageUploadField
+                                label={
+                                    field.label
+                                }
+                                multiple={
+                                    field.multiple
+                                }
+                                accept={
+                                    field.name.includes(
+                                        "Video"
+                                    )
+                                        ? "video/*"
+                                        : "image/*"
+                                }
+                                value={
+                                    formData[
+                                    field.name
+                                    ]
+                                }
+                                onChange={(file) =>
+                                    handleChange(
+                                        field.name,
+                                        file
+                                    )
+                                }
+                            />
+                        ) : field.type ===
+                            "map" ? (
                             <>
                                 <label className="block mb-2 text-sm font-medium text-slate-700">
-                                    {field.label}
+                                    {
+                                        field.label
+                                    }
                                 </label>
+
                                 <MapPicker
-                                    onSelect={(link) => handleChange(field.name, link)}
-                                    initialPosition={getPositionFromMapLink(formData[field.name])}
+                                    onSelect={(
+                                        link
+                                    ) =>
+                                        handleChange(
+                                            field.name,
+                                            link
+                                        )
+                                    }
+                                    initialPosition={getPositionFromMapLink(
+                                        formData[
+                                        field.name
+                                        ]
+                                    )}
                                 />
                             </>
-
                         ) : (
                             <>
                                 <label className="block mb-2 text-sm font-medium text-slate-700">
                                     {field.label}
-                                    {field.required && <span className="text-red-500 ml-0.5">*</span>}
+                                    {field.required && (
+                                        <span className="text-red-500 ml-0.5">
+                                            *
+                                        </span>
+                                    )}
                                 </label>
+
                                 <InputField
-                                    type={field.type}
-                                    name={field.name}
-                                    placeholder={field.placeholder}
-                                    value={formData[field.name] || ""}
-                                    onChange={(e) => handleChange(field.name, e.target.value)}
-                                    showLabel={false}
+                                    type={
+                                        field.type
+                                    }
+                                    name={
+                                        field.name
+                                    }
+                                    placeholder={
+                                        field.placeholder
+                                    }
+                                    value={
+                                        formData[
+                                        field.name
+                                        ] || ""
+                                    }
+                                    onChange={(e) =>
+                                        handleChange(
+                                            field.name,
+                                            e.target
+                                                .value
+                                        )
+                                    }
+                                    showLabel={
+                                        false
+                                    }
                                 />
                             </>
                         )}
@@ -242,10 +415,18 @@ export default function ReusableForm({
             </div>
 
             <div className="flex justify-end gap-3 mt-6">
-                <Button type="button" variant="outline" onClick={onClose}>
+                <Button
+                    type="button"
+                    variant="outline"
+                    onClick={onClose}
+                >
                     Cancel
                 </Button>
-                <Button type="submit" disabled={loading}>
+
+                <Button
+                    type="submit"
+                    disabled={loading}
+                >
                     {loading ? (
                         <div className="flex items-center gap-2">
                             <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />

@@ -1,5 +1,13 @@
-import { useEffect, useRef, useState } from "react";
-import { ChevronDown, Search, X } from "lucide-react";
+import React, {
+    useEffect,
+    useRef,
+    useState,
+} from "react";
+import {
+    ChevronDown,
+    Search,
+    X,
+} from "lucide-react";
 
 export interface Option {
     label: string;
@@ -8,13 +16,16 @@ export interface Option {
 
 interface SelectFieldProps {
     name?: string;
-    value?: string | number;
+    value?: string | number | (string | number)[];
     options: Option[];
     placeholder?: string;
     searchable?: boolean;
+    multiple?: boolean;
     showLabel?: boolean;
     className?: string;
-    onChange?: (value: string | number) => void;
+    onChange?: (
+        value: string | number | (string | number)[]
+    ) => void;
 }
 
 const SelectField: React.FC<SelectFieldProps> = ({
@@ -23,6 +34,7 @@ const SelectField: React.FC<SelectFieldProps> = ({
     options,
     placeholder = "Select an option",
     searchable = false,
+    multiple = false,
     showLabel = true,
     className = "",
     onChange,
@@ -31,88 +43,231 @@ const SelectField: React.FC<SelectFieldProps> = ({
     const [search, setSearch] = useState("");
     const dropdownRef = useRef<HTMLDivElement>(null);
 
-    const selectedOption = options.find(
-        (item) => String(item.value) === String(value)
-    );
+    const selectedOptions = options.filter((option) => {
+        if (Array.isArray(value)) {
+            return value.some(
+                (item) =>
+                    String(item) === String(option.value)
+            );
+        }
 
-    const filteredOptions = options.filter((item) =>
-        item.label.toLowerCase().includes(search.toLowerCase())
+        return (
+            String(value) === String(option.value)
+        );
+    });
+
+    const filteredOptions = options.filter((option) =>
+        option.label
+            .toLowerCase()
+            .includes(search.toLowerCase())
     );
 
     useEffect(() => {
-        const handleClickOutside = (e: MouseEvent) => {
+        const handleClickOutside = (event: MouseEvent) => {
             if (
                 dropdownRef.current &&
-                !dropdownRef.current.contains(e.target as Node)
+                !dropdownRef.current.contains(
+                    event.target as Node
+                )
             ) {
                 setOpen(false);
+                setSearch("");
             }
         };
 
-        document.addEventListener("mousedown", handleClickOutside);
+        document.addEventListener(
+            "mousedown",
+            handleClickOutside
+        );
 
-        return () =>
-            document.removeEventListener("mousedown", handleClickOutside);
+        return () => {
+            document.removeEventListener(
+                "mousedown",
+                handleClickOutside
+            );
+        };
     }, []);
 
-    const handleSelect = (value: string | number) => {
-        onChange?.(value);
+    const isSelected = (
+        optionValue: string | number
+    ) => {
+        if (Array.isArray(value)) {
+            return value.some(
+                (item) =>
+                    String(item) ===
+                    String(optionValue)
+            );
+        }
+
+        return (
+            String(value) ===
+            String(optionValue)
+        );
+    };
+
+    const handleSelect = (
+        optionValue: string | number
+    ) => {
+        if (multiple) {
+            const currentValues = Array.isArray(value)
+                ? value
+                : [];
+
+            const exists = currentValues.some(
+                (item) =>
+                    String(item) ===
+                    String(optionValue)
+            );
+
+            const newValues = exists
+                ? currentValues.filter(
+                    (item) =>
+                        String(item) !==
+                        String(optionValue)
+                )
+                : [
+                    ...currentValues,
+                    optionValue,
+                ];
+
+            onChange?.(newValues);
+            return;
+        }
+
+        onChange?.(optionValue);
         setOpen(false);
         setSearch("");
     };
 
+    const handleClear = (
+        event: React.MouseEvent
+    ) => {
+        event.stopPropagation();
+
+        if (multiple) {
+            onChange?.([]);
+        } else {
+            onChange?.("");
+        }
+
+        setSearch("");
+    };
+
     return (
-        <div className="w-full" ref={dropdownRef}>
+        <div
+            className="w-full"
+            ref={dropdownRef}
+        >
             {showLabel && name && (
                 <label className="block mb-1.5 text-sm font-medium text-slate-700 capitalize">
-                    {name.replace(/([A-Z])/g, " $1")}
+                    {name.replace(
+                        /([A-Z])/g,
+                        " $1"
+                    )}
                 </label>
             )}
 
             <div className="relative">
                 <div
-                    onClick={() => setOpen((prev) => !prev)}
-                    className={`flex items-center justify-between w-full rounded-sm border border-gray-300 bg-white px-3 py-2 cursor-pointer ${className}`}
+                    onClick={() =>
+                        setOpen((prev) => !prev)
+                    }
+                    className={`flex items-center justify-between w-full min-h-[40px] rounded-sm border border-gray-300 bg-white px-3 py-2 cursor-pointer ${className}`}
                 >
-                    <span
-                        className={
-                            selectedOption
-                                ? "text-gray-900"
-                                : "text-gray-400"
-                        }
-                    >
-                        {selectedOption?.label ?? placeholder}
-                    </span>
+                    <div className="flex flex-1 flex-wrap gap-1">
+                        {multiple ? (
+                            selectedOptions.length > 0 ? (
+                                selectedOptions.map(
+                                    (option) => (
+                                        <span
+                                            key={
+                                                option.value
+                                            }
+                                            className="inline-flex items-center gap-1 rounded-md bg-gray-100 px-2 py-1 text-xs font-medium text-gray-700"
+                                        >
+                                            {
+                                                option.label
+                                            }
 
-                    <div className="flex items-center gap-2">
-                        {selectedOption && (
-                            <X
-                                size={16}
-                                className="cursor-pointer text-gray-400 hover:text-red-500"
-                                onClick={(e) => {
-                                    e.stopPropagation();
-                                    handleSelect("");
-                                }}
-                            />
+                                            <button
+                                                type="button"
+                                                onClick={(
+                                                    event
+                                                ) => {
+                                                    event.stopPropagation();
+
+                                                    handleSelect(
+                                                        option.value
+                                                    );
+                                                }}
+                                                className="text-gray-400 hover:text-red-500"
+                                            >
+                                                <X
+                                                    size={12}
+                                                />
+                                            </button>
+                                        </span>
+                                    )
+                                )
+                            ) : (
+                                <span className="text-gray-400">
+                                    {placeholder}
+                                </span>
+                            )
+                        ) : (
+                            <span
+                                className={
+                                    selectedOptions.length
+                                        ? "text-gray-900"
+                                        : "text-gray-400"
+                                }
+                            >
+                                {selectedOptions[0]
+                                    ?.label ??
+                                    placeholder}
+                            </span>
+                        )}
+                    </div>
+
+                    <div className="flex items-center gap-2 ml-2">
+                        {selectedOptions.length > 0 && (
+                            <button
+                                type="button"
+                                onClick={handleClear}
+                                className="text-gray-400 hover:text-red-500"
+                            >
+                                <X size={16} />
+                            </button>
                         )}
 
                         <ChevronDown
                             size={18}
-                            className={`transition-transform ${open ? "rotate-180" : ""
+                            className={`transition-transform ${open
+                                    ? "rotate-180"
+                                    : ""
                                 }`}
                         />
                     </div>
                 </div>
 
                 {open && (
-                    <div className="absolute left-0 z-50 mt-1 max-h-60 w-full overflow-auto rounded-sm border border-gray-300 bg-white shadow-lg">
+                    <div className="absolute left-0 z-50 mt-1 max-h-72 w-full overflow-auto rounded-sm border border-gray-300 bg-white shadow-lg">
                         {searchable && (
                             <div className="flex items-center gap-2 border-b border-gray-300 p-2">
-                                <Search size={16} className="text-gray-400" />
+                                <Search
+                                    size={16}
+                                    className="text-gray-400"
+                                />
+
                                 <input
                                     value={search}
-                                    onChange={(e) =>
-                                        setSearch(e.target.value)
+                                    onChange={(event) =>
+                                        setSearch(
+                                            event.target.value
+                                        )
+                                    }
+                                    onClick={(event) =>
+                                        event.stopPropagation()
                                     }
                                     placeholder="Search..."
                                     className="w-full text-sm outline-none"
@@ -120,21 +275,49 @@ const SelectField: React.FC<SelectFieldProps> = ({
                             </div>
                         )}
 
-                        {filteredOptions.length ? (
-                            filteredOptions.map((option) => (
-                                <div
-                                    key={option.value}
-                                    onClick={() =>
-                                        handleSelect(option.value)
-                                    }
-                                    className={`cursor-pointer px-3 py-2 text-sm hover:bg-gray-100 ${String(option.value) === String(value)
-                                        ? "bg-gray-100 font-medium"
-                                        : ""
-                                        }`}
-                                >
-                                    {option.label}
-                                </div>
-                            ))
+                        {filteredOptions.length > 0 ? (
+                            filteredOptions.map(
+                                (option) => {
+                                    const selected =
+                                        isSelected(
+                                            option.value
+                                        );
+
+                                    return (
+                                        <div
+                                            key={
+                                                option.value
+                                            }
+                                            onClick={() =>
+                                                handleSelect(
+                                                    option.value
+                                                )
+                                            }
+                                            className={`flex cursor-pointer items-center gap-2 px-3 py-2 text-sm hover:bg-gray-100 ${selected
+                                                    ? "bg-gray-100 font-medium"
+                                                    : ""
+                                                }`}
+                                        >
+                                            {multiple && (
+                                                <input
+                                                    type="checkbox"
+                                                    checked={
+                                                        selected
+                                                    }
+                                                    readOnly
+                                                    className="h-4 w-4 rounded border-gray-300"
+                                                />
+                                            )}
+
+                                            <span>
+                                                {
+                                                    option.label
+                                                }
+                                            </span>
+                                        </div>
+                                    );
+                                }
+                            )
                         ) : (
                             <div className="p-3 text-sm text-gray-400">
                                 No results found

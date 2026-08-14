@@ -13,6 +13,7 @@ interface Options<T extends object> {
   searchKeys?: (keyof T)[];
   defaultView?: ViewMode;
   defaultPageSize?: number;
+  paginationMode?: "server" | "client";
 }
 
 export interface DataTableState<T> {
@@ -39,6 +40,7 @@ export function useDataTable<T extends object>({
   searchKeys = [],
   defaultView = "table",
   defaultPageSize = 10,
+  paginationMode = "client",
 }: Options<T>): DataTableState<T> {
   const [view, setView] = useState<ViewMode>(defaultView);
   const [query, setQuery] = useState("");
@@ -49,7 +51,7 @@ export function useDataTable<T extends object>({
 
   const handleQueryChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
     setQuery(e.target.value);
-    setPageRaw(1); // reset to first page on new search
+    setPageRaw(1);
   }, []);
 
   const clearQuery = useCallback(() => {
@@ -68,13 +70,13 @@ export function useDataTable<T extends object>({
   }, []);
 
   const setPage = useCallback((p: number) => setPageRaw(p), []);
-
   const setPageSize = useCallback((s: number) => {
     setPageSizeRaw(s);
     setPageRaw(1);
   }, []);
 
   const filteredData = useMemo<T[]>(() => {
+    if (paginationMode === "server") return data;
     const q = query.trim().toLowerCase();
     if (!q || searchKeys.length === 0) return data;
     return data.filter((row) =>
@@ -83,9 +85,10 @@ export function useDataTable<T extends object>({
         return v != null && String(v).toLowerCase().includes(q);
       }),
     );
-  }, [data, query, searchKeys]);
+  }, [data, query, searchKeys, paginationMode]);
 
   const sortedData = useMemo<T[]>(() => {
+    if (paginationMode === "server") return filteredData;
     if (!sort.key || !sort.direction) return filteredData;
     const { key, direction } = sort;
     return [...filteredData].sort((a, b) => {
@@ -103,16 +106,19 @@ export function useDataTable<T extends object>({
             });
       return direction === "asc" ? cmp : -cmp;
     });
-  }, [filteredData, sort]);
+  }, [filteredData, sort, paginationMode]);
+
+  const pagedData = useMemo<T[]>(() => {
+    if (paginationMode === "server") return sortedData;
+    const totalCount = sortedData.length;
+    const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
+    const safePage = Math.min(page, totalPages);
+    const start = (safePage - 1) * pageSize;
+    return sortedData.slice(start, start + pageSize);
+  }, [sortedData, page, pageSize, paginationMode]);
 
   const totalCount = sortedData.length;
   const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
-  const safePage = Math.min(page, totalPages);
-
-  const pagedData = useMemo<T[]>(() => {
-    const start = (safePage - 1) * pageSize;
-    return sortedData.slice(start, start + pageSize);
-  }, [sortedData, safePage, pageSize]);
 
   return {
     view,
@@ -123,7 +129,7 @@ export function useDataTable<T extends object>({
     clearQuery,
     sort,
     handleSort,
-    page: safePage,
+    page,
     pageSize,
     setPage,
     setPageSize,

@@ -14,7 +14,6 @@ import { useDataTable } from "./useDataTable";
 import { Pagination } from "./Pagination";
 import type { ColumnDef, DataTableProps, SortState } from "./TableTypes";
 
-
 const TableSkeleton = memo(() => (
     <div className="animate-pulse p-4 space-y-3">
         {Array.from({ length: 6 }).map((_, i) => (
@@ -32,7 +31,6 @@ const DefaultEmptyState = memo(() => (
 ));
 DefaultEmptyState.displayName = "DefaultEmptyState";
 
-
 const SortIcon = memo(({ columnKey, sort }: { columnKey: string; sort: SortState }) => {
     if (sort.key !== columnKey)
         return <ChevronsUpDown size={12} className="ml-1 text-slate-300 shrink-0" />;
@@ -41,7 +39,6 @@ const SortIcon = memo(({ columnKey, sort }: { columnKey: string; sort: SortState
     return <ChevronDown size={12} className="ml-1 text-blue-500 shrink-0" />;
 });
 SortIcon.displayName = "SortIcon";
-
 
 const ViewToggleBtn = memo(
     ({
@@ -63,11 +60,11 @@ const ViewToggleBtn = memo(
             aria-label={label}
             aria-pressed={active}
             className={[
-                "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium select-none",
+                "flex items-center cursor-pointer gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium select-none",
                 "transition-colors duration-150",
                 "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/40",
                 active
-                    ? "bg-[#0f172a] text-white shadow-sm"
+                    ? "bg-[#3A29AA] text-white shadow-sm"
                     : "text-slate-500 hover:text-slate-700 hover:bg-slate-100",
             ].join(" ")}
         >
@@ -77,7 +74,6 @@ const ViewToggleBtn = memo(
     )
 );
 ViewToggleBtn.displayName = "ViewToggleBtn";
-
 
 function resolveValue<T>(row: T, col: ColumnDef<T>): unknown {
     return typeof col.accessor === "function"
@@ -90,7 +86,6 @@ const ALIGN: Record<string, string> = {
     center: "text-center",
     right: "text-right",
 };
-
 
 function THead<T>({
     columns,
@@ -137,7 +132,6 @@ function THead<T>({
         </thead>
     );
 }
-
 
 function TBody<T extends object>({
     data,
@@ -193,7 +187,6 @@ function TBody<T extends object>({
     );
 }
 
-
 const DEFAULT_PAGE_SIZE_OPTIONS = [10, 20, 50, 100];
 
 export function DataTable<T extends object>({
@@ -214,6 +207,8 @@ export function DataTable<T extends object>({
     stickyHeader = false,
     className = "",
     style,
+    paginationMode = "client",
+    pagination: externalPagination,
 }: DataTableProps<T>) {
     const {
         view,
@@ -236,9 +231,31 @@ export function DataTable<T extends object>({
         searchKeys,
         defaultView,
         defaultPageSize: initialPageSize,
+        paginationMode,
     });
 
     const isEmpty = !loading && pagedData.length === 0;
+
+    const currentPage = externalPagination?.currentPage || page;
+    const totalPagesCount = externalPagination?.totalPages || totalPages;
+    const totalItems = externalPagination?.total || totalCount;
+    const currentPageSize = externalPagination?.limit || pageSize;
+
+    const handlePageChange = useCallback((newPage: number) => {
+        if (externalPagination?.onPageChange) {
+            externalPagination.onPageChange(newPage);
+        } else {
+            setPage(newPage);
+        }
+    }, [externalPagination, setPage]);
+
+    const handlePageSizeChange = useCallback((newSize: number) => {
+        if (externalPagination?.onLimitChange) {
+            externalPagination.onLimitChange(newSize);
+        } else {
+            setPageSize(newSize);
+        }
+    }, [externalPagination, setPageSize]);
 
     return (
         <div className={["flex flex-col gap-4", className].join(" ")} style={style}>
@@ -318,13 +335,13 @@ export function DataTable<T extends object>({
                             </div>
                             <div className="px-4 py-3">
                                 <Pagination
-                                    page={page}
-                                    totalPages={totalPages}
-                                    totalCount={totalCount}
-                                    pageSize={pageSize}
+                                    page={currentPage}
+                                    totalPages={totalPagesCount}
+                                    totalCount={totalItems}
+                                    pageSize={currentPageSize}
                                     pageSizeOptions={pageSizeOptions}
-                                    onPageChange={setPage}
-                                    onPageSizeChange={setPageSize}
+                                    onPageChange={handlePageChange}
+                                    onPageSizeChange={handlePageSizeChange}
                                 />
                             </div>
                         </>
@@ -367,7 +384,6 @@ export function DataTable<T extends object>({
                                                             <span className="text-xs text-slate-500">
                                                                 {col.header}
                                                             </span>
-
                                                             <span className="text-sm font-medium text-slate-800">
                                                                 {col.render
                                                                     ? col.render(value, row)
@@ -382,13 +398,13 @@ export function DataTable<T extends object>({
                             </div>
                             <div className="bg-white rounded-xl border border-slate-200 px-4 py-3">
                                 <Pagination
-                                    page={page}
-                                    totalPages={totalPages}
-                                    totalCount={totalCount}
-                                    pageSize={pageSize}
+                                    page={currentPage}
+                                    totalPages={totalPagesCount}
+                                    totalCount={totalItems}
+                                    pageSize={currentPageSize}
                                     pageSizeOptions={pageSizeOptions}
-                                    onPageChange={setPage}
-                                    onPageSizeChange={setPageSize}
+                                    onPageChange={handlePageChange}
+                                    onPageSizeChange={handlePageSizeChange}
                                 />
                             </div>
                         </>

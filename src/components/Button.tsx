@@ -27,7 +27,7 @@ const Button: React.FC<ButtonProps> = ({
 
     const variants: Record<"primary" | "outline", string> = {
         primary:
-            "bg-[#fa0400] text-white  hover:bg-[#e60300] hover:shadow-md",
+            "bg-[#3A29AA] text-white  hover:bg-[#2f218f]  hover:shadow-md",
         outline:
             "border border-gray-400 bg-white text-black hover:shadow-md"
     };

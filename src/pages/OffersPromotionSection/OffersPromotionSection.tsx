@@ -15,7 +15,6 @@ import DotMenu from "../../components/DotMenu";
 import ConfirmDeleteModal from "../../components/ConfirmDeleteModal";
 import type { Coupon } from "../../types";
 import { exportTableData } from "../../utils/exportToExcel";
-import { usePermission } from "../../hooks/usePermission";
 
 
 interface TableRow {
@@ -34,7 +33,6 @@ interface TableRow {
 
 export default function OffersPromotionSection() {
     const dispatch = useAppDispatch();
-    const { hasPermission } = usePermission();
     const { message, error, coupons } = useAppSelector(
         (state) => state.coupon
     );
@@ -148,8 +146,6 @@ export default function OffersPromotionSection() {
                 render: (_, row) => {
                     return (
                         <DotMenu
-                            showEdit={hasPermission("coupons.update")}
-                            showDelete={hasPermission("coupons.delete")}
                             onEdit={() => {
                                 const coupon = coupons.find((c) => c._id === row.id);
                                 setSelectedCoupon(coupon ?? null);
@@ -246,13 +242,12 @@ export default function OffersPromotionSection() {
                             <Download size={18} />
                             Export
                         </button>
-                        {hasPermission("coupons.create") && (
-                            <button
-                                onClick={() => setOpenCreate(true)}
-                                className="flex cursor-pointer items-center gap-2 px-4 py-2 bg-black text-white rounded-md transition-colors text-sm font-medium shadow-sm hover:shadow-md">
-                                <Plus size={18} />
-                                New Campaign
-                            </button>)}
+                        <button
+                            onClick={() => setOpenCreate(true)}
+                            className="flex cursor-pointer items-center gap-2 px-4 py-2 bg-black text-white rounded-md transition-colors text-sm font-medium shadow-sm hover:shadow-md">
+                            <Plus size={18} />
+                            New Campaign
+                        </button>
                     </div>
                 </div>
                 <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden hover:shadow-lg transition-shadow duration-300">
