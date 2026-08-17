@@ -248,12 +248,6 @@ export default function Sidebar({
                                     ? "h-10 w-10 rounded-full object-contain"
                                     : "h-7 w-7 rounded-full object-contain"
                             }
-                            animate={{ rotate: 360 }}
-                            transition={{
-                                duration: 3,
-                                repeat: Infinity,
-                                ease: "linear",
-                            }}
                         />
 
                         {sidebarOpen && (

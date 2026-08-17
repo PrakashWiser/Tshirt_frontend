@@ -19,6 +19,7 @@ import { exportTableData } from "../../utils/exportToExcel";
 import { useNavigate } from "react-router-dom";
 import CustomImage from "../../components/Image";
 import Button from "../../components/Button";
+import PropertyFilterCanvas from "./PropertyFilterCanvas";
 
 interface PropertyRow {
     id: string;
@@ -44,6 +45,7 @@ export default function PropertyList() {
     const [filters, setFilters] = useState<PropertyFilters>({});
     const [currentPage, setCurrentPage] = useState(1);
     const [limit, setLimit] = useState(10);
+    const [showFilterCanvas, setShowFilterCanvas] = useState(false);
 
     const {
         properties,
@@ -274,7 +276,7 @@ export default function PropertyList() {
                     </div>
                     <div className="flex items-center gap-3 flex-wrap">
                         <button
-                            onClick={() => setShowFilters(!showFilters)}
+                            onClick={() => setShowFilterCanvas(true)}
                             className="flex items-center gap-2 px-4 py-2 border border-slate-200 rounded-md hover:bg-slate-50 transition-colors text-sm font-medium"
                         >
                             <Filter size={18} />
@@ -401,7 +403,8 @@ export default function PropertyList() {
                     </div>
                 )}
 
-                <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden hover:shadow-lg transition-shadow duration-300">
+                <div
+                    className="bg-white border border-slate-200 rounded-2xl overflow-hidden hover:shadow-lg transition-shadow duration-300">
                     <div className="p-4">
                         {isLoading ? (
                             <div className="flex justify-center items-center py-12">
@@ -412,7 +415,7 @@ export default function PropertyList() {
                                 data={tableData}
                                 columns={columns}
                                 rowKey="id"
-                                defaultView="table"
+                                defaultView="grid"
                                 searchKeys={["name", "propertyType", "propertyAction", "location"]}
                                 searchPlaceholder="Search properties..."
                                 paginationMode="server"
@@ -434,7 +437,9 @@ export default function PropertyList() {
                                 renderGridCard={(row: PropertyRow) => {
                                     const originalProperty = properties.find((p) => p.id === row.id);
                                     return (
-                                        <div className="overflow-hidden bg-white border border-slate-200 rounded-2xl shadow-sm hover:shadow-md transition-all">
+                                        <div
+                                            onClick={() => handleView(row.id)}
+                                            className="overflow-hidden cursor-pointer bg-white border border-slate-200 rounded-2xl shadow-sm hover:shadow-md transition-all">
                                             <div className="relative h-48">
                                                 <CustomImage
                                                     src={row.image}
@@ -511,6 +516,22 @@ export default function PropertyList() {
                     </div>
                 </div>
             </div>
+
+            <PropertyFilterCanvas
+                isOpen={showFilterCanvas}
+                onClose={() => setShowFilterCanvas(false)}
+                filters={filters}
+                filterOptions={filterOptions}
+                onApplyFilters={(newFilters) => {
+                    setFilters(newFilters);
+                    setCurrentPage(1);
+                }}
+                onClearFilters={() => {
+                    setFilters({});
+                    setCurrentPage(1);
+                }}
+                isLoading={isLoading}
+            />
 
             <ConfirmDeleteModal
                 isOpen={deleteModal}

@@ -14,50 +14,18 @@ import {
     XAxis,
     YAxis,
     CartesianGrid,
-    Tooltip
+    Tooltip,
+    BarChart,
+    Bar,
+    PieChart,
+    Pie,
+    Cell,
 } from 'recharts';
 import { useSelector } from 'react-redux';
 import { setBreadcrumbs } from '../../store/slice/uiSlice';
 import { useAppDispatch, useAppSelector } from '../../hooks/hooks';
 import { getDashboardStats } from '../../store/slice/statsSlice';
-
-const DUMMY_USERS = [
-    { id: 1, name: 'John Doe', email: 'john@example.com', status: 'Active' },
-    { id: 2, name: 'Jane Smith', email: 'jane@example.com', status: 'Active' },
-    { id: 3, name: 'Bob Johnson', email: 'bob@example.com', status: 'Inactive' },
-    { id: 4, name: 'Alice Williams', email: 'alice@example.com', status: 'Active' },
-    { id: 5, name: 'Charlie Brown', email: 'charlie@example.com', status: 'Active' },
-    { id: 6, name: 'Diana Prince', email: 'diana@example.com', status: 'Inactive' },
-    { id: 7, name: 'Edward Norton', email: 'edward@example.com', status: 'Active' },
-    { id: 8, name: 'Fiona Apple', email: 'fiona@example.com', status: 'Active' },
-];
-
-const DUMMY_PRODUCTS = [
-    { id: 1, name: 'Premium VPN', price: 99.99, status: 'Active', category: 'Security' },
-    { id: 2, name: 'Cloud Storage Pro', price: 149.99, status: 'Active', category: 'Storage' },
-    { id: 3, name: 'Team Collaboration Suite', price: 299.99, status: 'Draft', category: 'Productivity' },
-    { id: 4, name: 'AI Analytics Platform', price: 499.99, status: 'Active', category: 'Analytics' },
-    { id: 5, name: 'API Gateway Enterprise', price: 199.99, status: 'Active', category: 'Infrastructure' },
-    { id: 6, name: 'Database Cluster', price: 399.99, status: 'Draft', category: 'Infrastructure' },
-];
-
-const DUMMY_ORDERS = [
-    { id: 1, orderNumber: 'ORD-2026-001', customerName: 'TechCorp Inc.', totalAmount: 1499.99, status: 'Processing' },
-    { id: 2, orderNumber: 'ORD-2026-002', customerName: 'DataFlow Systems', totalAmount: 899.50, status: 'Delivered' },
-    { id: 3, orderNumber: 'ORD-2026-003', customerName: 'CloudNine Solutions', totalAmount: 2499.00, status: 'Pending' },
-    { id: 4, orderNumber: 'ORD-2026-004', customerName: 'Quantum Industries', totalAmount: 3499.99, status: 'Shipped' },
-    { id: 5, orderNumber: 'ORD-2026-005', customerName: 'Innovation Labs', totalAmount: 1299.99, status: 'Cancelled' },
-    { id: 6, orderNumber: 'ORD-2026-006', customerName: 'SmartTech LLC', totalAmount: 799.99, status: 'Processing' },
-    { id: 7, orderNumber: 'ORD-2026-007', customerName: 'Global Systems', totalAmount: 1899.99, status: 'Delivered' },
-    { id: 8, orderNumber: 'ORD-2026-008', customerName: 'Digital Dynamics', totalAmount: 2599.99, status: 'Pending' },
-];
-
-const DUMMY_TIMELINE = [
-    { id: 1, action: 'Platform database successfully scaled', target: 'Quantum DB Cluster', time: '12 minutes ago', type: 'system' },
-    { id: 2, action: 'User added to engineering support division', target: 'David Kim', time: '1 hour ago', type: 'user' },
-    { id: 3, action: 'Fulfillment order generated', target: 'ORD-2026-7788', time: '3 hours ago', type: 'order' },
-    { id: 4, action: 'Assigned draft release flag status to product', target: 'VPN Tunnel Pro', time: '1 day ago', type: 'product' },
-];
+import CustomImage from '../../components/Image';
 
 const CHART_DATA = [
     { month: 'Jan', revenue: 4200, users: 400 },
@@ -67,7 +35,6 @@ const CHART_DATA = [
     { month: 'May', revenue: 11200, users: 1450 },
     { month: 'Jun', revenue: 15400, users: 2100 },
 ];
-
 
 const TOP_PROPERTIES = [
     {
@@ -108,130 +75,106 @@ const TOP_PROPERTIES = [
     },
 ];
 
+const OCCUPANCY_DATA = [
+    { day: "Mon", occupancy: 62 },
+    { day: "Tue", occupancy: 68 },
+    { day: "Wed", occupancy: 74 },
+    { day: "Thu", occupancy: 88 },
+    { day: "Fri", occupancy: 82 },
+    { day: "Sat", occupancy: 95 },
+    { day: "Sun", occupancy: 97 },
+];
+
+const COLORS = ['#4f46e5', '#22c55e', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#14b8a6'];
+
+
+
+
+
 export default function DashboardHome() {
     const dispatch = useAppDispatch();
-
-    const { stats } = useAppSelector(
-        (state) => state.stats
-    );
-
-    console.log(stats);
+    const { stats } = useAppSelector((state: any) => state.stats);
+    const { darkMode } = useSelector((state: any) => state.ui);
 
     useEffect(() => {
         dispatch(getDashboardStats());
     }, [dispatch]);
 
-    const { darkMode } = useSelector((state: any) => state.ui);
-
     useEffect(() => {
         dispatch(setBreadcrumbs([{ label: 'Dashboard' }]));
     }, [dispatch]);
 
-    const activeUsersCount = DUMMY_USERS.filter((u) => u.status === 'Active').length;
-    const totalProductsCount = DUMMY_PRODUCTS.length;
-    const pendingOrders = DUMMY_ORDERS.filter((o) => o.status === 'Processing' || o.status === 'Pending');
+    const summary = stats?.summary || {};
+    const propertyTypes = stats?.distributions?.propertyTypes || [];
+    const propertyActions = stats?.distributions?.propertyActions || [];
+    const monthlyStats = stats?.monthlyStats || [];
+    const topPerforming = stats?.topPerforming?.properties || [];
+    console.log(topPerforming);
 
-    const totalRevenue = DUMMY_ORDERS
-        .filter((o) => o.status !== 'Cancelled')
-        .reduce((sum, o) => sum + o.totalAmount, 0);
+    const recentProperties = stats?.recentActivities?.properties || [];
+
+    const totalRevenue = summary.totalRevenue || 0;
+    const totalProperties = summary.totalProperties || 0;
+    const totalUsers = summary.totalUsers || 0;
+    const totalEnquiries = summary.totalEnquiries || 0;
+
+    const formatCurrency = (amount: number): string => {
+        if (amount >= 10000000) {
+            return `₹${(amount / 10000000).toFixed(1)}Cr`;
+        } else if (amount >= 100000) {
+            return `₹${(amount / 100000).toFixed(1)}L`;
+        }
+        return `₹${amount.toLocaleString()}`;
+    };
+
+    const propertyTypeData = propertyTypes.map((item: any) => ({
+        name: item._id,
+        value: item.count
+    }));
+
+    const monthlyData = monthlyStats.map((item: any) => ({
+        month: `${item._id.month}/${item._id.year}`,
+        properties: item.count
+    }));
 
     const statCards = [
         {
             id: "stat-revenue",
             title: "Total Revenue",
-            value: `$${totalRevenue.toLocaleString(undefined, {
-                minimumFractionDigits: 2,
-                maximumFractionDigits: 2,
-            })}`,
+            value: formatCurrency(totalRevenue),
             trend: "+12.5%",
             isPositive: true,
             subtitle: "vs last month",
             icon: <DollarSign size={18} className="text-blue-500" />,
-            chart: (
-                <svg viewBox="0 0 100 40" className="w-24 h-10">
-                    <path
-                        d="M5 30 L20 28 L35 18 L50 10 L65 16 L80 4 L95 2"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        className="text-blue-500"
-                    />
-                </svg>
-            ),
+        },
+        {
+            id: "stat-properties",
+            title: "Total Properties",
+            value: totalProperties.toLocaleString(),
+            trend: "+8.2%",
+            isPositive: true,
+            subtitle: "active properties",
+            icon: <Package size={18} className="text-amber-500" />,
         },
         {
             id: "stat-users",
-            title: "Active Users",
-            value: activeUsersCount.toLocaleString(),
+            title: "Total Users",
+            value: totalUsers.toLocaleString(),
             trend: "+3.2%",
             isPositive: true,
             subtitle: "vs last month",
             icon: <Users size={18} className="text-emerald-500" />,
-            chart: (
-                <svg viewBox="0 0 100 40" className="w-24 h-10">
-                    <path
-                        d="M5 35 L20 22 L35 16 L50 8 L65 2 L80 12 L95 8"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        className="text-emerald-500"
-                    />
-                </svg>
-            ),
         },
         {
-            id: "stat-products",
-            title: "Products",
-            value: totalProductsCount.toLocaleString(),
-            trend: "+4.8%",
-            isPositive: true,
-            subtitle: "active products",
-            icon: <Package size={18} className="text-amber-500" />,
-            chart: (
-                <svg viewBox="0 0 100 40" className="w-24 h-10">
-                    <path
-                        d="M5 30 L18 12 L30 32 L45 10 L60 6 L72 18 L88 8 L95 10"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        className="text-amber-500"
-                    />
-                </svg>
-            ),
-        },
-        {
-            id: "stat-orders",
-            title: "Pending Orders",
-            value: pendingOrders.length.toLocaleString(),
-            trend: "-1.2%",
-            isPositive: false,
-            subtitle: "vs last week",
+            id: "stat-enquiries",
+            title: "Enquiries",
+            value: totalEnquiries.toLocaleString(),
+            trend: totalEnquiries > 0 ? "+5.1%" : "0%",
+            isPositive: totalEnquiries > 0,
+            subtitle: "total enquiries",
             icon: <ShoppingCart size={18} className="text-violet-500" />,
-            chart: (
-                <svg viewBox="0 0 100 40" className="w-24 h-10">
-                    <path
-                        d="M5 32 L20 18 L35 20 L50 10 L65 4 L80 5 L95 3"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        className="text-violet-500"
-                    />
-                </svg>
-            ),
         },
     ];
-
-    const OCCUPANCY_DATA = [
-        { day: "Mon", occupancy: 62 },
-        { day: "Tue", occupancy: 68 },
-        { day: "Wed", occupancy: 74 },
-        { day: "Thu", occupancy: 88 },
-        { day: "Fri", occupancy: 82 },
-        { day: "Sat", occupancy: 95 },
-        { day: "Sun", occupancy: 97 },
-    ];
-
-
 
     return (
         <div className="space-y-8" id="dashboard-home-page">
@@ -245,41 +188,33 @@ export default function DashboardHome() {
                         <div className="flex items-center justify-between mb-3">
                             <div
                                 className={`w-9 h-9 rounded-lg flex items-center justify-center ${card.id === "stat-revenue"
-                                    ? "bg-blue-50"
-                                    : card.id === "stat-users"
-                                        ? "bg-emerald-50"
-                                        : card.id === "stat-products"
-                                            ? "bg-amber-50"
-                                            : "bg-violet-50"
+                                    ? "bg-blue-50 dark:bg-blue-900/20"
+                                    : card.id === "stat-properties"
+                                        ? "bg-amber-50 dark:bg-amber-900/20"
+                                        : card.id === "stat-users"
+                                            ? "bg-emerald-50 dark:bg-emerald-900/20"
+                                            : "bg-violet-50 dark:bg-violet-900/20"
                                     }`}
                             >
                                 {card.icon}
                             </div>
-
-                            <div className="w-20 h-8 flex items-center justify-end">
-                                {card.chart}
-                            </div>
-                        </div>
-
-                        <div className="flex items-baseline justify-between gap-2">
-                            <h3 className="text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight truncate">
-                                {card.value}
-                            </h3>
-
                             <span
                                 className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${card.isPositive
-                                    ? "text-emerald-600 bg-emerald-50"
-                                    : "text-rose-600 bg-rose-50"
+                                    ? "text-emerald-600 bg-emerald-50 dark:bg-emerald-900/30 dark:text-emerald-400"
+                                    : "text-rose-600 bg-rose-50 dark:bg-rose-900/30 dark:text-rose-400"
                                     }`}
                             >
                                 {card.trend}
                             </span>
                         </div>
-
+                        <div className="flex items-baseline justify-between gap-2">
+                            <h3 className="text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight truncate">
+                                {card.value}
+                            </h3>
+                        </div>
                         <p className="text-xs text-slate-400 dark:text-slate-500 mt-2 truncate">
                             {card.title}
                         </p>
-
                         <p className="text-xs text-slate-400 dark:text-slate-500 mt-1 truncate">
                             {card.subtitle}
                         </p>
@@ -287,23 +222,23 @@ export default function DashboardHome() {
                 ))}
             </div>
 
-            <div className="grid grid-cols-1  gap-8" id="charts-grid">
-                <div className="bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800/80 rounded-2xl p-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+                <div className="bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800/80 rounded-2xl p-6 lg:col-span-1">
                     <div className="flex justify-between items-center mb-6">
                         <div>
-                            <h3 className="text-base font-bold text-gray-900 dark:text-white">Revenue Analtics</h3>
-                            <p className="text-xs text-gray-400 mt-0.5">Monthly performance overview across all properties</p>
+                            <h3 className="text-base font-bold text-gray-900 dark:text-white">Property Listings Trend</h3>
+                            <p className="text-xs text-gray-400 mt-0.5">Monthly property listings overview</p>
                         </div>
                         <div className="text-xs font-semibold text-emerald-500 bg-emerald-500/10 border border-emerald-500/10 px-2.5 py-1 rounded-full flex items-center gap-1">
                             <TrendingUp className="w-3.5 h-3.5" />
-                            Solid +12.4%
+                            {monthlyData.length > 0 ? `+${monthlyData[monthlyData.length - 1]?.properties || 0} new` : 'No data'}
                         </div>
                     </div>
                     <div className="h-72">
                         <ResponsiveContainer width="100%" height="100%">
-                            <AreaChart data={CHART_DATA} margin={{ top: 10, right: 10, left: -25, bottom: 0 }}>
+                            <AreaChart data={monthlyData.length > 0 ? monthlyData : CHART_DATA} margin={{ top: 10, right: 10, left: -25, bottom: 0 }}>
                                 <defs>
-                                    <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
+                                    <linearGradient id="colorProperties" x1="0" y1="0" x2="0" y2="1">
                                         <stop offset="5%" stopColor="#4f46e5" stopOpacity={0.2} />
                                         <stop offset="95%" stopColor="#4f46e5" stopOpacity={0} />
                                     </linearGradient>
@@ -320,24 +255,54 @@ export default function DashboardHome() {
                                         color: darkMode ? '#ffffff' : '#000000',
                                     }}
                                 />
-                                <Area type="monotone" dataKey="revenue" stroke="#4f46e5" strokeWidth={2.5} fillOpacity={1} fill="url(#colorRevenue)" />
+                                <Area type="monotone" dataKey={monthlyData.length > 0 ? "properties" : "revenue"} stroke="#4f46e5" strokeWidth={2.5} fillOpacity={1} fill="url(#colorProperties)" />
                             </AreaChart>
+                        </ResponsiveContainer>
+                    </div>
+                </div>
+
+                <div className="bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800/80 rounded-2xl p-6">
+                    <h3 className="text-base font-bold text-gray-900 dark:text-white mb-6">Property Types</h3>
+                    <div className="h-[260px]">
+                        <ResponsiveContainer width="100%" height="100%">
+                            <PieChart>
+                                <Pie
+                                    data={propertyTypeData.length > 0 ? propertyTypeData : [{ name: 'No Data', value: 1 }]}
+                                    cx="50%"
+                                    cy="50%"
+                                    innerRadius={60}
+                                    outerRadius={90}
+                                    paddingAngle={2}
+                                    dataKey="value"
+                                    label={({ name, percent }) =>
+                                        `${name ?? "Unknown"} ${((percent ?? 0) * 100).toFixed(0)}%`
+                                    }
+                                    labelLine={false}
+                                >
+                                    {(propertyTypeData.length > 0 ? propertyTypeData : [{ name: 'No Data', value: 1 }]).map((_entry: any, index: number) => (
+                                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                                    ))}
+                                </Pie>
+                                <Tooltip
+                                    contentStyle={{
+                                        backgroundColor: darkMode ? '#0f172a' : '#ffffff',
+                                        border: darkMode ? '1px solid #1e293b' : '1px solid #e2e8f0',
+                                        borderRadius: '8px',
+                                        fontSize: '11px',
+                                        color: darkMode ? '#ffffff' : '#000000',
+                                    }}
+                                />
+                            </PieChart>
                         </ResponsiveContainer>
                     </div>
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-5" id="recent-assets-split">
-                <div className="bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800/80 rounded-2xl p-4">
-                    <div className="mb-6">
-                        <h3 className="text-base font-bold text-gray-900 dark:text-white">
-                            Weekly Occupancy
-                        </h3>
-                        <p className="text-xs text-gray-400 mt-0.5">
-                            Avg across all properties
-                        </p>
-                    </div>
 
+
+            <div className="grid grid-cols-1  gap-5">
+                <div className="bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800/80 rounded-2xl p-6">
+                    <h3 className="text-base font-bold text-gray-900 dark:text-white mb-6">Weekly Occupancy</h3>
                     <div className="h-[260px]">
                         <ResponsiveContainer width="100%" height="100%">
                             <AreaChart data={OCCUPANCY_DATA}>
@@ -346,14 +311,12 @@ export default function DashboardHome() {
                                     vertical={false}
                                     stroke={darkMode ? "#1e293b" : "#e5e7eb"}
                                 />
-
                                 <XAxis
                                     dataKey="day"
                                     tickLine={false}
                                     axisLine={false}
                                     style={{ fontSize: "12px", fill: "#94a3b8" }}
                                 />
-
                                 <YAxis
                                     domain={[0, 100]}
                                     tickFormatter={(v) => `${v}%`}
@@ -361,16 +324,22 @@ export default function DashboardHome() {
                                     axisLine={false}
                                     style={{ fontSize: "12px", fill: "#94a3b8" }}
                                 />
-
-                                <Tooltip formatter={(value) => [`${value}%`, "Occupancy"]} />
-
+                                <Tooltip
+                                    formatter={(value) => [`${value}%`, "Occupancy"]}
+                                    contentStyle={{
+                                        backgroundColor: darkMode ? '#0f172a' : '#ffffff',
+                                        border: darkMode ? '1px solid #1e293b' : '1px solid #e2e8f0',
+                                        borderRadius: '8px',
+                                        fontSize: '11px',
+                                        color: darkMode ? '#ffffff' : '#000000',
+                                    }}
+                                />
                                 <defs>
                                     <linearGradient id="occupancyFill" x1="0" y1="0" x2="0" y2="1">
                                         <stop offset="5%" stopColor="#22c55e" stopOpacity={0.2} />
                                         <stop offset="95%" stopColor="#22c55e" stopOpacity={0} />
                                     </linearGradient>
                                 </defs>
-
                                 <Area
                                     type="monotone"
                                     dataKey="occupancy"
@@ -382,13 +351,57 @@ export default function DashboardHome() {
                         </ResponsiveContainer>
                     </div>
                 </div>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-5" id="recent-assets-split">
+                <div className="bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800/80 rounded-2xl p-4">
+                    <div className="mb-6">
+                        <h3 className="text-base font-bold text-gray-900 dark:text-white">
+                            Property Actions
+                        </h3>
+                        <p className="text-xs text-gray-400 mt-0.5">
+                            Distribution by action type
+                        </p>
+                    </div>
+                    <div className="h-[260px]">
+                        <ResponsiveContainer width="100%" height="100%">
+                            <BarChart data={propertyActions.length > 0 ? propertyActions : [{ _id: 'Buy', count: 10 }]}>
+                                <CartesianGrid
+                                    strokeDasharray="3 3"
+                                    vertical={false}
+                                    stroke={darkMode ? "#1e293b" : "#e5e7eb"}
+                                />
+                                <XAxis
+                                    dataKey="_id"
+                                    tickLine={false}
+                                    axisLine={false}
+                                    style={{ fontSize: "12px", fill: "#94a3b8" }}
+                                />
+                                <YAxis
+                                    tickLine={false}
+                                    axisLine={false}
+                                    style={{ fontSize: "12px", fill: "#94a3b8" }}
+                                />
+                                <Tooltip
+                                    contentStyle={{
+                                        backgroundColor: darkMode ? '#0f172a' : '#ffffff',
+                                        border: darkMode ? '1px solid #1e293b' : '1px solid #e2e8f0',
+                                        borderRadius: '8px',
+                                        fontSize: '11px',
+                                        color: darkMode ? '#ffffff' : '#000000',
+                                    }}
+                                />
+                                <Bar dataKey="count" fill="#f59e0b" radius={[4, 4, 0, 0]} />
+                            </BarChart>
+                        </ResponsiveContainer>
+                    </div>
+                </div>
 
                 <div className="bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded-2xl p-6">
                     <div className="flex items-center justify-between mb-6">
                         <h3 className="text-base font-bold text-gray-900 dark:text-white">
                             Top Properties
                         </h3>
-
                         <Link
                             to="/properties"
                             className="text-xs text-indigo-600 hover:text-indigo-400 font-semibold"
@@ -396,76 +409,94 @@ export default function DashboardHome() {
                             View all →
                         </Link>
                     </div>
-
                     <div className="space-y-5">
-                        {TOP_PROPERTIES?.map((property) => (
-                            <div
-                                key={property?.id}
-                                className="flex items-center justify-between"
-                            >
-                                <div className="flex items-center gap-3">
-                                    <img
-                                        src={property?.image}
-                                        alt={property?.name}
-                                        className="w-12 h-12 rounded-xl object-cover"
-                                    />
+                        {(topPerforming.length > 0 ? topPerforming : TOP_PROPERTIES)
+                            .slice(0, 4)
+                            .map((property: any, index: number) => {
+                                const imageUrl =
+                                    property.propertyMedia?.find(
+                                        (media: any) => media.type === "Image"
+                                    )?.url;
 
-                                    <div>
-                                        <h4 className="text-sm font-semibold text-gray-900 dark:text-white">
-                                            {property.name}
-                                        </h4>
+                                return (
+                                    <div
+                                        key={property._id || index}
+                                        className="flex items-center justify-between"
+                                    >
+                                        <div className="flex items-center gap-3 min-w-0">
+                                            <div className="w-12 h-12 rounded-xl overflow-hidden flex-shrink-0 bg-gray-100 dark:bg-slate-800">
+                                                {imageUrl ? (
+                                                    <CustomImage
+                                                        src={imageUrl}
+                                                        alt={property.name || "Property"}
+                                                        className="w-full h-full object-cover"
+                                                    />
+                                                ) : (
+                                                    <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-indigo-500 to-purple-500 text-white font-bold text-sm">
+                                                        {property.name?.charAt(0) || "P"}
+                                                    </div>
+                                                )}
+                                            </div>
 
-                                        <p className="text-xs text-gray-400">
-                                            {property.city}
-                                        </p>
+                                            <div className="min-w-0">
+                                                <h4 className="text-sm capitalize font-semibold text-gray-900 dark:text-white line-clamp-1">
+                                                    {property.name || "Property"}
+                                                </h4>
+
+                                                <p className="text-xs text-gray-400">
+                                                    {property.location?.coordinates
+                                                        ? `${property.location.coordinates[1]?.toFixed(4) || ""}, ${property.location.coordinates[0]?.toFixed(4) || ""}`
+                                                        : "Location not available"}
+                                                </p>
+                                            </div>
+                                        </div>
+
+                                        <div className="text-right flex-shrink-0 ml-3">
+                                            <p className="text-sm font-bold text-gray-900 dark:text-white">
+                                                {formatCurrency(property.totalPrice || 0)}
+                                            </p>
+
+                                            <div className="flex items-center justify-end gap-1 text-xs font-semibold text-emerald-500">
+                                                <span>{property.visitCount || 0} views</span>
+                                            </div>
+                                        </div>
                                     </div>
-                                </div>
-
-                                <div className="text-right">
-                                    <p className="text-sm font-bold text-gray-900 dark:text-white">
-                                        {property.revenue}
-                                    </p>
-
-                                    <div className="flex items-center justify-end gap-1 text-xs font-semibold text-emerald-500">
-                                        <span>{property.occupancy}</span>
-                                        <span>↗</span>
-                                    </div>
-                                </div>
-                            </div>
-                        ))}
+                                );
+                            })}
                     </div>
                 </div>
 
                 <div className="bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800/80 rounded-2xl p-6">
-                    <h3 className="text-base font-bold text-gray-900 dark:text-white mb-6">Activity Audit Log</h3>
+                    <h3 className="text-base font-bold text-gray-900 dark:text-white mb-6">Recent Properties</h3>
                     <div className="space-y-6" id="dashboard-timeline-list">
-                        {DUMMY_TIMELINE?.map((item, idx) => {
+                        {(recentProperties.length > 0 ? recentProperties : []).slice(0, 4).map((property: any, idx: number) => {
                             return (
-                                <div key={item.id} className="flex gap-4 items-start relative">
-                                    {idx !== DUMMY_TIMELINE?.length - 1 && (
+                                <div key={property._id || idx} className="flex gap-4 items-start relative">
+                                    {idx !== Math.min((recentProperties.length > 0 ? recentProperties : []).slice(0, 4).length - 1, 3) && (
                                         <span className="absolute left-[11.5px] top-7 bottom-0 w-0.5 bg-gray-100 dark:bg-slate-800/60" />
                                     )}
-
-                                    <div className={`w-6 h-6 rounded-full border flex items-center justify-center flex-shrink-0 bg-white dark:bg-slate-900
-                    ${item.type === 'system' ? 'border-indigo-200 text-indigo-500 dark:border-indigo-800/40' : ''}
-                    ${item.type === 'user' ? 'border-amber-200 text-amber-500 dark:border-amber-800/40' : ''}
-                    ${item.type === 'order' ? 'border-emerald-200 text-emerald-500 dark:border-emerald-800/40' : ''}
-                    ${item.type === 'product' ? 'border-blue-200 text-blue-500 dark:border-blue-800/40' : ''}
-                  `}>
+                                    <div className="w-6 h-6 rounded-full border flex items-center justify-center flex-shrink-0 bg-white dark:bg-slate-900 border-indigo-200 text-indigo-500 dark:border-indigo-800/40">
                                         <span className="w-1.5 h-1.5 rounded-full bg-current" />
                                     </div>
-
                                     <div className="overflow-hidden">
-                                        <p className="text-xs text-gray-700 dark:text-gray-300 font-medium">
-                                            {item.action}: <span className="font-bold text-gray-900 dark:text-white">{item.target}</span>
+                                        <p className="text-xs capitalize text-gray-700 dark:text-gray-300 font-medium line-clamp-2">
+                                            {property.name || 'Property'}
                                         </p>
                                         <span className="text-[10px] text-gray-400 dark:text-gray-500 block mt-1">
-                                            {item.time}
+                                            {property.propertyType?.name || 'N/A'} • {formatCurrency(property.totalPrice || 0)}
+                                        </span>
+                                        <span className="text-[10px] text-gray-400 dark:text-gray-500 block mt-0.5">
+                                            {property.address?.city || ''}, {property.address?.state || ''}
                                         </span>
                                     </div>
                                 </div>
                             );
                         })}
+                        {recentProperties.length === 0 && (
+                            <div className="text-center text-gray-400 text-sm py-8">
+                                No recent properties
+                            </div>
+                        )}
                     </div>
                 </div>
             </div>

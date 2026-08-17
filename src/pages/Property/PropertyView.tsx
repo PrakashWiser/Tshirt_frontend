@@ -13,6 +13,10 @@ import {
     Ruler,
     DollarSign,
     Map,
+    User,
+    Phone,
+    Mail,
+    Clock,
 } from "lucide-react";
 import Button from "../../components/Button";
 import { useAppDispatch, useAppSelector } from "../../hooks/hooks";
@@ -34,7 +38,6 @@ const formatDate = (value?: string): string => {
 
 const formatCurrency = (value?: number | string): string => {
     if (!value) return "—";
-    // If it's already a string with currency symbol (like "₹1.3 Crores"), return as is
     if (typeof value === 'string') {
         return value;
     }
@@ -144,30 +147,19 @@ export default function PropertyView() {
         return [];
     }, [propertyDetail]);
 
-    const location = propertyDetail?.location || null;
-
     const getAddress = () => {
-        if (!location) return "—";
+        const addr = propertyDetail?.address;
+        if (!addr) return "—";
         const parts = [];
-        if (location.address) parts.push(location.address);
-        if (location.locality) parts.push(location.locality);
-        if (location.city) parts.push(location.city);
-        if (location.state) parts.push(location.state);
-        if (location.country) parts.push(location.country);
+        if (addr.houseNo) parts.push(addr.houseNo);
+        if (addr.street) parts.push(addr.street);
+        if (addr.locality) parts.push(addr.locality);
+        if (addr.city) parts.push(addr.city);
+        if (addr.state) parts.push(addr.state);
+        if (addr.country) parts.push(addr.country);
         return parts.join(", ") || "—";
     };
 
-    const getFullAddress = () => {
-        if (!location) return "—";
-        const parts = [];
-        if (location.address) parts.push(location.address);
-        if (location.locality) parts.push(location.locality);
-        if (location.city) parts.push(location.city);
-        if (location.state) parts.push(location.state);
-        if (location.pincode) parts.push(location.pincode);
-        if (location.country) parts.push(location.country);
-        return parts.join(", ") || "—";
-    };
 
     if (isLoading && !propertyDetail) {
         return (
@@ -196,11 +188,9 @@ export default function PropertyView() {
         );
     }
 
-    // Handle status - it's a string from API
     const statusDisplay = propertyDetail?.status || "Inactive";
     const isActive = statusDisplay === "Active";
 
-    // Get property type name
     const getPropertyTypeName = () => {
         if (!propertyDetail?.propertyType) return "—";
         if (typeof propertyDetail.propertyType === 'object') {
@@ -209,13 +199,22 @@ export default function PropertyView() {
         return propertyDetail.propertyType;
     };
 
-    // Get property action name
     const getPropertyActionName = () => {
         if (!propertyDetail?.propertyAction) return "—";
         if (typeof propertyDetail.propertyAction === 'object') {
             return propertyDetail.propertyAction.name || "—";
         }
         return propertyDetail.propertyAction;
+    };
+
+    const getOwnerName = () => {
+        if (!propertyDetail?.owner) return "—";
+        if (typeof propertyDetail.owner === 'object') {
+            const firstName = propertyDetail.owner.firstName || "";
+            const lastName = propertyDetail.owner.lastName || "";
+            return `${firstName} ${lastName}`.trim() || "—";
+        }
+        return propertyDetail.owner;
     };
 
     return (
@@ -364,68 +363,56 @@ export default function PropertyView() {
                         </InfoCard>
                     )}
 
-                    <InfoCard title="Location Details">
-                        <InfoRow label="Address" value={getFullAddress()} />
-                        {location?.locality && (
-                            <InfoRow label="Locality" value={location.locality} />
+                    <InfoCard title="Address Details">
+                        {propertyDetail?.address && typeof propertyDetail.address === 'object' && (
+                            <>
+                                {propertyDetail.address.houseNo && (
+                                    <InfoRow label="House No" value={propertyDetail.address.houseNo} />
+                                )}
+                                {propertyDetail.address.street && (
+                                    <InfoRow label="Street" value={propertyDetail.address.street} />
+                                )}
+                                {propertyDetail.address.landmark && (
+                                    <InfoRow label="Landmark" value={propertyDetail.address.landmark} />
+                                )}
+                                {propertyDetail.address.locality && (
+                                    <InfoRow label="Locality" value={propertyDetail.address.locality} />
+                                )}
+                                {propertyDetail.address.city && (
+                                    <InfoRow label="City" value={propertyDetail.address.city} />
+                                )}
+                                {propertyDetail.address.state && (
+                                    <InfoRow label="State" value={propertyDetail.address.state} />
+                                )}
+                                {propertyDetail.address.pincode && (
+                                    <InfoRow label="Pincode" value={propertyDetail.address.pincode} />
+                                )}
+                                {propertyDetail.address.country && (
+                                    <InfoRow label="Country" value={propertyDetail.address.country} />
+                                )}
+                            </>
                         )}
-                        {location?.city && (
-                            <InfoRow label="City" value={location.city} />
-                        )}
-                        {location?.state && (
-                            <InfoRow label="State" value={location.state} />
-                        )}
-                        {location?.country && (
-                            <InfoRow label="Country" value={location.country} />
-                        )}
-                        {location?.pincode && (
-                            <InfoRow label="Pincode" value={location.pincode} />
-                        )}
-                        {location?.coordinates && location.coordinates.length === 2 && (
+                        {propertyDetail?.location?.coordinates && propertyDetail.location.coordinates.length === 2 && (
                             <InfoRow
                                 label="Coordinates"
-                                value={`${location.coordinates[0]}, ${location.coordinates[1]}`}
+                                value={`${propertyDetail.location.coordinates[0]}, ${propertyDetail.location.coordinates[1]}`}
                             />
                         )}
                     </InfoCard>
 
-                    {propertyDetail?.address && typeof propertyDetail.address === 'object' && (
-                        <InfoCard title="Address Details">
-                            {propertyDetail.address.houseNo && (
-                                <InfoRow label="House No" value={propertyDetail.address.houseNo} />
-                            )}
-                            {propertyDetail.address.street && (
-                                <InfoRow label="Street" value={propertyDetail.address.street} />
-                            )}
-                            {propertyDetail.address.landmark && (
-                                <InfoRow label="Landmark" value={propertyDetail.address.landmark} />
-                            )}
-                            {propertyDetail.address.locality && (
-                                <InfoRow label="Locality" value={propertyDetail.address.locality} />
-                            )}
-                            {propertyDetail.address.city && (
-                                <InfoRow label="City" value={propertyDetail.address.city} />
-                            )}
-                            {propertyDetail.address.state && (
-                                <InfoRow label="State" value={propertyDetail.address.state} />
-                            )}
-                            {propertyDetail.address.pincode && (
-                                <InfoRow label="Pincode" value={propertyDetail.address.pincode} />
-                            )}
-                            {propertyDetail.address.country && (
-                                <InfoRow label="Country" value={propertyDetail.address.country} />
-                            )}
-                        </InfoCard>
-                    )}
-
-                    {(propertyDetail?.lifestyles && propertyDetail.lifestyles.length > 0) && (
+                    {propertyDetail?.lifestyles && propertyDetail.lifestyles.length > 0 && (
                         <InfoCard title="Lifestyles">
                             <div className="flex flex-wrap gap-2">
-                                {propertyDetail.lifestyles.map((lifestyle: any) => {
-                                    const name = typeof lifestyle === 'string' ? lifestyle : lifestyle.name;
+                                {propertyDetail.lifestyles.map((lifestyle: any, index: number) => {
+                                    const name = typeof lifestyle === "string"
+                                        ? lifestyle
+                                        : lifestyle?.name || "Unknown";
+                                    const key = typeof lifestyle === "string"
+                                        ? lifestyle
+                                        : lifestyle?._id || `${name}-${index}`;
                                     return (
                                         <span
-                                            key={typeof lifestyle === 'string' ? lifestyle : lifestyle._id}
+                                            key={key}
                                             className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-indigo-50 border border-indigo-200 text-xs font-medium text-indigo-700"
                                         >
                                             <ShieldCheck size={12} />
@@ -437,34 +424,73 @@ export default function PropertyView() {
                         </InfoCard>
                     )}
 
-                    {(propertyDetail?.premiumAmenities && propertyDetail.premiumAmenities.length > 0) && (
+                    {propertyDetail?.premiumAmenities && propertyDetail.premiumAmenities.length > 0 && (
                         <InfoCard title="Premium Amenities">
                             <div className="flex flex-wrap gap-2">
-                                {propertyDetail.premiumAmenities.map((amenity: any) => (
-                                    <span
-                                        key={amenity._id}
-                                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-amber-50 border border-amber-200 text-xs font-medium text-amber-700"
-                                    >
-                                        <Star size={12} fill="currentColor" />
-                                        {amenity.name}
-                                    </span>
-                                ))}
+                                {propertyDetail.premiumAmenities.map((amenity: any, index: number) => {
+                                    const name = typeof amenity === "string"
+                                        ? amenity
+                                        : amenity?.name || "Unknown";
+                                    const key = typeof amenity === "string"
+                                        ? `${amenity}-${index}`
+                                        : amenity?._id || `${name}-${index}`;
+                                    return (
+                                        <span
+                                            key={key}
+                                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-amber-50 border border-amber-200 text-xs font-medium text-amber-700"
+                                        >
+                                            <Star size={12} fill="currentColor" />
+                                            {name}
+                                        </span>
+                                    );
+                                })}
                             </div>
                         </InfoCard>
                     )}
 
-                    {(propertyDetail?.neighborhoods && propertyDetail.neighborhoods.length > 0) && (
-                        <InfoCard title="Neighborhoods">
-                            <div className="flex flex-wrap gap-2">
-                                {propertyDetail.neighborhoods.map((neighborhood: string) => (
-                                    <span
-                                        key={neighborhood}
-                                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-teal-50 border border-teal-200 text-xs font-medium text-teal-700"
-                                    >
-                                        <Map size={12} />
-                                        {neighborhood}
-                                    </span>
-                                ))}
+                    {propertyDetail?.neighborhoods && propertyDetail.neighborhoods.length > 0 && (
+                        <InfoCard title="Nearby Places">
+                            <div className="space-y-2">
+                                {propertyDetail.neighborhoods.map((neighborhood: any, index: number) => {
+                                    const name = typeof neighborhood === "string"
+                                        ? neighborhood
+                                        : neighborhood?.name || "Unknown";
+                                    const type = typeof neighborhood === "string"
+                                        ? ""
+                                        : neighborhood?.type || "";
+                                    const time = typeof neighborhood === "string"
+                                        ? ""
+                                        : neighborhood?.time || "";
+                                    const timeUnit = typeof neighborhood === "string"
+                                        ? ""
+                                        : neighborhood?.timeUnit || "";
+                                    const key = typeof neighborhood === "string"
+                                        ? `${neighborhood}-${index}`
+                                        : neighborhood?._id || `${name}-${index}`;
+
+                                    return (
+                                        <div
+                                            key={key}
+                                            className="flex items-center justify-between py-2 text-sm border-b border-slate-100 last:border-b-0"
+                                        >
+                                            <div className="flex items-center gap-2">
+                                                <Map size={14} className="text-slate-400" />
+                                                <span className="font-medium text-slate-800">{name}</span>
+                                                {type && (
+                                                    <span className="text-xs text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full">
+                                                        {type}
+                                                    </span>
+                                                )}
+                                            </div>
+                                            {time && (
+                                                <span className="text-xs text-slate-600 flex items-center gap-1">
+                                                    <Clock size={12} />
+                                                    {time} {timeUnit}
+                                                </span>
+                                            )}
+                                        </div>
+                                    );
+                                })}
                             </div>
                         </InfoCard>
                     )}
@@ -495,9 +521,40 @@ export default function PropertyView() {
                         {propertyDetail?.visitCount !== undefined && (
                             <InfoRow label="Visit Count" value={propertyDetail.visitCount} />
                         )}
+                        {propertyDetail?.isVerified !== undefined && (
+                            <InfoRow
+                                label="Verified"
+                                value={propertyDetail.isVerified ? "Yes" : "No"}
+                            />
+                        )}
                     </InfoCard>
 
-                    <InfoCard title="Meta">
+                    {propertyDetail?.owner && (
+                        <InfoCard title="Owner Information">
+                            <div className="space-y-2">
+                                {propertyDetail.owner.firstName && (
+                                    <div className="flex items-center gap-2 text-sm">
+                                        <User size={14} className="text-slate-400" />
+                                        <span className="font-medium text-slate-800">{getOwnerName()}</span>
+                                    </div>
+                                )}
+                                {propertyDetail.owner.email && (
+                                    <div className="flex items-center gap-2 text-sm">
+                                        <Mail size={14} className="text-slate-400" />
+                                        <span className="text-slate-600">{propertyDetail.owner.email}</span>
+                                    </div>
+                                )}
+                                {propertyDetail.owner.mobile && (
+                                    <div className="flex items-center gap-2 text-sm">
+                                        <Phone size={14} className="text-slate-400" />
+                                        <span className="text-slate-600">{propertyDetail.owner.mobile}</span>
+                                    </div>
+                                )}
+                            </div>
+                        </InfoCard>
+                    )}
+
+                    <InfoCard title="Meta Information">
                         <InfoRow
                             label="Created"
                             value={
@@ -526,13 +583,13 @@ export default function PropertyView() {
                 </div>
             </div>
 
-            {location?.coordinates && location.coordinates.length === 2 && (
+            {propertyDetail?.location?.coordinates && propertyDetail.location.coordinates.length === 2 && (
                 <div className="py-5">
-                    <InfoCard title="Map">
+                    <InfoCard title="Location Map">
                         <MapPicker
                             initialPosition={{
-                                lat: location.coordinates[1],
-                                lng: location.coordinates[0]
+                                lat: propertyDetail.location.coordinates[1],
+                                lng: propertyDetail.location.coordinates[0]
                             }}
                             isInput={false}
                             onSelect={() => { }}
