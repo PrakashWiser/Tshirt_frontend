@@ -12,6 +12,7 @@ import {
 export interface Option {
     label: string;
     value: string | number;
+    isCreateOption?: boolean; 
 }
 
 interface SelectFieldProps {
@@ -108,6 +109,13 @@ const SelectField: React.FC<SelectFieldProps> = ({
     const handleSelect = (
         optionValue: string | number
     ) => {
+        const selectedOption = options.find(o => o.value === optionValue);
+
+        if (selectedOption?.isCreateOption) {
+            onChange?.(optionValue);
+            return;
+        }
+
         if (multiple) {
             const currentValues = Array.isArray(value)
                 ? value
@@ -243,8 +251,8 @@ const SelectField: React.FC<SelectFieldProps> = ({
                         <ChevronDown
                             size={18}
                             className={`transition-transform ${open
-                                    ? "rotate-180"
-                                    : ""
+                                ? "rotate-180"
+                                : ""
                                 }`}
                         />
                     </div>
@@ -294,7 +302,10 @@ const SelectField: React.FC<SelectFieldProps> = ({
                                                 )
                                             }
                                             className={`flex cursor-pointer items-center gap-2 px-3 py-2 text-sm hover:bg-gray-100 ${selected
-                                                    ? "bg-gray-100 font-medium"
+                                                ? "bg-gray-100 font-medium"
+                                                : ""
+                                                } ${option.isCreateOption
+                                                    ? "border-t border-gray-200 text-blue-600 font-medium hover:bg-blue-50"
                                                     : ""
                                                 }`}
                                         >

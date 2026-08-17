@@ -16,6 +16,7 @@ import { getPositionFromMapLink } from "../utils/getPositionFromMapLink";
 export interface FieldOption {
     label: string;
     value: string | number;
+    isCreateOption?: boolean; // Add this field
 }
 
 export interface FormField {
@@ -43,6 +44,7 @@ export interface FormField {
     options?: FieldOption[];
     suggestions?: string[];
     schema?: SchemaField[];
+    onOptionSelect?: (option: FieldOption) => void; // Add this callback
 }
 
 interface ReusableFormProps {
@@ -74,6 +76,13 @@ export default function ReusableForm({
     }, [initialValues]);
 
     const handleChange = (name: string, value: any) => {
+        // Check if the field has onOptionSelect and value is an object with isCreateOption
+        const field = fields.find(f => f.name === name);
+        if (field?.onOptionSelect && typeof value === 'object' && value.isCreateOption) {
+            field.onOptionSelect(value);
+            return;
+        }
+
         setFormData((prev) => {
             const updated = {
                 ...prev,
@@ -313,12 +322,18 @@ export default function ReusableForm({
                                     field.type ===
                                     "multi-select"
                                 }
-                                onChange={(value) =>
+                                onChange={(value) => {
+                                    // Check if the selected value is a "create new" option
+                                    const option = field.options?.find(o => o.value === value);
+                                    if (option?.isCreateOption && field.onOptionSelect) {
+                                        field.onOptionSelect(option);
+                                        return;
+                                    }
                                     handleChange(
                                         field.name,
                                         value
-                                    )
-                                }
+                                    );
+                                }}
                             />
                         ) : field.type ===
                             "file" ? (

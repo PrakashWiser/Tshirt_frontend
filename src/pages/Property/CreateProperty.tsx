@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import ReusableForm, { type FormField } from "../../components/ReusableForm";
 import { useAppDispatch, useAppSelector } from "../../hooks/hooks";
 import {
@@ -8,11 +8,17 @@ import {
     type Property,
     getPropertyById,
 } from "../../store/slice/propertySlice";
-import { getAllPropertyActions } from "../../store/slice/propertyActionSlice";
-import { getAllPropertyTypes } from "../../store/slice/propertyTypeSlice";
-import { getAllBHKs } from "../../store/slice/bhkSlice";
-import { getAllAmenities } from "../../store/slice/premiumAmenitySlice";
-import { getAllLifestyles } from "../../store/slice/lifestyleSlice";
+import { clearPropertyActionError, getAllPropertyActions } from "../../store/slice/propertyActionSlice";
+import { clearPropertyTypeError, getAllPropertyTypes } from "../../store/slice/propertyTypeSlice";
+import { clearBHKError, getAllBHKs } from "../../store/slice/bhkSlice";
+import { clearAmenityError, getAllAmenities } from "../../store/slice/premiumAmenitySlice";
+import { clearLifestyleError, getAllLifestyles } from "../../store/slice/lifestyleSlice";
+import PropertyTypeCreate from "../PropertyTypeSection/CreatePropertyType";
+import CreateBHK from "../BHK/CreateBhk";
+import PropertyActionCreate from "../PropertyAction/CreatePropertyAction";
+import CreateAmenity from "../AmenitySection/CreateAmenitySection";
+import CreateLifestyle from "../Lifestyle/CreateLifestyle";
+import { addToast } from "../../store/slice/uiSlice";
 
 interface CreatePropertyProps {
     selectedProperty?: Property | null;
@@ -22,18 +28,112 @@ interface CreatePropertyProps {
 
 export default function CreateProperty({ selectedProperty, onClose, loading }: CreatePropertyProps) {
     const dispatch = useAppDispatch();
-    const { propertyActions } = useAppSelector((state) => state.propertyAction);
     const { property } = useAppSelector((state) => state.property);
-    const { propertyTypes } = useAppSelector((state) => state.propertyType);
-    const { bhks } = useAppSelector((state) => state.bhk);
-    const { amenities } = useAppSelector((state) => state.premiumAmenities);
-    const { lifestyles } = useAppSelector((state) => state.lifestyle);
+    const {
+        propertyActions,
+        message: propertyActionsMessage,
+        error: propertyActionsError,
+    } = useAppSelector((state) => state.propertyAction);
+    const {
+        propertyTypes,
+        message: propertyTypesMessage,
+        error: propertyTypesError,
+    } = useAppSelector((state) => state.propertyType);
+    const {
+        bhks,
+        message: bhksMessage,
+        error: bhksError,
+    } = useAppSelector((state) => state.bhk);
+    const {
+        amenities,
+        message: AmenitiesMessage,
+        error: AmenitiesError,
+    } = useAppSelector((state) => state.premiumAmenities);
+    const {
+        lifestyles,
+        message: lifeStyleMessage,
+        error: lifeStyleError,
+    } = useAppSelector((state) => state.lifestyle);
+    const [showCreatePropertyAction, setShowCreatePropertyAction] = useState(false);
+    const [showCreatePropertyType, setShowCreatePropertyType] = useState(false);
+    const [showCreateBHK, setShowCreateBHK] = useState(false);
+    const [showCreateAmenity, setShowCreateAmenity] = useState(false);
+    const [showCreateLifestyle, setShowCreateLifestyle] = useState(false);
 
     const formProperty = selectedProperty ? property : null;
 
     useEffect(() => {
         if (selectedProperty?.id) dispatch(getPropertyById(selectedProperty.id));
     }, [dispatch, selectedProperty]);
+
+    const refreshPropertyOptions = () => {
+        dispatch(getPropertyFilters());
+        dispatch(getAllPropertyActions());
+        dispatch(getAllPropertyTypes());
+        dispatch(getAllBHKs());
+        dispatch(getAllAmenities());
+        dispatch(getAllLifestyles());
+        dispatch(clearLifestyleError());
+        dispatch(clearBHKError());
+        dispatch(clearPropertyActionError());
+        dispatch(clearPropertyTypeError());
+        dispatch(clearAmenityError());
+    };
+
+    useEffect(() => {
+        if (propertyActionsMessage) {
+            dispatch(addToast({ type: "success", text: propertyActionsMessage }));
+            setShowCreatePropertyAction(false);
+            refreshPropertyOptions();
+        }
+        if (propertyActionsError) {
+            dispatch(addToast({ type: "error", text: propertyActionsError }));
+        }
+        if (propertyTypesMessage) {
+            dispatch(addToast({ type: "success", text: propertyTypesMessage }));
+            setShowCreatePropertyType(false);
+            refreshPropertyOptions();
+        }
+        if (propertyTypesError) {
+            dispatch(addToast({ type: "error", text: propertyTypesError }));
+        }
+        if (bhksMessage) {
+            dispatch(addToast({ type: "success", text: bhksMessage }));
+            setShowCreateBHK(false);
+            refreshPropertyOptions();
+        }
+        if (bhksError) {
+            dispatch(addToast({ type: "error", text: bhksError }));
+        }
+        if (AmenitiesMessage) {
+            dispatch(addToast({ type: "success", text: AmenitiesMessage }));
+            setShowCreateAmenity(false);
+            refreshPropertyOptions();
+        }
+        if (AmenitiesError) {
+            dispatch(addToast({ type: "error", text: AmenitiesError }));
+        }
+        if (lifeStyleMessage) {
+            dispatch(addToast({ type: "success", text: lifeStyleMessage }));
+            setShowCreateLifestyle(false);
+            refreshPropertyOptions();
+        }
+        if (lifeStyleError) {
+            dispatch(addToast({ type: "error", text: lifeStyleError }));
+        }
+    }, [
+        dispatch,
+        propertyActionsMessage,
+        propertyActionsError,
+        propertyTypesMessage,
+        propertyTypesError,
+        bhksMessage,
+        bhksError,
+        AmenitiesMessage,
+        AmenitiesError,
+        lifeStyleMessage,
+        lifeStyleError,
+    ]);
 
     useEffect(() => {
         dispatch(getPropertyFilters());
@@ -68,6 +168,101 @@ export default function CreateProperty({ selectedProperty, onClose, loading }: C
         [lifestyles]
     );
 
+    const propertyActionOptions = useMemo(() => {
+        const options = propertyActions.map((pa) => ({
+            label: pa.name,
+            value: pa._id
+        }));
+        return [
+            ...options,
+            {
+                label: "+ Add New Property Action",
+                value: "add_new_property_action",
+                isCreateOption: true
+            }
+        ];
+    }, [propertyActions]);
+
+    const propertyTypeOptions = useMemo(() => {
+        const options = propertyTypes.map((pt) => ({
+            label: pt.name,
+            value: pt._id
+        }));
+        return [
+            ...options,
+            {
+                label: "+ Add New Property Type",
+                value: "add_new_property_type",
+                isCreateOption: true
+            }
+        ];
+    }, [propertyTypes]);
+
+    const bhkOptionsWithCreate = useMemo(() => {
+        const options = bhkOptions;
+        return [
+            ...options,
+            {
+                label: "+ Add New BHK",
+                value: "add_new_bhk",
+                isCreateOption: true
+            }
+        ];
+    }, [bhkOptions]);
+
+    const amenityOptionsWithCreate = useMemo(() => {
+        const options = amenityOptions;
+        return [
+            ...options,
+            {
+                label: "+ Add New Amenity",
+                value: "add_new_amenity",
+                isCreateOption: true
+            }
+        ];
+    }, [amenityOptions]);
+
+    const lifestyleOptionsWithCreate = useMemo(() => {
+        const options = lifestyleOptions;
+        return [
+            ...options,
+            {
+                label: "+ Add New Lifestyle",
+                value: "add_new_lifestyle",
+                isCreateOption: true
+            }
+        ];
+    }, [lifestyleOptions]);
+
+    const handleFieldChange = (name: string, value: any) => {
+        if (name === "propertyAction" && value === "add_new_property_action") {
+            setShowCreatePropertyAction(true);
+            return;
+        }
+        if (name === "propertyType" && value === "add_new_property_type") {
+            setShowCreatePropertyType(true);
+            return;
+        }
+        if (name === "bhk" && value === "add_new_bhk") {
+            setShowCreateBHK(true);
+            return;
+        }
+        if (name === "amenities") {
+            const lastValue = Array.isArray(value) ? value[value.length - 1] : value;
+            if (lastValue === "add_new_amenity") {
+                setShowCreateAmenity(true);
+                return;
+            }
+        }
+        if (name === "lifestyles") {
+            const lastValue = Array.isArray(value) ? value[value.length - 1] : value;
+            if (lastValue === "add_new_lifestyle") {
+                setShowCreateLifestyle(true);
+                return;
+            }
+        }
+    };
+
     const fields: FormField[] = [
         {
             name: "name",
@@ -81,35 +276,60 @@ export default function CreateProperty({ selectedProperty, onClose, loading }: C
             label: "Property Action",
             type: "select",
             required: true,
-            options: propertyActions.map((pa) => ({ label: pa.name, value: pa._id })),
+            options: propertyActionOptions,
+            onOptionSelect: (option: any) => {
+                if (option.isCreateOption) {
+                    setShowCreatePropertyAction(true);
+                }
+            }
         },
         {
             name: "propertyType",
             label: "Property Type",
             type: "select",
             required: true,
-            options: propertyTypes.map((pt) => ({ label: pt.name, value: pt._id })),
+            options: propertyTypeOptions,
+            onOptionSelect: (option: any) => {
+                if (option.isCreateOption) {
+                    setShowCreatePropertyType(true);
+                }
+            }
         },
         {
             name: "amenities",
             label: "Amenities",
             type: "multi-select",
             required: false,
-            options: amenityOptions
+            options: amenityOptionsWithCreate,
+            onOptionSelect: (option: any) => {
+                if (option.isCreateOption) {
+                    setShowCreateAmenity(true);
+                }
+            }
         },
         {
             name: "lifestyles",
             label: "Lifestyle",
             type: "multi-select",
             required: false,
-            options: lifestyleOptions
+            options: lifestyleOptionsWithCreate,
+            onOptionSelect: (option: any) => {
+                if (option.isCreateOption) {
+                    setShowCreateLifestyle(true);
+                }
+            }
         },
         {
             name: "bhk",
             label: "BHK",
             type: "select",
             required: true,
-            options: bhkOptions
+            options: bhkOptionsWithCreate,
+            onOptionSelect: (option: any) => {
+                if (option.isCreateOption) {
+                    setShowCreateBHK(true);
+                }
+            }
         },
         {
             name: "totalSquareFeet",
@@ -243,26 +463,22 @@ export default function CreateProperty({ selectedProperty, onClose, loading }: C
         formData.append("propertyAction", values.propertyAction || "");
         formData.append("bhk", String(values.bhk || ""));
         formData.append("totalSquareFeet", String(values.totalSquareFeet || ""));
-
         if (values.totalBuiltArea !== undefined && values.totalBuiltArea !== null && values.totalBuiltArea !== "") {
             formData.append("totalBuiltArea", String(values.totalBuiltArea));
         }
-
         formData.append("totalPrice", String(values.totalPrice || ""));
-
         if (values.description) formData.append("description", values.description);
-
         if (Array.isArray(values.amenities)) {
-            values.amenities.forEach((id: string) => formData.append("premiumAmenities[]", id));
+            const filteredAmenities = values.amenities.filter((id: string) => id !== "add_new_amenity");
+            filteredAmenities.forEach((id: string) => formData.append("premiumAmenities[]", id));
         }
         if (Array.isArray(values.lifestyles)) {
-            values.lifestyles.forEach((id: string) => formData.append("lifestyles[]", id));
+            const filteredLifestyles = values.lifestyles.filter((id: string) => id !== "add_new_lifestyle");
+            filteredLifestyles.forEach((id: string) => formData.append("lifestyles[]", id));
         }
-
         formData.append("isHighlighted", String(values.isHighlighted ?? false));
         formData.append("isRecommended", String(values.isRecommended ?? false));
         formData.append("isFeatured", String(values.isFeatured ?? false));
-
         formData.append(
             "location",
             JSON.stringify({
@@ -273,7 +489,6 @@ export default function CreateProperty({ selectedProperty, onClose, loading }: C
                 ]
             })
         );
-
         formData.append(
             "address",
             JSON.stringify({
@@ -287,7 +502,6 @@ export default function CreateProperty({ selectedProperty, onClose, loading }: C
                 country: values.location?.country || ""
             })
         );
-
         if (Array.isArray(values.images)) {
             values.images.forEach((file: File | string) => {
                 if (file instanceof File) {
@@ -297,7 +511,6 @@ export default function CreateProperty({ selectedProperty, onClose, loading }: C
         } else if (values.images instanceof File) {
             formData.append("propertyMedia", values.images);
         }
-
         if (selectedProperty?.id) {
             dispatch(updateProperty({ id: selectedProperty.id, data: formData }));
         } else {
@@ -373,6 +586,15 @@ export default function CreateProperty({ selectedProperty, onClose, loading }: C
             : [],
     };
 
+    const handleCreateModalClose = () => {
+        setShowCreatePropertyAction(false);
+        setShowCreatePropertyType(false);
+        setShowCreateBHK(false);
+        setShowCreateAmenity(false);
+        setShowCreateLifestyle(false);
+        refreshPropertyOptions();
+    };
+
     return (
         <div className="p-6">
             <ReusableForm
@@ -383,7 +605,43 @@ export default function CreateProperty({ selectedProperty, onClose, loading }: C
                 loading={loading}
                 onSubmit={handleSubmit}
                 onClose={onClose}
+                onFieldChange={handleFieldChange}
             />
+            {showCreatePropertyAction && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+                    <div className="bg-white rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+                        <PropertyActionCreate onClose={handleCreateModalClose} />
+                    </div>
+                </div>
+            )}
+            {showCreatePropertyType && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+                    <div className="bg-white rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+                        <PropertyTypeCreate onClose={handleCreateModalClose} />
+                    </div>
+                </div>
+            )}
+            {showCreateBHK && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+                    <div className="bg-white rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+                        <CreateBHK onClose={handleCreateModalClose} />
+                    </div>
+                </div>
+            )}
+            {showCreateAmenity && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+                    <div className="bg-white rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+                        <CreateAmenity onClose={handleCreateModalClose} />
+                    </div>
+                </div>
+            )}
+            {showCreateLifestyle && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+                    <div className="bg-white rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+                        <CreateLifestyle onClose={handleCreateModalClose} />
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
