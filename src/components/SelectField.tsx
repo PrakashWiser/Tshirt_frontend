@@ -12,7 +12,7 @@ import {
 export interface Option {
     label: string;
     value: string | number;
-    isCreateOption?: boolean; 
+    isCreateOption?: boolean;
 }
 
 interface SelectFieldProps {
@@ -57,11 +57,23 @@ const SelectField: React.FC<SelectFieldProps> = ({
         );
     });
 
-    const filteredOptions = options.filter((option) =>
-        option.label
-            .toLowerCase()
-            .includes(search.toLowerCase())
-    );
+    const filteredOptions = [
+        ...options.filter(
+            (option) =>
+                option.isCreateOption &&
+                option.label
+                    .toLowerCase()
+                    .includes(search.toLowerCase())
+        ),
+
+        ...options.filter(
+            (option) =>
+                !option.isCreateOption &&
+                option.label
+                    .toLowerCase()
+                    .includes(search.toLowerCase())
+        ),
+    ];
 
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {

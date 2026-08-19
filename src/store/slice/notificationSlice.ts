@@ -31,7 +31,6 @@ const notificationSlice = createSlice({
         timestamp: action.payload.timestamp || new Date().toISOString(),
         read: false,
       });
-
       state.unreadCount += 1;
     },
 

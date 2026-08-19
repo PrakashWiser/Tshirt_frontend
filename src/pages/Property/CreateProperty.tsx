@@ -26,6 +26,9 @@ interface CreatePropertyProps {
     loading?: boolean;
 }
 
+const IMG_URL = import.meta.env.VITE_BASE_IMAGE_URL || "";
+
+
 export default function CreateProperty({ selectedProperty, onClose, loading }: CreatePropertyProps) {
     const dispatch = useAppDispatch();
     const { property } = useAppSelector((state) => state.property);
@@ -61,6 +64,7 @@ export default function CreateProperty({ selectedProperty, onClose, loading }: C
     const [showCreateLifestyle, setShowCreateLifestyle] = useState(false);
 
     const formProperty = selectedProperty ? property : null;
+
 
     useEffect(() => {
         if (selectedProperty?.id) dispatch(getPropertyById(selectedProperty.id));
@@ -448,73 +452,299 @@ export default function CreateProperty({ selectedProperty, onClose, loading }: C
             ],
         },
         {
+            name: "nearbyPlaces",
+            label: "Nearby Places",
+            type: "json-object",
+            fullWidth: true,
+            required: false,
+            repeatable: true,
+            schema: [
+                {
+                    key: "type",
+                    label: "Type",
+                    type: "text",
+                    placeholder: "e.g. School, Hospital, Mall"
+                },
+                {
+                    key: "name",
+                    label: "Place Name",
+                    type: "text",
+                    placeholder: "e.g. ABC International School"
+                },
+                {
+                    key: "time",
+                    label: "Time",
+                    type: "number",
+                    placeholder: "e.g. 10"
+                },
+                {
+                    key: "timeUnit",
+                    label: "Time Unit",
+                    type: "select",
+                    options: [
+                        { label: "Minutes", value: "minutes" },
+                        { label: "Hours", value: "hours" },
+                        { label: "KM", value: "km" },
+                    ],
+                },
+                {
+                    key: "coordinates",
+                    label: "Location",
+                    type: "map"
+                }
+            ],
+        },
+        {
             name: "images",
             label: "Property Images",
             type: "file",
             fullWidth: true,
             multiple: true
         },
+        {
+            name: "videos",
+            label: "Property Videos",
+            type: "file",
+            fullWidth: true,
+            multiple: true,
+        },
     ];
 
     const handleSubmit = (values: Record<string, any>) => {
         const formData = new FormData();
+
         formData.append("name", values.name || "");
         formData.append("propertyType", values.propertyType || "");
         formData.append("propertyAction", values.propertyAction || "");
         formData.append("bhk", String(values.bhk || ""));
-        formData.append("totalSquareFeet", String(values.totalSquareFeet || ""));
-        if (values.totalBuiltArea !== undefined && values.totalBuiltArea !== null && values.totalBuiltArea !== "") {
-            formData.append("totalBuiltArea", String(values.totalBuiltArea));
+        formData.append(
+            "totalSquareFeet",
+            String(values.totalSquareFeet || "")
+        );
+
+        if (
+            values.totalBuiltArea !== undefined &&
+            values.totalBuiltArea !== null &&
+            values.totalBuiltArea !== ""
+        ) {
+            formData.append(
+                "totalBuiltArea",
+                String(values.totalBuiltArea)
+            );
         }
-        formData.append("totalPrice", String(values.totalPrice || ""));
-        if (values.description) formData.append("description", values.description);
+
+        formData.append(
+            "totalPrice",
+            String(values.totalPrice || "")
+        );
+
+        if (values.description) {
+            formData.append(
+                "description",
+                values.description
+            );
+        }
+
         if (Array.isArray(values.amenities)) {
-            const filteredAmenities = values.amenities.filter((id: string) => id !== "add_new_amenity");
-            filteredAmenities.forEach((id: string) => formData.append("premiumAmenities[]", id));
+            const filteredAmenities =
+                values.amenities.filter(
+                    (id: string) =>
+                        id !== "add_new_amenity"
+                );
+
+            filteredAmenities.forEach((id: string) => {
+                formData.append(
+                    "premiumAmenities[]",
+                    id
+                );
+            });
         }
+
         if (Array.isArray(values.lifestyles)) {
-            const filteredLifestyles = values.lifestyles.filter((id: string) => id !== "add_new_lifestyle");
-            filteredLifestyles.forEach((id: string) => formData.append("lifestyles[]", id));
+            const filteredLifestyles =
+                values.lifestyles.filter(
+                    (id: string) =>
+                        id !== "add_new_lifestyle"
+                );
+
+            filteredLifestyles.forEach((id: string) => {
+                formData.append(
+                    "lifestyles[]",
+                    id
+                );
+            });
         }
-        formData.append("isHighlighted", String(values.isHighlighted ?? false));
-        formData.append("isRecommended", String(values.isRecommended ?? false));
-        formData.append("isFeatured", String(values.isFeatured ?? false));
+
+        formData.append(
+            "isHighlighted",
+            String(values.isHighlighted ?? false)
+        );
+
+        formData.append(
+            "isRecommended",
+            String(values.isRecommended ?? false)
+        );
+
+        formData.append(
+            "isFeatured",
+            String(values.isFeatured ?? false)
+        );
+
+        if (Array.isArray(values.videos)) {
+            const videosMeta = values.videos.map(
+                (_file: File, index: number) => ({
+                    category:
+                        values.videosMeta?.[index]?.category?.trim() || "",
+                })
+            );
+
+            const hasEmptyCategory = videosMeta.some(
+                (item) => !item.category
+            );
+
+            if (hasEmptyCategory) {
+                alert(
+                    "Please enter a category for every video."
+                );
+                return;
+            }
+
+            values.videos.forEach((file: File) => {
+                if (file instanceof File) {
+                    formData.append(
+                        "videos",
+                        file
+                    );
+                }
+            });
+
+            formData.append(
+                "videosMeta",
+                JSON.stringify(videosMeta)
+            );
+        }
+
+        if (Array.isArray(values.images)) {
+            values.images.forEach(
+                (file: File | string) => {
+                    if (file instanceof File) {
+                        formData.append(
+                            "propertyMedia",
+                            file
+                        );
+                    }
+                }
+            );
+
+            const propertyMediaMeta =
+                values.images.map(
+                    (
+                        _file: File | string,
+                        index: number
+                    ) => ({
+                        isPrimary: index === 0,
+                        sortOrder: index + 1,
+                    })
+                );
+
+            formData.append(
+                "propertyMediaMeta",
+                JSON.stringify(
+                    propertyMediaMeta
+                )
+            );
+        } else if (values.images instanceof File) {
+            formData.append(
+                "propertyMedia",
+                values.images
+            );
+
+            formData.append(
+                "propertyMediaMeta",
+                JSON.stringify([
+                    {
+                        isPrimary: true,
+                        sortOrder: 1,
+                    },
+                ])
+            );
+        }
+
+        const latitude =
+            Number(
+                values.coordinates?.latitude
+            ) || 0;
+
+        const longitude =
+            Number(
+                values.coordinates?.longitude
+            ) || 0;
+
         formData.append(
             "location",
             JSON.stringify({
                 type: "Point",
                 coordinates: [
-                    Number(values.coordinates?.longitude || 0),
-                    Number(values.coordinates?.latitude || 0)
-                ]
+                    latitude,
+                    longitude,
+                ],
             })
         );
+
         formData.append(
             "address",
             JSON.stringify({
-                houseNo: values.address?.houseNo || "",
-                street: values.address?.street || "",
-                landmark: values.address?.landmark || "",
-                locality: values.location?.locality || "",
-                city: values.location?.city || "",
-                state: values.location?.state || "",
-                pincode: values.location?.pincode || "",
-                country: values.location?.country || ""
+                houseNo:
+                    values.address?.houseNo || "",
+                street:
+                    values.address?.street || "",
+                landmark:
+                    values.address?.landmark || "",
+                locality:
+                    values.location?.locality || "",
+                city:
+                    values.location?.city || "",
+                state:
+                    values.location?.state || "",
+                pincode:
+                    values.location?.pincode || "",
+                country:
+                    values.location?.country || "",
             })
         );
-        if (Array.isArray(values.images)) {
-            values.images.forEach((file: File | string) => {
-                if (file instanceof File) {
-                    formData.append("propertyMedia", file);
-                }
-            });
-        } else if (values.images instanceof File) {
-            formData.append("propertyMedia", values.images);
+
+        if (
+            values.nearbyPlaces &&
+            Array.isArray(values.nearbyPlaces)
+        ) {
+            formData.append(
+                "neighborhoods",
+                JSON.stringify(
+                    values.nearbyPlaces
+                )
+            );
         }
+
+        for (const [key, value] of formData.entries()) {
+            console.log(
+                key,
+                value instanceof File
+                    ? value.name
+                    : value
+            );
+        }
+
         if (selectedProperty?.id) {
-            dispatch(updateProperty({ id: selectedProperty.id, data: formData }));
+            dispatch(
+                updateProperty({
+                    id: selectedProperty.id,
+                    data: formData,
+                })
+            );
         } else {
-            dispatch(createProperty(formData));
+            dispatch(
+                createProperty(formData)
+            );
         }
     };
 
@@ -581,8 +811,39 @@ export default function CreateProperty({ selectedProperty, onClose, loading }: C
             latitude: formProperty?.location?.coordinates?.[1] || 0,
             longitude: formProperty?.location?.coordinates?.[0] || 0,
         },
+        nearbyPlaces: Array.isArray(formProperty?.neighborhoods)
+            ? formProperty.neighborhoods.map((place: any) => ({
+                _id: place._id,
+                type: place.type || "",
+                name: place.name || "",
+                time: place.time ?? "",
+                timeUnit: place.timeUnit || "",
+                coordinates:
+                    Array.isArray(place.coordinates) &&
+                        place.coordinates.length === 2
+                        ? [
+                            Number(place.coordinates[0]),
+                            Number(place.coordinates[1]),
+                        ]
+                        : [0, 0],
+            }))
+            : [],
         images: Array.isArray(formProperty?.propertyMedia)
             ? formProperty.propertyMedia.map((media) => media.url)
+            : [],
+        videos: Array.isArray(formProperty?.videos)
+            ? formProperty.videos.map(
+                (video) =>
+                    `${IMG_URL}${video.url}`
+            )
+            : [],
+
+        videosMeta: Array.isArray(formProperty?.videos)
+            ? formProperty.videos.map(
+                (video) => ({
+                    category: video.category || "",
+                })
+            )
             : [],
     };
 
@@ -606,6 +867,11 @@ export default function CreateProperty({ selectedProperty, onClose, loading }: C
                 onSubmit={handleSubmit}
                 onClose={onClose}
                 onFieldChange={handleFieldChange}
+                resetKey={
+                    selectedProperty?.id
+                        ? `${selectedProperty.id}-${formProperty ? "loaded" : "loading"}`
+                        : "new-property"
+                }
             />
             {showCreatePropertyAction && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">

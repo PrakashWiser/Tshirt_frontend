@@ -109,8 +109,6 @@ export default function DashboardHome() {
     const propertyActions = stats?.distributions?.propertyActions || [];
     const monthlyStats = stats?.monthlyStats || [];
     const topPerforming = stats?.topPerforming?.properties || [];
-    console.log(topPerforming);
-
     const recentProperties = stats?.recentActivities?.properties || [];
 
     const totalRevenue = summary.totalRevenue || 0;

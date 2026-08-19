@@ -16,7 +16,7 @@ import { getPositionFromMapLink } from "../utils/getPositionFromMapLink";
 export interface FieldOption {
     label: string;
     value: string | number;
-    isCreateOption?: boolean; // Add this field
+    isCreateOption?: boolean;
 }
 
 export interface FormField {
@@ -37,6 +37,7 @@ export interface FormField {
     | "policies"
     | "json-object"
     | "multi-select";
+
     multiple?: boolean;
     placeholder?: string;
     fullWidth?: boolean;
@@ -44,7 +45,8 @@ export interface FormField {
     options?: FieldOption[];
     suggestions?: string[];
     schema?: SchemaField[];
-    onOptionSelect?: (option: FieldOption) => void; // Add this callback
+    onOptionSelect?: (option: FieldOption) => void;
+    repeatable?: boolean;
 }
 
 interface ReusableFormProps {
@@ -56,6 +58,7 @@ interface ReusableFormProps {
     loading?: boolean;
     onSubmit: (values: Record<string, any>) => void;
     onFieldChange?: (name: string, value: any) => void;
+    resetKey?: string | number;
 }
 
 export default function ReusableForm({
@@ -67,16 +70,23 @@ export default function ReusableForm({
     onClose,
     loading,
     onFieldChange,
+    resetKey,
 }: ReusableFormProps) {
     const [formData, setFormData] =
         useState<Record<string, any>>(initialValues);
 
+
+
+
     useEffect(() => {
-        setFormData(initialValues);
-    }, [initialValues]);
+        if (Object.keys(initialValues).length > 0) {
+            setFormData(initialValues);
+        }
+    }, [initialValues, resetKey]);
+
+
 
     const handleChange = (name: string, value: any) => {
-        // Check if the field has onOptionSelect and value is an object with isCreateOption
         const field = fields.find(f => f.name === name);
         if (field?.onOptionSelect && typeof value === 'object' && value.isCreateOption) {
             field.onOptionSelect(value);
@@ -255,6 +265,7 @@ export default function ReusableForm({
                                 required={
                                     field.required
                                 }
+                                repeatable={field.repeatable}
                             />
                         ) : field.type ===
                             "textarea" ? (
@@ -323,7 +334,6 @@ export default function ReusableForm({
                                     "multi-select"
                                 }
                                 onChange={(value) => {
-                                    // Check if the selected value is a "create new" option
                                     const option = field.options?.find(o => o.value === value);
                                     if (option?.isCreateOption && field.onOptionSelect) {
                                         field.onOptionSelect(option);
@@ -335,34 +345,35 @@ export default function ReusableForm({
                                     );
                                 }}
                             />
-                        ) : field.type ===
-                            "file" ? (
+                        ) : field.type === "file" ? (
                             <ImageUploadField
-                                label={
-                                    field.label
-                                }
-                                multiple={
-                                    field.multiple
-                                }
+                                label={field.label}
+                                multiple={field.multiple}
                                 accept={
-                                    field.name.includes(
-                                        "Video"
-                                    )
+                                    field.name
+                                        .toLowerCase()
+                                        .includes("video")
                                         ? "video/*"
                                         : "image/*"
                                 }
-                                value={
-                                    formData[
-                                    field.name
-                                    ]
-                                }
+                                value={formData[field.name]}
                                 onChange={(file) =>
                                     handleChange(
                                         field.name,
                                         file
                                     )
                                 }
+                                videoMeta={
+                                    formData.videosMeta || []
+                                }
+                                onVideoMetaChange={(meta) =>
+                                    handleChange(
+                                        "videosMeta",
+                                        meta
+                                    )
+                                }
                             />
+
                         ) : field.type ===
                             "map" ? (
                             <>

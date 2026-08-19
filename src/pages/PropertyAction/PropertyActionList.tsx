@@ -16,6 +16,7 @@ import DotMenu from "../../components/DotMenu";
 import ConfirmDeleteModal from "../../components/ConfirmDeleteModal";
 import { exportTableData } from "../../utils/exportToExcel";
 import Button from "../../components/Button";
+import CustomImage from "../../components/Image";
 
 export default function PropertyActionList() {
     const dispatch = useAppDispatch();
@@ -109,6 +110,30 @@ export default function PropertyActionList() {
                 },
             },
             {
+                key: "image",
+                header: "Image",
+                accessor: "image",
+                render: (value) => {
+                    const image = String(value || "");
+
+                    return (
+                        <div className="w-14 h-14 rounded-lg overflow-hidden border border-slate-200 bg-slate-100">
+                            {image ? (
+                                <CustomImage
+                                    src={image}
+                                    alt="Property Action"
+                                    className="w-full h-full object-cover"
+                                />
+                            ) : (
+                                <div className="w-full h-full flex items-center justify-center text-xs text-slate-400">
+                                    No Image
+                                </div>
+                            )}
+                        </div>
+                    );
+                },
+            },
+            {
                 key: "updatedAt",
                 header: "Last Updated",
                 accessor: "updatedAt",
@@ -151,6 +176,7 @@ export default function PropertyActionList() {
             slug: propertyAction.slug,
             isNew: propertyAction.isNew,
             status: propertyAction.status,
+            image: propertyAction.image,
             updatedAt: propertyAction.updatedAt || propertyAction.createdAt || new Date().toISOString(),
         }));
     }, [propertyActions]);

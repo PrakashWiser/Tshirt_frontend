@@ -13,9 +13,7 @@ export default function SessionExpiredPopup() {
 
     useEffect(() => {
         const handler = () => setOpen(true);
-
         window.addEventListener("session-expired-popup", handler);
-
         return () => {
             window.removeEventListener("session-expired-popup", handler);
         };

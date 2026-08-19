@@ -2,6 +2,14 @@ import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import { FetchApi } from "../../api/Fetch";
 import type { RootState } from "../store";
 
+export interface NearbyPlace {
+  type: string;
+  time: number;
+  timeUnit: string;
+  name: string;
+  coordinates: [number, number];
+}
+
 export interface PropertyLocation {
   type: "Point";
   coordinates: [number, number];
@@ -80,6 +88,12 @@ export interface Property {
     isPrimary?: boolean;
     sortOrder?: number;
   }>;
+  nearbyPlaces?: NearbyPlace[];
+  videos?: {
+    _id?: string;
+    url: string;
+    category: string;
+  }[];
 }
 
 export interface CreatePropertyPayload {
@@ -102,6 +116,7 @@ export interface CreatePropertyPayload {
     address?: string;
   };
   images?: File[];
+  nearbyPlaces?: NearbyPlace[];
 }
 
 export interface UpdatePropertyPayload {
@@ -124,6 +139,7 @@ export interface UpdatePropertyPayload {
     address?: string;
   };
   images?: File[];
+  nearbyPlaces?: NearbyPlace[];
 }
 
 export interface PropertyFilters {

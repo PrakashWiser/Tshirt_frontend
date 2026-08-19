@@ -144,77 +144,177 @@ function Header({
                     </button>
 
                     {notificationsOpen && (
-                        <div className="absolute right-0 top-full mt-3 w-96 bg-white rounded-xl shadow-xl border border-gray-200 overflow-hidden z-50">
-                            <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100">
-                                <h4 className="font-semibold text-gray-900">
-                                    Notifications
-                                </h4>
+                        <div className="absolute right-0 top-full mt-3 w-[400px] overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-2xl z-50">
+                            <div className="flex items-center justify-between border-b border-gray-100 bg-white px-5 py-4">
+                                <div>
+                                    <div className="flex items-center gap-2">
+                                        <h4 className="text-base font-semibold text-gray-900">
+                                            Notifications
+                                        </h4>
+
+                                        {unreadCount > 0 && (
+                                            <span className="rounded-full bg-blue-100 px-2 py-0.5 text-[10px] font-semibold text-blue-600">
+                                                {unreadCount} new
+                                            </span>
+                                        )}
+                                    </div>
+
+                                    <p className="mt-0.5 text-xs text-gray-400 capitalize">
+                                        Stay updated with your latest activity
+                                    </p>
+                                </div>
 
                                 {unreadCount > 0 && (
                                     <button
                                         type="button"
                                         onClick={handleMarkAllAsRead}
-                                        className="text-xs font-medium text-blue-600 hover:text-blue-700 cursor-pointer"
+                                        className="rounded-lg px-2.5 py-1.5 text-xs font-medium text-blue-600 transition hover:bg-blue-50 hover:text-blue-700"
                                     >
-                                        Mark all as read
+                                        Mark all read
                                     </button>
                                 )}
                             </div>
 
-                            <div className="max-h-96 overflow-y-auto">
+                            <div className="max-h-[420px] overflow-y-auto">
+
                                 {notifications.length === 0 ? (
-                                    <div className="px-4 py-8 text-center text-sm text-gray-400">
-                                        No notifications yet
+                                    <div className="flex flex-col items-center justify-center px-6 py-14 text-center">
+
+                                        <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-gray-100">
+                                            <svg
+                                                className="h-6 w-6 text-gray-400"
+                                                fill="none"
+                                                stroke="currentColor"
+                                                viewBox="0 0 24 24"
+                                            >
+                                                <path
+                                                    strokeLinecap="round"
+                                                    strokeLinejoin="round"
+                                                    strokeWidth={1.8}
+                                                    d="M15 17h5l-1.5-1.5A2 2 0 0118 14V10a6 6 0 00-12 0v4a2 2 0 01-.5 1.5L4 17h5m6 0a3 3 0 01-6 0m6 0H9"
+                                                />
+                                            </svg>
+                                        </div>
+
+                                        <h5 className="text-sm font-semibold text-gray-800">
+                                            No notifications
+                                        </h5>
+
+                                        <p className="mt-1 max-w-[240px] text-xs leading-5 text-gray-400">
+                                            You're all caught up. New notifications will appear here.
+                                        </p>
                                     </div>
                                 ) : (
                                     notifications.map((notification) => (
                                         <button
                                             type="button"
                                             key={notification.id}
-                                            onClick={() => handleMarkAsRead(notification.id)}
-                                            className={`w-full text-left px-4 py-3 border-b border-gray-50 last:border-b-0 hover:bg-gray-50 transition flex gap-3 ${notification.read ? "bg-white" : "bg-blue-50/40"
-                                                }`}
+                                            onClick={() =>
+                                                handleMarkAsRead(notification.id)
+                                            }
+                                            className={`group relative flex w-full gap-3 border-b border-gray-100 px-5 py-4 text-left transition-all duration-200 last:border-b-0
+                            ${notification.read
+                                                    ? "bg-white hover:bg-gray-50"
+                                                    : "bg-blue-50/60 hover:bg-blue-50"
+                                                }
+                        `}
                                         >
-                                            {!notification.read && (
-                                                <span className="mt-1.5 h-2 w-2 rounded-full bg-blue-500 flex-shrink-0" />
-                                            )}
-                                            <div className="flex-1 min-w-0 capitalize">
-                                                <p className="text-sm font-semibold text-gray-900">
-                                                    {notification.message}
-                                                </p>
-                                                <div className="mt-1 space-y-1">
+
+                                            <div className="flex-shrink-0 pt-0.5">
+                                                <div
+                                                    className={`flex h-9 w-9 items-center justify-center rounded-full
+                                    ${notification.read
+                                                            ? "bg-gray-100 text-gray-400"
+                                                            : "bg-blue-100 text-blue-600"
+                                                        }
+                                `}
+                                                >
+                                                    <svg
+                                                        className="h-4 w-4"
+                                                        fill="none"
+                                                        stroke="currentColor"
+                                                        viewBox="0 0 24 24"
+                                                    >
+                                                        <path
+                                                            strokeLinecap="round"
+                                                            strokeLinejoin="round"
+                                                            strokeWidth={1.8}
+                                                            d="M15 17h5l-1.5-1.5A2 2 0 0118 14V10a6 6 0 00-12 0v4a2 2 0 01-.5 1.5L4 17h5m6 0a3 3 0 01-6 0"
+                                                        />
+                                                    </svg>
+                                                </div>
+                                            </div>
+                                            <div className="min-w-0 flex-1">
+
+                                                <div className="flex items-start justify-between gap-2">
+                                                    <p
+                                                        className={`line-clamp-2 text-sm leading-5
+                                        ${notification.read
+                                                                ? "font-medium text-gray-700"
+                                                                : "font-semibold text-gray-900"
+                                                            }
+                                    `}
+                                                    >
+                                                        {notification.message}
+                                                    </p>
+
+                                                    {!notification.read && (
+                                                        <span className="mt-1.5 h-2 w-2 flex-shrink-0 rounded-full bg-blue-500" />
+                                                    )}
+                                                </div>
+                                                <div className="mt-2 space-y-1.5">
+
                                                     {notification.data?.fullName && (
-                                                        <p className="text-xs text-gray-500">
-                                                            <span className="font-medium">Customer:</span>{" "}
-                                                            {notification.data.fullName}
-                                                        </p>
+                                                        <div className="flex items-center gap-1.5 text-xs text-gray-500">
+                                                            <span className="font-medium text-gray-600">
+                                                                Customer:
+                                                            </span>
+
+                                                            <span className="truncate">
+                                                                {notification.data.fullName}
+                                                            </span>
+                                                        </div>
                                                     )}
 
                                                     {notification.data?.phone && (
-                                                        <p className="text-xs text-gray-500">
-                                                            <span className="font-medium">Phone:</span>{" "}
-                                                            {notification.data.phone}
-                                                        </p>
+                                                        <div className="flex items-center gap-1.5 text-xs text-gray-500">
+                                                            <span className="font-medium text-gray-600">
+                                                                Phone:
+                                                            </span>
+
+                                                            <span>
+                                                                {notification.data.phone}
+                                                            </span>
+                                                        </div>
                                                     )}
 
-                                                    {notification.data?.propertyId && (
-                                                        <p className="text-xs text-gray-500">
-                                                            <span className="font-medium">Property:</span>{" "}
-                                                            {notification.data.propertyId?.name}
-                                                        </p>
+                                                    {notification.data?.propertyId?.name && (
+                                                        <div className="flex items-center gap-1.5 text-xs text-gray-500">
+                                                            <span className="font-medium text-gray-600">
+                                                                Property:
+                                                            </span>
+
+                                                            <span className="truncate">
+                                                                {notification.data.propertyId.name}
+                                                            </span>
+                                                        </div>
                                                     )}
 
                                                     {notification.data?.specialRequest && (
-                                                        <p className="text-xs text-gray-500">
-                                                            <span className="font-medium">Request:</span>{" "}
+                                                        <div className="rounded-lg bg-gray-50 px-2.5 py-2 text-xs leading-4 text-gray-500">
+                                                            <span className="font-medium text-gray-600">
+                                                                Request:
+                                                            </span>{" "}
                                                             {notification.data.specialRequest}
-                                                        </p>
+                                                        </div>
                                                     )}
-                                                </div>
 
-                                                <p className="text-[11px] text-gray-400 mt-2">
+                                                </div>
+                                                <p className="mt-2.5 text-[10px] font-medium text-gray-400">
                                                     {notification.timestamp
-                                                        ? new Date(notification.timestamp).toLocaleString()
+                                                        ? new Date(
+                                                            notification.timestamp
+                                                        ).toLocaleString()
                                                         : ""}
                                                 </p>
                                             </div>
@@ -222,6 +322,16 @@ function Header({
                                     ))
                                 )}
                             </div>
+                            {notifications.length > 0 && (
+                                <div className="border-t border-gray-100 bg-gray-50/70 px-5 py-3 text-center">
+                                    <button
+                                        type="button"
+                                        className="text-xs font-medium text-gray-500 transition hover:text-blue-600"
+                                    >
+                                        View all notifications
+                                    </button>
+                                </div>
+                            )}
                         </div>
                     )}
                 </div>

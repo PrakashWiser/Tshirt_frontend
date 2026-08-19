@@ -10,6 +10,7 @@ export interface PropertyAction {
   description: string;
   icon: string;
   color: string;
+  image: string;
   sortOrder: number;
   status: "Active" | "Inactive";
   createdAt: string;
@@ -52,39 +53,12 @@ export interface PropertyActionTableRow {
   isNew: boolean;
   status: "Active" | "Inactive";
   updatedAt: string;
+  image: string;
 }
 
 export const getStatusOptions = () => [
   { label: "Active", value: "Active" },
   { label: "Inactive", value: "Inactive" },
-];
-
-export const getColorOptions = () => [
-  { label: "Red", value: "#EF4444" },
-  { label: "Green", value: "#22C55E" },
-  { label: "Blue", value: "#3B82F6" },
-  { label: "Yellow", value: "#EAB308" },
-  { label: "Purple", value: "#8B5CF6" },
-  { label: "Pink", value: "#EC4899" },
-  { label: "Orange", value: "#F97316" },
-  { label: "Teal", value: "#14B8A6" },
-  { label: "Gray", value: "#6B7280" },
-  { label: "Black", value: "#1F2937" },
-];
-
-export const getIconOptions = () => [
-  { label: "🏠 House", value: "house" },
-  { label: "🏢 Building", value: "building" },
-  { label: "🏗️ Construction", value: "construction" },
-  { label: "🔑 Key", value: "key" },
-  { label: "📋 Clipboard", value: "clipboard" },
-  { label: "⭐ Star", value: "star" },
-  { label: "❤️ Heart", value: "heart" },
-  { label: "🎯 Target", value: "target" },
-  { label: "📌 Pin", value: "pin" },
-  { label: "🔔 Bell", value: "bell" },
-  { label: "📊 Chart", value: "chart" },
-  { label: "⚡ Lightning", value: "lightning" },
 ];
 
 interface PropertyActionState {
@@ -149,49 +123,47 @@ export const getPropertyActionById = createAsyncThunk(
 
 export const createPropertyAction = createAsyncThunk(
   "propertyAction/create",
-  async (payload: CreatePropertyActionPayload, thunkAPI) => {
+  async (data: FormData, thunkAPI) => {
     try {
       const state = thunkAPI.getState() as RootState;
       const token = state.auth.accessToken;
-
-      const res = await FetchApi<any>({
+      const response = await FetchApi({
         endpoint: "/propertyAction/create",
         method: "POST",
-        body: payload,
+        body: data,
         token,
       });
 
-      return res.data;
-    } catch (err: any) {
-      return thunkAPI.rejectWithValue(
-        err?.message || "Failed to create property action",
-      );
+      if (response?.data?.success === false) {
+        return thunkAPI.rejectWithValue(response?.data?.errors);
+      }
+
+      return response?.data;
+    } catch (error: any) {
+      return thunkAPI.rejectWithValue(error);
     }
   },
 );
-
 export const updatePropertyAction = createAsyncThunk(
   "propertyAction/update",
-  async (
-    { id, data }: { id: string; data: UpdatePropertyActionPayload },
-    thunkAPI,
-  ) => {
+  async ({ id, data }: { id: string; data: FormData }, thunkAPI) => {
     try {
       const state = thunkAPI.getState() as RootState;
       const token = state.auth.accessToken;
-
-      const res = await FetchApi<any>({
+      const response = await FetchApi({
         endpoint: `/propertyAction/${id}`,
         method: "PUT",
         body: data,
         token,
       });
 
-      return res.data;
-    } catch (err: any) {
-      return thunkAPI.rejectWithValue(
-        err?.message || "Failed to update property action",
-      );
+      if (response?.data?.success === false) {
+        return thunkAPI.rejectWithValue(response?.data?.errors);
+      }
+
+      return response?.data;
+    } catch (error: any) {
+      return thunkAPI.rejectWithValue(error);
     }
   },
 );

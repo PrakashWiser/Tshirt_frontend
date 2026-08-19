@@ -7,11 +7,11 @@ import {
     Hotel,
     Users,
     // Store,
-    CreditCard,
-    DollarSign,
-    Tag,
-    Star,
-    BarChart3,
+    // CreditCard,
+    // DollarSign,
+    // Tag,
+    // Star,
+    // BarChart3,
     Shield,
     ClipboardList,
     LogOut,
@@ -112,57 +112,60 @@ export default function Sidebar({
                 // },
             ],
         },
-        {
-            title: "FINANCE",
-            items: [
-                {
-                    label: "Payments",
-                    path: "/payments",
-                    icon: CreditCard,
-                },
-                {
-                    label: "Pricing Management",
-                    path: "/pricing-management",
-                    icon: DollarSign,
-                },
-                {
-                    label: "Coupon & Offers",
-                    path: "/offers",
-                    icon: Tag,
-                },
-            ],
-        },
+        // {
+        //     title: "FINANCE",
+        //     items: [
+        //         {
+        //             label: "Payments",
+        //             path: "/payments",
+        //             icon: CreditCard,
+        //         },
+        //         {
+        //             label: "Pricing Management",
+        //             path: "/pricing-management",
+        //             icon: DollarSign,
+        //         },
+        //         {
+        //             label: "Coupon & Offers",
+        //             path: "/offers",
+        //             icon: Tag,
+        //         },
+        //     ],
+        // },
 
-        {
-            title: "INSIGHTS",
-            items: [
-                {
-                    label: "Reviews",
-                    path: "/reviews",
-                    icon: Star,
-                },
-                {
-                    label: "Reports",
-                    path: "/reports",
-                    icon: BarChart3,
-                },
-            ],
-        },
+        // {
+        //     title: "INSIGHTS",
+        //     items: [
+        //         {
+        //             label: "Reviews",
+        //             path: "/reviews",
+        //             icon: Star,
+        //         },
+        //         {
+        //             label: "Reports",
+        //             path: "/reports",
+        //             icon: BarChart3,
+        //         },
+        //     ],
+        // },
         {
             title: "SYSTEM",
             items: [
-                {
-                    label: "Roles & Permissions",
-                    path: "/roles",
-                    icon: Shield,
-                },
                 {
                     label: "Audit Logs",
                     path: "/audit-logs",
                     icon: ClipboardList,
                 },
+                {
+                    label: "Roles & Permissions",
+                    path: "/roles",
+                    icon: Shield,
+                },
+                
+
             ],
         },
+        
     ];
 
     const handleLogout = () => {
@@ -261,7 +264,7 @@ export default function Sidebar({
                                         ease: "easeOut",
                                     }}
                                 >
-                                    Landly 
+                                    Landly
                                 </motion.span>
 
                                 <p className="text-center text-sm text-slate-300 capitalize">

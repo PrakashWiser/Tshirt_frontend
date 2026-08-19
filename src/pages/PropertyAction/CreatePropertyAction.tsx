@@ -5,8 +5,6 @@ import {
     updatePropertyAction,
     getStatusOptions,
     type PropertyAction,
-    type CreatePropertyActionPayload,
-    type UpdatePropertyActionPayload,
 } from "../../store/slice/propertyActionSlice";
 import type { RootState, AppDispatch } from "../../store/store";
 
@@ -24,6 +22,9 @@ export default function PropertyActionCreate({
     const { isLoading } = useSelector(
         (state: RootState) => state.propertyAction
     );
+
+    console.log(propertyAction);
+    
 
     const fields: FormField[] = [
         {
@@ -48,35 +49,43 @@ export default function PropertyActionCreate({
             options: getStatusOptions(),
             fullWidth: false,
         },
+        {
+            name: "propertyActionIcon",
+            label: "Action Icon",
+            type: "file",
+            required: !propertyAction,
+            fullWidth: true,
+        },
     ];
 
     const initialValues = {
         name: propertyAction?.name ?? "",
         isNew: propertyAction?.isNew ?? false,
         status: propertyAction?.status ?? "Active",
+        propertyActionIcon :propertyAction?.image
+        
     };
 
     const handleSubmit = async (values: Record<string, any>) => {
+        const formData = new FormData();
+        formData.append("name", values.name);
+        formData.append("isNew", String(Boolean(values.isNew)));
         if (propertyAction) {
-            const payload: UpdatePropertyActionPayload = {
-                name: values.name,
-                isNew: Boolean(values.isNew),
-                status: values.status,
-            };
-
+            formData.append("status", values.status);
+        }
+        const iconFile = values.propertyActionIcon;
+        if (iconFile instanceof File) {
+            formData.append("propertyActionIcon", iconFile);
+        }
+        if (propertyAction) {
             await dispatch(
                 updatePropertyAction({
                     id: propertyAction._id,
-                    data: payload,
+                    data: formData,
                 })
             );
         } else {
-            const payload: CreatePropertyActionPayload = {
-                name: values.name,
-                isNew: Boolean(values.isNew),
-            };
-
-            await dispatch(createPropertyAction(payload));
+            await dispatch(createPropertyAction(formData));
         }
     };
 

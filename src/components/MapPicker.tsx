@@ -1,3 +1,5 @@
+"use client";
+
 import { useEffect, useState } from "react";
 import {
     MapContainer,
@@ -22,6 +24,7 @@ interface MapPickerProps {
     }) => void;
     initialPosition?: Position | null;
     isInput?: boolean;
+    height?: string | number;
 }
 
 const defaultCenter: Position = {
@@ -29,7 +32,7 @@ const defaultCenter: Position = {
     lng: 78,
 };
 
-const markerIcon = new L.Icon({
+const markerIcon = L.icon({
     iconUrl:
         "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon.png",
     iconRetinaUrl:
@@ -65,10 +68,10 @@ function MapClickHandler({
     onSelectPosition,
 }: MapClickHandlerProps) {
     useMapEvents({
-        click(e) {
+        click(event) {
             onSelectPosition({
-                lat: e.latlng.lat,
-                lng: e.latlng.lng,
+                lat: event.latlng.lat,
+                lng: event.latlng.lng,
             });
         },
     });
@@ -80,9 +83,10 @@ export default function MapPicker({
     onSelect,
     initialPosition = null,
     isInput = true,
+    height = "400px",
 }: MapPickerProps) {
     const [position, setPosition] = useState<Position>(
-        initialPosition || defaultCenter
+        initialPosition ?? defaultCenter
     );
 
     const [query, setQuery] = useState("");
@@ -93,9 +97,7 @@ export default function MapPicker({
         }
     }, [initialPosition]);
 
-    const handlePositionSelect = (
-        newPosition: Position
-    ) => {
+    const handlePositionSelect = (newPosition: Position) => {
         setPosition(newPosition);
 
         onSelect({
@@ -115,6 +117,10 @@ export default function MapPicker({
                 )}&limit=1`
             );
 
+            if (!response.ok) {
+                throw new Error("Location search failed");
+            }
+
             const results = await response.json();
 
             if (!results || results.length === 0) {
@@ -124,6 +130,11 @@ export default function MapPicker({
 
             const lat = Number(results[0].lat);
             const lng = Number(results[0].lon);
+
+            if (Number.isNaN(lat) || Number.isNaN(lng)) {
+                alert("Invalid location coordinates");
+                return;
+            }
 
             const newPosition: Position = {
                 lat,
@@ -138,29 +149,23 @@ export default function MapPicker({
                 longitude: lng,
             });
         } catch (error) {
-            console.error(
-                "Location search failed:",
-                error
-            );
-
+            console.error("Location search failed:", error);
             alert("Unable to search location");
         }
     };
 
     return (
-        <div>
+        <div className="w-full">
             {isInput && (
                 <div className="flex gap-2 mb-3">
                     <input
                         type="text"
                         value={query}
-                        onChange={(e) =>
-                            setQuery(e.target.value)
-                        }
-                        onKeyDown={(e) => {
-                            if (e.key === "Enter") {
-                                e.preventDefault();
-                                e.stopPropagation();
+                        onChange={(event) => setQuery(event.target.value)}
+                        onKeyDown={(event) => {
+                            if (event.key === "Enter") {
+                                event.preventDefault();
+                                event.stopPropagation();
                                 handleSearch();
                             }
                         }}
@@ -170,12 +175,12 @@ export default function MapPicker({
 
                     <button
                         type="button"
-                        onClick={(e) => {
-                            e.preventDefault();
-                            e.stopPropagation();
+                        onClick={(event) => {
+                            event.preventDefault();
+                            event.stopPropagation();
                             handleSearch();
                         }}
-                        className="px-5 bg-black text-white rounded hover:bg-gray-800 transition"
+                        className="px-5 bg-[#3A29AA] text-white rounded hover:bg-gray-800 transition"
                     >
                         Search
                     </button>
@@ -183,15 +188,12 @@ export default function MapPicker({
             )}
 
             <MapContainer
-                center={[
-                    position.lat,
-                    position.lng,
-                ]}
+                center={[position.lat, position.lng]}
                 zoom={initialPosition ? 13 : 5}
-                scrollWheelZoom={true}
+                scrollWheelZoom
                 style={{
                     width: "100%",
-                    height: "400px",
+                    height,
                     borderRadius: "12px",
                 }}
             >
@@ -200,21 +202,14 @@ export default function MapPicker({
                     url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                 />
 
-                <MapController
-                    position={position}
-                />
+                <MapController position={position} />
 
                 <MapClickHandler
-                    onSelectPosition={
-                        handlePositionSelect
-                    }
+                    onSelectPosition={handlePositionSelect}
                 />
 
                 <Marker
-                    position={[
-                        position.lat,
-                        position.lng,
-                    ]}
+                    position={[position.lat, position.lng]}
                     icon={markerIcon}
                 />
             </MapContainer>

@@ -438,7 +438,7 @@ export default function PropertyList() {
                                     const originalProperty = properties.find((p) => p.id === row.id);
                                     return (
                                         <div
-                                            onClick={() => handleView(row.id)}
+                                            key={row.id}
                                             className="overflow-hidden cursor-pointer bg-white border border-slate-200 rounded-2xl shadow-sm hover:shadow-md transition-all">
                                             <div className="relative h-48">
                                                 <CustomImage
