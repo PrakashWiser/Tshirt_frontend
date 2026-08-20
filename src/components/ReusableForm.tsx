@@ -47,6 +47,10 @@ export interface FormField {
     schema?: SchemaField[];
     onOptionSelect?: (option: FieldOption) => void;
     repeatable?: boolean;
+    onMediaDelete?: (
+        mediaType: "image" | "video",
+        mediaId: string
+    ) => void;
 }
 
 interface ReusableFormProps {
@@ -74,8 +78,6 @@ export default function ReusableForm({
 }: ReusableFormProps) {
     const [formData, setFormData] =
         useState<Record<string, any>>(initialValues);
-
-
 
 
     useEffect(() => {
@@ -349,6 +351,7 @@ export default function ReusableForm({
                             <ImageUploadField
                                 label={field.label}
                                 multiple={field.multiple}
+                                onMediaDelete={field.onMediaDelete}
                                 accept={
                                     field.name
                                         .toLowerCase()

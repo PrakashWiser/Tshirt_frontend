@@ -7,6 +7,8 @@ import {
     getPropertyFilters,
     type Property,
     getPropertyById,
+    deletePropertyMedia,
+    clearMediaMessage,
 } from "../../store/slice/propertySlice";
 import { clearPropertyActionError, getAllPropertyActions } from "../../store/slice/propertyActionSlice";
 import { clearPropertyTypeError, getAllPropertyTypes } from "../../store/slice/propertyTypeSlice";
@@ -32,6 +34,10 @@ const IMG_URL = import.meta.env.VITE_BASE_IMAGE_URL || "";
 export default function CreateProperty({ selectedProperty, onClose, loading }: CreatePropertyProps) {
     const dispatch = useAppDispatch();
     const { property } = useAppSelector((state) => state.property);
+    const { mediaMessage } = useAppSelector(
+        (state) => state.property
+    );
+
     const {
         propertyActions,
         message: propertyActionsMessage,
@@ -147,6 +153,23 @@ export default function CreateProperty({ selectedProperty, onClose, loading }: C
         dispatch(getAllAmenities());
         dispatch(getAllLifestyles());
     }, [dispatch]);
+
+
+    useEffect(() => {
+        if (!mediaMessage) return;
+        if (mediaMessage) {
+            dispatch(
+                addToast({
+                    type: "success",
+                    text: mediaMessage,
+                })
+            );
+            if (selectedProperty?.id) dispatch(getPropertyById(selectedProperty.id));
+            dispatch(clearMediaMessage());
+        }
+    }, [mediaMessage, dispatch, selectedProperty]);
+
+
 
     const bhkOptions = useMemo(
         () =>
@@ -266,6 +289,31 @@ export default function CreateProperty({ selectedProperty, onClose, loading }: C
             }
         }
     };
+
+
+    const handleDeleteMedia = async (
+        mediaType: "image" | "video",
+        mediaId: string
+    ) => {
+        if (!selectedProperty?.id || !mediaId) return;
+        try {
+            await dispatch(
+                deletePropertyMedia({
+                    id: selectedProperty.id,
+                    mediaType,
+                    mediaId,
+                })
+            )
+        } catch (error: any) {
+            dispatch(
+                addToast({
+                    type: "error",
+                    text: error || "Failed to delete media",
+                })
+            );
+        }
+    };
+
 
     const fields: FormField[] = [
         {
@@ -499,7 +547,8 @@ export default function CreateProperty({ selectedProperty, onClose, loading }: C
             label: "Property Images",
             type: "file",
             fullWidth: true,
-            multiple: true
+            multiple: true,
+            onMediaDelete: handleDeleteMedia,
         },
         {
             name: "videos",
@@ -507,9 +556,9 @@ export default function CreateProperty({ selectedProperty, onClose, loading }: C
             type: "file",
             fullWidth: true,
             multiple: true,
+            onMediaDelete: handleDeleteMedia,
         },
     ];
-
     const handleSubmit = (values: Record<string, any>) => {
         const formData = new FormData();
 
@@ -546,11 +595,9 @@ export default function CreateProperty({ selectedProperty, onClose, loading }: C
         }
 
         if (Array.isArray(values.amenities)) {
-            const filteredAmenities =
-                values.amenities.filter(
-                    (id: string) =>
-                        id !== "add_new_amenity"
-                );
+            const filteredAmenities = values.amenities.filter(
+                (id: string) => id !== "add_new_amenity"
+            );
 
             filteredAmenities.forEach((id: string) => {
                 formData.append(
@@ -561,11 +608,9 @@ export default function CreateProperty({ selectedProperty, onClose, loading }: C
         }
 
         if (Array.isArray(values.lifestyles)) {
-            const filteredLifestyles =
-                values.lifestyles.filter(
-                    (id: string) =>
-                        id !== "add_new_lifestyle"
-                );
+            const filteredLifestyles = values.lifestyles.filter(
+                (id: string) => id !== "add_new_lifestyle"
+            );
 
             filteredLifestyles.forEach((id: string) => {
                 formData.append(
@@ -591,37 +636,44 @@ export default function CreateProperty({ selectedProperty, onClose, loading }: C
         );
 
         if (Array.isArray(values.videos)) {
-            const videosMeta = values.videos.map(
-                (_file: File, index: number) => ({
-                    category:
-                        values.videosMeta?.[index]?.category?.trim() || "",
-                })
+            const newVideos = values.videos.filter(
+                (
+                    file: File | string | any
+                ): file is File =>
+                    file instanceof File
             );
 
-            const hasEmptyCategory = videosMeta.some(
-                (item) => !item.category
-            );
-
-            if (hasEmptyCategory) {
-                alert(
-                    "Please enter a category for every video."
+            if (newVideos.length > 0) {
+                const videosMeta = newVideos.map(
+                    (_file: File, index: number) => ({
+                        category:
+                            values.videosMeta?.[index]?.category?.trim() || "",
+                    })
                 );
-                return;
-            }
 
-            values.videos.forEach((file: File) => {
-                if (file instanceof File) {
+                const hasEmptyCategory = videosMeta.some(
+                    (item) => !item.category
+                );
+
+                if (hasEmptyCategory) {
+                    alert(
+                        "Please enter a category for every new video."
+                    );
+                    return;
+                }
+
+                newVideos.forEach((file: File) => {
                     formData.append(
                         "videos",
                         file
                     );
-                }
-            });
+                });
 
-            formData.append(
-                "videosMeta",
-                JSON.stringify(videosMeta)
-            );
+                formData.append(
+                    "videosMeta",
+                    JSON.stringify(videosMeta)
+                );
+            }
         }
 
         if (Array.isArray(values.images)) {
@@ -636,23 +688,26 @@ export default function CreateProperty({ selectedProperty, onClose, loading }: C
                 }
             );
 
-            const propertyMediaMeta =
-                values.images.map(
-                    (
-                        _file: File | string,
-                        index: number
-                    ) => ({
-                        isPrimary: index === 0,
-                        sortOrder: index + 1,
-                    })
-                );
-
-            formData.append(
-                "propertyMediaMeta",
-                JSON.stringify(
-                    propertyMediaMeta
-                )
+            const newImages = values.images.filter(
+                (
+                    file: File | string | any
+                ): file is File =>
+                    file instanceof File
             );
+
+            const propertyMediaMeta = newImages.map(
+                (_file: File, index: number) => ({
+                    isPrimary: index === 0,
+                    sortOrder: index + 1,
+                })
+            );
+
+            if (newImages.length > 0) {
+                formData.append(
+                    "propertyMediaMeta",
+                    JSON.stringify(propertyMediaMeta)
+                );
+            }
         } else if (values.images instanceof File) {
             formData.append(
                 "propertyMedia",
@@ -725,7 +780,10 @@ export default function CreateProperty({ selectedProperty, onClose, loading }: C
             );
         }
 
-        for (const [key, value] of formData.entries()) {
+        for (
+            const [key, value]
+            of formData.entries()
+        ) {
             console.log(
                 key,
                 value instanceof File
@@ -829,13 +887,19 @@ export default function CreateProperty({ selectedProperty, onClose, loading }: C
             }))
             : [],
         images: Array.isArray(formProperty?.propertyMedia)
-            ? formProperty.propertyMedia.map((media) => media.url)
+            ? formProperty.propertyMedia.map((media: any) => ({
+                id: media._id || media.id,
+                url: media.url,
+                isExisting: true,
+            }))
             : [],
+
         videos: Array.isArray(formProperty?.videos)
-            ? formProperty.videos.map(
-                (video) =>
-                    `${IMG_URL}${video.url}`
-            )
+            ? formProperty.videos.map((video: any) => ({
+                id: video._id || video.id,
+                url: `${IMG_URL}${video.url}`,
+                isExisting: true,
+            }))
             : [],
 
         videosMeta: Array.isArray(formProperty?.videos)
@@ -855,6 +919,9 @@ export default function CreateProperty({ selectedProperty, onClose, loading }: C
         setShowCreateLifestyle(false);
         refreshPropertyOptions();
     };
+
+
+
 
     return (
         <div className="p-6">

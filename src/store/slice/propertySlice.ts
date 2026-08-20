@@ -185,6 +185,7 @@ interface PropertyState {
   isLoading: boolean;
   error: string | null;
   message: string | null;
+  mediaMessage: string | null;
   pagination: Pagination | null;
 }
 
@@ -192,6 +193,7 @@ const initialState: PropertyState = {
   properties: [],
   property: null,
   filters: null,
+  mediaMessage: null,
   homeProperties: [],
   similarProperties: [],
   isLoading: false,
@@ -360,28 +362,6 @@ export const deleteProperty = createAsyncThunk(
   },
 );
 
-export const deletePropertyMedia = createAsyncThunk(
-  "property/deleteMedia",
-  async ({ id, mediaIndex }: { id: string; mediaIndex: number }, thunkAPI) => {
-    try {
-      const state = thunkAPI.getState() as RootState;
-      const token = state.auth.accessToken;
-
-      await FetchApi({
-        endpoint: `/properties/${id}/media/${mediaIndex}`,
-        method: "DELETE",
-        token,
-      });
-
-      return { id, mediaIndex };
-    } catch (err: any) {
-      return thunkAPI.rejectWithValue(
-        err?.message || "Failed to delete property media",
-      );
-    }
-  },
-);
-
 export const incrementPropertyVisit = createAsyncThunk(
   "property/incrementVisit",
   async (id: string, thunkAPI) => {
@@ -448,10 +428,81 @@ export const getPropertyById = createAsyncThunk(
   },
 );
 
+export const updatePropertyMedia = createAsyncThunk(
+  "property/updateMedia",
+  async (
+    {
+      id,
+      mediaType,
+      mediaId,
+      data,
+    }: {
+      id: string;
+      mediaType: "image" | "video";
+      mediaId: string;
+      data: FormData;
+    },
+    thunkAPI,
+  ) => {
+    try {
+      const state = thunkAPI.getState() as RootState;
+      const token = state.auth.accessToken;
+      const res = await FetchApi<any>({
+        endpoint: `/properties/${id}/media/${mediaType}/${mediaId}`,
+        method: "PATCH",
+        body: data,
+        token,
+      });
+
+      return res.data;
+    } catch (err: any) {
+      return thunkAPI.rejectWithValue(
+        err?.message || "Failed to update property media",
+      );
+    }
+  },
+);
+
+export const deletePropertyMedia = createAsyncThunk(
+  "property/deleteMedia",
+  async (
+    {
+      id,
+      mediaType,
+      mediaId,
+    }: {
+      id: string;
+      mediaType: "image" | "video";
+      mediaId: string;
+    },
+    thunkAPI,
+  ) => {
+    try {
+      const state = thunkAPI.getState() as RootState;
+      const token = state.auth.accessToken;
+
+      const res = await FetchApi<any>({
+        endpoint: `/properties/${id}/media/${mediaType}/${mediaId}`,
+        method: "DELETE",
+        token,
+      });
+
+      return res.data;
+    } catch (err: any) {
+      return thunkAPI.rejectWithValue(
+        err?.message || "Failed to delete property media",
+      );
+    }
+  },
+);
+
 const propertySlice = createSlice({
   name: "property",
   initialState,
   reducers: {
+    clearMediaMessage: (state) => {
+      state.mediaMessage = null;
+    },
     clearPropertyError: (state) => {
       state.error = null;
       state.message = null;
@@ -554,19 +605,6 @@ const propertySlice = createSlice({
         state.error = action.payload;
       })
 
-      .addCase(deletePropertyMedia.pending, (state) => {
-        state.isLoading = true;
-        state.error = null;
-      })
-      .addCase(deletePropertyMedia.fulfilled, (state) => {
-        state.isLoading = false;
-        state.message = "Media deleted successfully";
-      })
-      .addCase(deletePropertyMedia.rejected, (state, action: any) => {
-        state.isLoading = false;
-        state.error = action.payload;
-      })
-
       .addCase(incrementPropertyVisit.pending, (state) => {
         state.isLoading = true;
         state.error = null;
@@ -603,10 +641,44 @@ const propertySlice = createSlice({
       .addCase(getPropertyById.rejected, (state, action: any) => {
         state.isLoading = false;
         state.error = action.payload;
+      })
+
+      .addCase(updatePropertyMedia.pending, (state) => {
+        state.isLoading = true;
+        state.error = null;
+        state.mediaMessage = null;
+      })
+      .addCase(updatePropertyMedia.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.mediaMessage =
+          action.payload?.message || "Media updated successfully";
+      })
+      .addCase(updatePropertyMedia.rejected, (state, action: any) => {
+        state.isLoading = false;
+        state.error = action.payload;
+      })
+
+      .addCase(deletePropertyMedia.pending, (state) => {
+        state.isLoading = true;
+        state.error = null;
+        state.mediaMessage = null;
+      })
+      .addCase(deletePropertyMedia.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.mediaMessage =
+          action.payload?.message || "Media deleted successfully";
+      })
+      .addCase(deletePropertyMedia.rejected, (state, action: any) => {
+        state.isLoading = false;
+        state.error = action.payload;
       });
   },
 });
 
-export const { clearPropertyError, clearPropertyMessage, clearPropertyState } =
-  propertySlice.actions;
+export const {
+  clearPropertyError,
+  clearPropertyMessage,
+  clearPropertyState,
+  clearMediaMessage,
+} = propertySlice.actions;
 export default propertySlice.reducer;

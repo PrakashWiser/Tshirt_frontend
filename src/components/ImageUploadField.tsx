@@ -2,16 +2,32 @@ import { UploadCloud, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import CustomImage from "./Image";
 
+interface MediaValue {
+    id?: string;
+    url: string;
+    isExisting?: boolean;
+}
+
 interface ImageUploadFieldProps {
     label?: string;
-    value?: string | string[] | File | File[] | null;
+    value?:
+    | string
+    | string[]
+    | File
+    | File[]
+    | MediaValue
+    | MediaValue[]
+    | null;
     accept?: string;
     multiple?: boolean;
     onChange: (file: any) => void;
+    onMediaDelete?: (
+        mediaType: "image" | "video",
+        mediaId: string
+    ) => void;
     videoMeta?: {
         category: string;
     }[];
-
     onVideoMetaChange?: (
         meta: { category: string }[]
     ) => void;
@@ -25,12 +41,13 @@ export default function ImageUploadField({
     accept = "image/*",
     videoMeta = [],
     onVideoMetaChange,
+    onMediaDelete,
 }: ImageUploadFieldProps) {
     const inputRef = useRef<HTMLInputElement>(null);
+
     const isVideo = accept.includes("video");
+
     const [previewUrls, setPreviewUrls] = useState<string[]>([]);
-
-
 
     useEffect(() => {
         if (!value) {
@@ -39,10 +56,12 @@ export default function ImageUploadField({
         }
 
         if (Array.isArray(value)) {
-            const urls = value.map((item) =>
+            const urls = value.map((item: any) =>
                 item instanceof File
                     ? URL.createObjectURL(item)
-                    : item
+                    : typeof item === "object"
+                        ? item.url
+                        : item
             );
 
             setPreviewUrls(urls);
@@ -66,9 +85,13 @@ export default function ImageUploadField({
             };
         }
 
+        if (typeof value === "object" && value !== null) {
+            setPreviewUrls([value.url]);
+            return;
+        }
+
         setPreviewUrls([value]);
     }, [value]);
-
 
     const handleRemove = (index: number) => {
         if (!Array.isArray(value)) {
@@ -79,6 +102,21 @@ export default function ImageUploadField({
             }
 
             return;
+        }
+
+        const item: any = value[index];
+
+        if (
+            item &&
+            typeof item === "object" &&
+            !(item instanceof File) &&
+            item.isExisting &&
+            item.id
+        ) {
+            onMediaDelete?.(
+                isVideo ? "video" : "image",
+                item.id
+            );
         }
 
         const updatedFiles = [...value];
@@ -100,7 +138,6 @@ export default function ImageUploadField({
         }
     };
 
-
     const handleCategoryChange = (
         index: number,
         category: string
@@ -115,7 +152,6 @@ export default function ImageUploadField({
     };
 
     const hasPreview = previewUrls.length > 0;
-
 
     return (
         <div className="w-full space-y-3">
@@ -132,7 +168,6 @@ export default function ImageUploadField({
                 className="w-full border-2 border-dashed border-slate-300 rounded-2xl p-8 cursor-pointer hover:border-[#3A29AA] transition-colors"
             >
                 <div className="flex flex-col items-center">
-
                     <UploadCloud
                         size={42}
                         className="text-slate-400"
@@ -151,9 +186,9 @@ export default function ImageUploadField({
                             ? "MP4, MOV, WEBM • Max 50MB"
                             : "JPG, PNG, JPEG, WEBP • Max 5MB each"}
                     </p>
-
                 </div>
             </div>
+
             <input
                 ref={inputRef}
                 type="file"
@@ -177,7 +212,9 @@ export default function ImageUploadField({
                             ...existing,
                             ...files,
                         ];
+
                         onChange(updatedFiles);
+
                         if (isVideo) {
                             const updatedMeta = [
                                 ...videoMeta,
@@ -191,9 +228,8 @@ export default function ImageUploadField({
                             );
                         }
                     } else {
-                        onChange(
-                            files[0] ?? null
-                        );
+                        onChange(files[0] ?? null);
+
                         if (isVideo) {
                             onVideoMetaChange?.([
                                 {
@@ -210,25 +246,66 @@ export default function ImageUploadField({
             {hasPreview && (
                 <div className="flex gap-4 overflow-x-auto pb-2">
                     {previewUrls.map(
-                        (url, index) => (
-                            <div
-                                key={index}
-                                className="relative shrink-0"
-                            >
+                        (url, index) => {
+                            return (
+                                <div
+                                    key={index}
+                                    className="relative shrink-0"
+                                >
+                                    {isVideo ? (
+                                        <div className="w-48">
+                                            <div className="relative">
+                                                <video
+                                                    controls
+                                                    className="w-48 h-40 rounded-xl border object-cover bg-black"
+                                                >
+                                                    <source
+                                                        src={url}
+                                                    />
+                                                    Your browser does not support video playback.
+                                                </video>
 
-                                {isVideo ? (
-                                    <div className="w-48">
+                                                <button
+                                                    type="button"
+                                                    onClick={() =>
+                                                        handleRemove(
+                                                            index
+                                                        )
+                                                    }
+                                                    className="absolute top-1 right-1 w-6 h-6 cursor-pointer rounded-full bg-red-500 text-white flex items-center justify-center hover:bg-red-600"
+                                                >
+                                                    <X
+                                                        size={14}
+                                                    />
+                                                </button>
+                                            </div>
+
+                                            <input
+                                                type="text"
+                                                value={
+                                                    videoMeta[
+                                                        index
+                                                    ]?.category ||
+                                                    ""
+                                                }
+                                                onChange={(e) =>
+                                                    handleCategoryChange(
+                                                        index,
+                                                        e.target.value
+                                                    )
+                                                }
+                                                placeholder="Enter video category"
+                                                className="w-full mt-2 px-3 py-2 text-sm border border-slate-300 rounded-lg outline-none focus:border-[#3A29AA] focus:ring-1 focus:ring-[#3A29AA]"
+                                            />
+                                        </div>
+                                    ) : (
                                         <div className="relative">
+                                            <CustomImage
+                                                src={url}
+                                                alt={`preview-${index}`}
+                                                className="w-35 h-35 rounded-xl border object-cover"
+                                            />
 
-                                            <video
-                                                controls
-                                                className="w-48 h-40 rounded-xl border object-cover bg-black"
-                                            >
-                                                <source
-                                                    src={url}
-                                                />
-                                                Your browser does not support video playback.
-                                            </video>
                                             <button
                                                 type="button"
                                                 onClick={() =>
@@ -236,65 +313,20 @@ export default function ImageUploadField({
                                                         index
                                                     )
                                                 }
-                                                className="absolute top-1 right-1 w-6 h-6 cursor-pointer rounded-full bg-red-500 text-white flex items-center justify-center hover:bg-red-600"
+                                                className="absolute top-1 right-1 w-5 h-5 cursor-pointer rounded-full bg-red-500 text-white flex items-center justify-center hover:bg-red-600"
                                             >
                                                 <X
                                                     size={14}
                                                 />
                                             </button>
                                         </div>
-                                        <input
-                                            type="text"
-                                            value={
-                                                videoMeta[
-                                                    index
-                                                ]?.category ||
-                                                ""
-                                            }
-                                            onChange={(
-                                                e
-                                            ) =>
-                                                handleCategoryChange(
-                                                    index,
-                                                    e.target.value
-                                                )
-                                            }
-                                            placeholder="Enter video category"
-                                            className="w-full mt-2 px-3 py-2 text-sm border border-slate-300 rounded-lg outline-none focus:border-[#3A29AA] focus:ring-1 focus:ring-[#3A29AA]"
-                                        />
-
-                                    </div>
-                                ) : (
-                                    <div className="relative">
-                                        <CustomImage
-                                            src={url}
-                                            alt={`preview-${index}`}
-                                            className="w-35 h-35 rounded-xl border object-cover"
-                                        />
-                                        <button
-                                            type="button"
-                                            onClick={() =>
-                                                handleRemove(
-                                                    index
-                                                )
-                                            }
-                                            className="absolute top-1 right-1 w-5 h-5 cursor-pointer rounded-full bg-red-500 text-white flex items-center justify-center hover:bg-red-600"
-                                        >
-                                            <X
-                                                size={14}
-                                            />
-                                        </button>
-
-                                    </div>
-                                )}
-
-                            </div>
-                        )
+                                    )}
+                                </div>
+                            );
+                        }
                     )}
-
                 </div>
             )}
-
         </div>
     );
 }
