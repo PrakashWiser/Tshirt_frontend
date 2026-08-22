@@ -78,7 +78,7 @@ export const getAllPropertyTypes = createAsyncThunk(
       const token = state.auth.accessToken;
 
       const res = await FetchApi<any>({
-        endpoint: "/property-types",
+        endpoint: "/property-types/admin",
         method: "GET",
         token,
       });

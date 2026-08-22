@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { X, Filter, SlidersHorizontal, RotateCcw, Check } from 'lucide-react';
+import { X, Filter, SlidersHorizontal, RotateCcw, Check, Home, Star, Sparkles } from 'lucide-react';
 import type { PropertyFilters, FilterOptions } from '../../store/slice/propertySlice';
 
 interface PropertyFilterCanvasProps {
@@ -23,23 +23,15 @@ export default function PropertyFilterCanvas({
 }: PropertyFilterCanvasProps) {
     const [localFilters, setLocalFilters] = useState<PropertyFilters>(filters);
     const [priceRange, setPriceRange] = useState<[number, number]>([
-        filters.minPrice || filterOptions?.priceRange?.min || 0,
-        filters.maxPrice || filterOptions?.priceRange?.max || 10000000,
-    ]);
-    const [squareFeetRange, setSquareFeetRange] = useState<[number, number]>([
-        filters.minSquareFeet || filterOptions?.squareFeetRange?.min || 0,
-        filters.maxSquareFeet || filterOptions?.squareFeetRange?.max || 10000,
+        filters.minPrice || filterOptions?.min_price || 0,
+        filters.maxPrice || filterOptions?.max_price || 10000000,
     ]);
 
     useEffect(() => {
         setLocalFilters(filters);
         setPriceRange([
-            filters.minPrice || filterOptions?.priceRange?.min || 0,
-            filters.maxPrice || filterOptions?.priceRange?.max || 10000000,
-        ]);
-        setSquareFeetRange([
-            filters.minSquareFeet || filterOptions?.squareFeetRange?.min || 0,
-            filters.maxSquareFeet || filterOptions?.squareFeetRange?.max || 10000,
+            filters.minPrice || filterOptions?.min_price || 0,
+            filters.maxPrice || filterOptions?.max_price || 10000000,
         ]);
     }, [filters, filterOptions]);
 
@@ -58,17 +50,6 @@ export default function PropertyFilterCanvas({
         }
     };
 
-    const handleSquareFeetChange = (index: 0 | 1, value: number) => {
-        const newRange: [number, number] = [...squareFeetRange] as [number, number];
-        newRange[index] = value;
-        setSquareFeetRange(newRange);
-        if (index === 0) {
-            setLocalFilters((prev) => ({ ...prev, minSquareFeet: value }));
-        } else {
-            setLocalFilters((prev) => ({ ...prev, maxSquareFeet: value }));
-        }
-    };
-
     const handleApply = () => {
         onApplyFilters(localFilters);
         onClose();
@@ -77,12 +58,8 @@ export default function PropertyFilterCanvas({
     const handleClear = () => {
         setLocalFilters({});
         setPriceRange([
-            filterOptions?.priceRange?.min || 0,
-            filterOptions?.priceRange?.max || 10000000,
-        ]);
-        setSquareFeetRange([
-            filterOptions?.squareFeetRange?.min || 0,
-            filterOptions?.squareFeetRange?.max || 10000,
+            filterOptions?.min_price || 0,
+            filterOptions?.max_price || 10000000,
         ]);
         onClearFilters();
         onClose();
@@ -100,12 +77,16 @@ export default function PropertyFilterCanvas({
         if (localFilters.propertyType) count++;
         if (localFilters.propertyAction) count++;
         if (localFilters.bhk) count++;
-        if (localFilters.city) count++;
-        if (localFilters.locality) count++;
         if (localFilters.minPrice) count++;
         if (localFilters.maxPrice) count++;
         if (localFilters.minSquareFeet) count++;
         if (localFilters.maxSquareFeet) count++;
+        if (localFilters.status) count++;
+        if (localFilters.verification) count++;
+        if (localFilters.recommended) count++;
+        if (localFilters.highlighted) count++;
+        if (localFilters.featured) count++;
+        if (localFilters.furnished) count++;
         return count;
     };
 
@@ -156,14 +137,176 @@ export default function PropertyFilterCanvas({
                             </button>
                         </div>
                     )}
+                    <div className="space-y-2">
+                        <label className="text-sm font-medium text-slate-700 flex items-center gap-2">
+                            <span className="w-1 h-4 bg-emerald-500 rounded-full"></span>
+                            Status
+                        </label>
+                        <div className="flex flex-wrap gap-2">
+                            <button
+                                onClick={() => handleFilterChange('status', localFilters.status ? '' : undefined)}
+                                className={`px-4 py-2 text-sm rounded-lg border transition-all duration-200 ${!localFilters.status
+                                    ? 'border-slate-300 bg-slate-100 text-slate-700'
+                                    : 'border-slate-200 hover:border-slate-300 hover:bg-slate-50'
+                                    }`}
+                            >
+                                All
+                            </button>
+                            <button
+                                onClick={() => handleFilterChange('status', localFilters.status === 'Active' ? '' : 'Active')}
+                                className={`px-4 py-2 text-sm rounded-lg border transition-all duration-200 ${localFilters.status === 'Active'
+                                    ? 'border-emerald-500 bg-emerald-50 text-emerald-700 ring-2 ring-emerald-200'
+                                    : 'border-slate-200 hover:border-slate-300 hover:bg-slate-50'
+                                    }`}
+                            >
+                                Active
+                            </button>
+                            <button
+                                onClick={() => handleFilterChange('status', localFilters.status === 'Inactive' ? '' : 'Inactive')}
+                                className={`px-4 py-2 text-sm rounded-lg border transition-all duration-200 ${localFilters.status === 'Inactive'
+                                    ? 'border-red-500 bg-red-50 text-red-700 ring-2 ring-red-200'
+                                    : 'border-slate-200 hover:border-slate-300 hover:bg-slate-50'
+                                    }`}
+                            >
+                                Inactive
+                            </button>
+                        </div>
+                    </div>
+                    <div className="space-y-2">
+                        <label className="text-sm font-medium text-slate-700 flex items-center gap-2">
+                            <span className="w-1 h-4 bg-purple-500 rounded-full"></span>
+                            Verification Status
+                        </label>
+                        <div className="flex flex-wrap gap-2">
+                            <button
+                                onClick={() => handleFilterChange('verification', localFilters.verification ? '' : undefined)}
+                                className={`px-4 py-2 text-sm rounded-lg border transition-all duration-200 ${!localFilters.verification
+                                    ? 'border-slate-300 bg-slate-100 text-slate-700'
+                                    : 'border-slate-200 hover:border-slate-300 hover:bg-slate-50'
+                                    }`}
+                            >
+                                All
+                            </button>
+                            <button
+                                onClick={() => handleFilterChange('verification', localFilters.verification === 'Verified' ? '' : 'Verified')}
+                                className={`px-4 py-2 text-sm rounded-lg border transition-all duration-200 ${localFilters.verification === 'Verified'
+                                    ? 'border-emerald-500 bg-emerald-50 text-emerald-700 ring-2 ring-emerald-200'
+                                    : 'border-slate-200 hover:border-slate-300 hover:bg-slate-50'
+                                    }`}
+                            >
+                                Verified
+                            </button>
+                            <button
+                                onClick={() => handleFilterChange('verification', localFilters.verification === 'Pending' ? '' : 'Pending')}
+                                className={`px-4 py-2 text-sm rounded-lg border transition-all duration-200 ${localFilters.verification === 'Pending'
+                                    ? 'border-amber-500 bg-amber-50 text-amber-700 ring-2 ring-amber-200'
+                                    : 'border-slate-200 hover:border-slate-300 hover:bg-slate-50'
+                                    }`}
+                            >
+                                Pending
+                            </button>
+                            <button
+                                onClick={() => handleFilterChange('verification', localFilters.verification === 'Rejected' ? '' : 'Rejected')}
+                                className={`px-4 py-2 text-sm rounded-lg border transition-all duration-200 ${localFilters.verification === 'Rejected'
+                                    ? 'border-red-500 bg-red-50 text-red-700 ring-2 ring-red-200'
+                                    : 'border-slate-200 hover:border-slate-300 hover:bg-slate-50'
+                                    }`}
+                            >
+                                Rejected
+                            </button>
+                        </div>
+                    </div>
 
+                    {/* Furnished Filter */}
+                    <div className="space-y-2">
+                        <label className="text-sm font-medium text-slate-700 flex items-center gap-2">
+                            <span className="w-1 h-4 bg-rose-500 rounded-full"></span>
+                            Furnished
+                        </label>
+                        <div className="flex flex-wrap gap-2">
+                            <button
+                                onClick={() => handleFilterChange('furnished', localFilters.furnished ? '' : undefined)}
+                                className={`px-4 py-2 text-sm rounded-lg border transition-all duration-200 ${!localFilters.furnished
+                                    ? 'border-slate-300 bg-slate-100 text-slate-700'
+                                    : 'border-slate-200 hover:border-slate-300 hover:bg-slate-50'
+                                    }`}
+                            >
+                                All
+                            </button>
+                            <button
+                                onClick={() => handleFilterChange('furnished', localFilters.furnished === 'furnished' ? '' : 'furnished')}
+                                className={`px-4 py-2 text-sm rounded-lg border transition-all duration-200 ${localFilters.furnished === 'furnished'
+                                    ? 'border-rose-500 bg-rose-50 text-rose-700 ring-2 ring-rose-200'
+                                    : 'border-slate-200 hover:border-slate-300 hover:bg-slate-50'
+                                    }`}
+                            >
+                                Furnished
+                            </button>
+                            <button
+                                onClick={() => handleFilterChange('furnished', localFilters.furnished === 'semi_furnished' ? '' : 'semi_furnished')}
+                                className={`px-4 py-2 text-sm rounded-lg border transition-all duration-200 ${localFilters.furnished === 'semi_furnished'
+                                    ? 'border-rose-500 bg-rose-50 text-rose-700 ring-2 ring-rose-200'
+                                    : 'border-slate-200 hover:border-slate-300 hover:bg-slate-50'
+                                    }`}
+                            >
+                                Semi-Furnished
+                            </button>
+                            <button
+                                onClick={() => handleFilterChange('furnished', localFilters.furnished === 'unfurnished' ? '' : 'unfurnished')}
+                                className={`px-4 py-2 text-sm rounded-lg border transition-all duration-200 ${localFilters.furnished === 'unfurnished'
+                                    ? 'border-rose-500 bg-rose-50 text-rose-700 ring-2 ring-rose-200'
+                                    : 'border-slate-200 hover:border-slate-300 hover:bg-slate-50'
+                                    }`}
+                            >
+                                Unfurnished
+                            </button>
+                        </div>
+                    </div>
+                    <div className="space-y-3">
+                        <label className="text-sm font-medium text-slate-700">Property Highlights</label>
+                        <div className="flex flex-wrap gap-3">
+                            <button
+                                onClick={() => handleFilterChange('recommended', localFilters.recommended ? false : true)}
+                                className={`flex items-center gap-2 px-4 py-2 text-sm rounded-lg border transition-all duration-200 ${localFilters.recommended
+                                    ? 'border-indigo-500 bg-indigo-50 text-indigo-700 ring-2 ring-indigo-200'
+                                    : 'border-slate-200 hover:border-slate-300 hover:bg-slate-50'
+                                    }`}
+                            >
+                                <Star size={16} />
+                                Recommended
+                                {localFilters.recommended && <Check size={16} />}
+                            </button>
+                            <button
+                                onClick={() => handleFilterChange('highlighted', localFilters.highlighted ? false : true)}
+                                className={`flex items-center gap-2 px-4 py-2 text-sm rounded-lg border transition-all duration-200 ${localFilters.highlighted
+                                    ? 'border-amber-500 bg-amber-50 text-amber-700 ring-2 ring-amber-200'
+                                    : 'border-slate-200 hover:border-slate-300 hover:bg-slate-50'
+                                    }`}
+                            >
+                                <Sparkles size={16} />
+                                Highlighted
+                                {localFilters.highlighted && <Check size={16} />}
+                            </button>
+                            <button
+                                onClick={() => handleFilterChange('featured', localFilters.featured ? false : true)}
+                                className={`flex items-center gap-2 px-4 py-2 text-sm rounded-lg border transition-all duration-200 ${localFilters.featured
+                                    ? 'border-blue-500 bg-blue-50 text-blue-700 ring-2 ring-blue-200'
+                                    : 'border-slate-200 hover:border-slate-300 hover:bg-slate-50'
+                                    }`}
+                            >
+                                <Home size={16} />
+                                Featured
+                                {localFilters.featured && <Check size={16} />}
+                            </button>
+                        </div>
+                    </div>
                     <div className="space-y-2">
                         <label className="text-sm font-medium text-slate-700 flex items-center gap-2">
                             <span className="w-1 h-4 bg-blue-500 rounded-full"></span>
                             Property Type
                         </label>
                         <div className="grid grid-cols-2 gap-2">
-                            {filterOptions?.propertyTypes?.map((type) => (
+                            {filterOptions?.propertyType?.map((type) => (
                                 <button
                                     key={type._id}
                                     onClick={() =>
@@ -193,62 +336,55 @@ export default function PropertyFilterCanvas({
                             <span className="w-1 h-4 bg-green-500 rounded-full"></span>
                             Property Action
                         </label>
-                        <div className="grid grid-cols-2 gap-2">
-                            {filterOptions?.propertyActions?.map((action) => (
-                                <button
-                                    key={action._id}
-                                    onClick={() =>
-                                        handleFilterChange(
-                                            'propertyAction',
-                                            localFilters.propertyAction === action._id ? '' : action._id
-                                        )
-                                    }
-                                    className={`px-3 py-2 text-sm rounded-lg border transition-all duration-200 text-left ${localFilters.propertyAction === action._id
-                                        ? 'border-green-500 bg-green-50 text-green-700 ring-2 ring-green-200'
-                                        : 'border-slate-200 hover:border-slate-300 hover:bg-slate-50'
-                                        }`}
-                                >
-                                    <span className="flex items-center justify-between">
-                                        {action.name}
-                                        {localFilters.propertyAction === action._id && (
-                                            <Check size={16} className="text-green-500" />
-                                        )}
-                                    </span>
-                                </button>
-                            ))}
-                        </div>
-                    </div>
 
+                    </div>
                     <div className="space-y-2">
                         <label className="text-sm font-medium text-slate-700 flex items-center gap-2">
                             <span className="w-1 h-4 bg-purple-500 rounded-full"></span>
                             BHK
                         </label>
+
                         <div className="flex flex-wrap gap-2">
                             <button
-                                onClick={() => handleFilterChange('bhk', localFilters.bhk ? '' : undefined)}
+                                type="button"
+                                onClick={() => handleFilterChange("bhk", undefined)}
                                 className={`px-4 py-2 text-sm rounded-lg border transition-all duration-200 ${!localFilters.bhk
-                                    ? 'border-slate-300 bg-slate-100 text-slate-700'
-                                    : 'border-slate-200 hover:border-slate-300 hover:bg-slate-50'
+                                        ? "border-slate-300 bg-slate-100 text-slate-700"
+                                        : "border-slate-200 hover:border-slate-300 hover:bg-slate-50"
                                     }`}
                             >
                                 All
                             </button>
-                            {filterOptions?.bhkOptions?.map((bhk) => (
+
+                            {filterOptions?.bhk?.map((bhk) => (
                                 <button
-                                    key={bhk}
-                                    onClick={() => handleFilterChange('bhk', localFilters.bhk === bhk ? '' : bhk)}
-                                    className={`px-4 py-2 text-sm rounded-lg border transition-all duration-200 ${localFilters.bhk === bhk
-                                        ? 'border-purple-500 bg-purple-50 text-purple-700 ring-2 ring-purple-200'
-                                        : 'border-slate-200 hover:border-slate-300 hover:bg-slate-50'
+                                    type="button"
+                                    key={bhk._id}
+                                    onClick={() =>
+                                        handleFilterChange(
+                                            "bhk",
+                                            localFilters.bhk === bhk._id
+                                                ? undefined
+                                                : bhk._id
+                                        )
+                                    }
+                                    className={`px-4 py-2 text-sm rounded-lg border transition-all duration-200 ${localFilters.bhk === bhk._id
+                                            ? "border-purple-500 bg-purple-50 text-purple-700 ring-2 ring-purple-200"
+                                            : "border-slate-200 hover:border-slate-300 hover:bg-slate-50"
                                         }`}
                                 >
-                                    {bhk} BHK
+                                    {bhk.name}
+
+                                    {localFilters.bhk === bhk._id && (
+                                        <Check
+                                            size={16}
+                                            className="inline ml-2 text-purple-500"
+                                        />
+                                    )}
                                 </button>
                             ))}
                         </div>
                     </div>
-
                     <div className="space-y-2">
                         <label className="text-sm font-medium text-slate-700 flex items-center gap-2">
                             <span className="w-1 h-4 bg-amber-500 rounded-full"></span>
@@ -281,108 +417,20 @@ export default function PropertyFilterCanvas({
                             </div>
                             <input
                                 type="range"
-                                min={filterOptions?.priceRange?.min || 0}
-                                max={filterOptions?.priceRange?.max || 10000000}
+                                min={filterOptions?.min_price || 0}
+                                max={filterOptions?.max_price || 10000000}
                                 value={priceRange[0]}
                                 onChange={(e) => handlePriceChange(0, Number(e.target.value))}
                                 className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-blue-500"
                             />
                             <input
                                 type="range"
-                                min={filterOptions?.priceRange?.min || 0}
-                                max={filterOptions?.priceRange?.max || 10000000}
+                                min={filterOptions?.min_price || 0}
+                                max={filterOptions?.max_price || 10000000}
                                 value={priceRange[1]}
                                 onChange={(e) => handlePriceChange(1, Number(e.target.value))}
                                 className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-blue-500"
                             />
-                        </div>
-                    </div>
-
-                    <div className="space-y-2">
-                        <label className="text-sm font-medium text-slate-700 flex items-center gap-2">
-                            <span className="w-1 h-4 bg-indigo-500 rounded-full"></span>
-                            Area (sq.ft)
-                        </label>
-                        <div className="space-y-4">
-                            <div className="flex items-center gap-4">
-                                <div className="flex-1">
-                                    <label className="text-xs text-slate-500">Min</label>
-                                    <input
-                                        type="number"
-                                        value={squareFeetRange[0]}
-                                        onChange={(e) => handleSquareFeetChange(0, Number(e.target.value))}
-                                        className="w-full mt-1 px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                    />
-                                </div>
-                                <div className="flex-1">
-                                    <label className="text-xs text-slate-500">Max</label>
-                                    <input
-                                        type="number"
-                                        value={squareFeetRange[1]}
-                                        onChange={(e) => handleSquareFeetChange(1, Number(e.target.value))}
-                                        className="w-full mt-1 px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                    />
-                                </div>
-                            </div>
-                            <div className="flex justify-between text-xs text-slate-500">
-                                <span>{squareFeetRange[0]} sq.ft</span>
-                                <span>{squareFeetRange[1]} sq.ft</span>
-                            </div>
-                            <input
-                                type="range"
-                                min={filterOptions?.squareFeetRange?.min || 0}
-                                max={filterOptions?.squareFeetRange?.max || 10000}
-                                value={squareFeetRange[0]}
-                                onChange={(e) => handleSquareFeetChange(0, Number(e.target.value))}
-                                className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-indigo-500"
-                            />
-                            <input
-                                type="range"
-                                min={filterOptions?.squareFeetRange?.min || 0}
-                                max={filterOptions?.squareFeetRange?.max || 10000}
-                                value={squareFeetRange[1]}
-                                onChange={(e) => handleSquareFeetChange(1, Number(e.target.value))}
-                                className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-indigo-500"
-                            />
-                        </div>
-                    </div>
-
-                    <div className="space-y-2">
-                        <label className="text-sm font-medium text-slate-700 flex items-center gap-2">
-                            <span className="w-1 h-4 bg-rose-500 rounded-full"></span>
-                            Location
-                        </label>
-                        <div className="grid grid-cols-2 gap-3">
-                            <div>
-                                <label className="text-xs text-slate-500">City</label>
-                                <select
-                                    value={localFilters.city || ''}
-                                    onChange={(e) => handleFilterChange('city', e.target.value || '')}
-                                    className="w-full mt-1 px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                >
-                                    <option value="">All Cities</option>
-                                    {filterOptions?.cities?.map((city) => (
-                                        <option key={city} value={city}>
-                                            {city}
-                                        </option>
-                                    ))}
-                                </select>
-                            </div>
-                            <div>
-                                <label className="text-xs text-slate-500">Locality</label>
-                                <select
-                                    value={localFilters.locality || ''}
-                                    onChange={(e) => handleFilterChange('locality', e.target.value || '')}
-                                    className="w-full mt-1 px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                >
-                                    <option value="">All Localities</option>
-                                    {filterOptions?.localities?.map((locality) => (
-                                        <option key={locality} value={locality}>
-                                            {locality}
-                                        </option>
-                                    ))}
-                                </select>
-                            </div>
                         </div>
                     </div>
                 </div>

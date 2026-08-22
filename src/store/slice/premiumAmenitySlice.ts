@@ -99,7 +99,7 @@ export const getAllAmenities = createAsyncThunk<
       if (params.status !== undefined)
         queryParams.append("status", String(params.status));
     }
-    const endpoint = `/premium-amenities${queryParams.toString() ? `?${queryParams.toString()}` : ""}`;
+    const endpoint = `/premium-amenities/admin${queryParams.toString() ? `?${queryParams.toString()}` : ""}`;
     const response = await FetchApi<AmenityResponse>({
       endpoint,
       method: "GET",

@@ -77,7 +77,7 @@ export const getAllLifestyles = createAsyncThunk(
       const token = state.auth.accessToken;
 
       const res = await FetchApi<any>({
-        endpoint: "/lifestyles/get-all",
+        endpoint: "/lifestyles/get-all/admin",
         method: "GET",
         token,
       });

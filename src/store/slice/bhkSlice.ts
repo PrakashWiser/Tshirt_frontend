@@ -68,7 +68,7 @@ export const getAllBHKs = createAsyncThunk(
       const token = state.auth.accessToken;
 
       const res = await FetchApi<any>({
-        endpoint: "/bhks/get-all",
+        endpoint: "/bhks/get-all/admin",
         method: "GET",
         token,
       });

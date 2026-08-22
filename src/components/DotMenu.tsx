@@ -1,12 +1,21 @@
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { createPortal } from "react-dom";
-import { MoreHorizontal } from "lucide-react";
+import {
+    MoreHorizontal,
+    CheckCircle,
+    Clock3,
+    XCircle,
+} from "lucide-react";
+
+export type VerificationStatus = "Verified" | "Pending" | "Rejected";
 
 interface DotMenuProps {
     onView?: () => void;
     onEdit?: () => void;
     onDelete?: () => void;
+    onVerificationChange?: (status: VerificationStatus) => void;
+    verificationStatus?: VerificationStatus;
     className?: string;
 }
 
@@ -14,6 +23,8 @@ const DotMenu: React.FC<DotMenuProps> = ({
     onView,
     onEdit,
     onDelete,
+    onVerificationChange,
+    verificationStatus = "Pending",
     className,
 }) => {
     const [isOpen, setIsOpen] = useState(false);
@@ -29,7 +40,7 @@ const DotMenu: React.FC<DotMenuProps> = ({
         if (buttonRef.current) {
             const rect = buttonRef.current.getBoundingClientRect();
 
-            const menuWidth = 130;
+            const menuWidth = 160;
             const screenWidth = window.innerWidth;
 
             let left =
@@ -41,11 +52,15 @@ const DotMenu: React.FC<DotMenuProps> = ({
             const top = rect.bottom + window.scrollY + 6;
 
             if (left < 8) left = 8;
+
             if (left + menuWidth > screenWidth) {
                 left = screenWidth - menuWidth - 8;
             }
 
-            setPosition({ top, left });
+            setPosition({
+                top,
+                left,
+            });
         }
 
         setIsOpen((prev) => !prev);
@@ -70,6 +85,27 @@ const DotMenu: React.FC<DotMenuProps> = ({
         };
     }, []);
 
+    const handleVerification = (status: VerificationStatus) => {
+        setIsOpen(false);
+        onVerificationChange?.(status);
+    };
+
+    const getVerificationClass = (status: VerificationStatus) => {
+        if (verificationStatus === status) {
+            if (status === "Verified") {
+                return "bg-green-50 text-green-700";
+            }
+
+            if (status === "Rejected") {
+                return "bg-red-50 text-red-700";
+            }
+
+            return "bg-amber-50 text-amber-700";
+        }
+
+        return "text-gray-700 hover:bg-gray-50";
+    };
+
     return (
         <>
             <button
@@ -85,11 +121,23 @@ const DotMenu: React.FC<DotMenuProps> = ({
                     <AnimatePresence>
                         <motion.div
                             ref={menuRef}
-                            initial={{ opacity: 0, scale: 0.95 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            exit={{ opacity: 0, scale: 0.95 }}
+                            initial={{
+                                opacity: 0,
+                                scale: 0.95,
+                                y: -4,
+                            }}
+                            animate={{
+                                opacity: 1,
+                                scale: 1,
+                                y: 0,
+                            }}
+                            exit={{
+                                opacity: 0,
+                                scale: 0.95,
+                                y: -4,
+                            }}
                             transition={{ duration: 0.15 }}
-                            className={`absolute w-32 border bg-white border-gray-200 rounded-md shadow-lg z-[9999] ${className}`}
+                            className={`absolute w-40 border bg-white border-gray-200 rounded-lg shadow-xl z-[9999] overflow-hidden ${className || ""}`}
                             style={{
                                 top: position.top,
                                 left: position.left,
@@ -102,7 +150,7 @@ const DotMenu: React.FC<DotMenuProps> = ({
                                             setIsOpen(false);
                                             onView();
                                         }}
-                                        className="block w-full px-4 py-1.5 text-left text-sm text-gray-700 hover:bg-gray-100"
+                                        className="block w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50"
                                     >
                                         View
                                     </button>
@@ -114,27 +162,121 @@ const DotMenu: React.FC<DotMenuProps> = ({
                                             setIsOpen(false);
                                             onEdit();
                                         }}
-                                        className="block w-full px-4 py-1.5 text-left text-sm text-gray-700 hover:bg-gray-100"
+                                        className="block w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50"
                                     >
                                         Update
                                     </button>
                                 )}
-
                                 {onDelete && (
-                                    <button
-                                        onClick={() => {
-                                            setIsOpen(false);
-                                            onDelete();
-                                        }}
-                                        className="block w-full px-4 py-1.5 text-left text-sm text-red-600 hover:bg-gray-100"
-                                    >
-                                        Delete
-                                    </button>
+                                    <>
+                                        <div />
+
+                                        <button
+                                            onClick={() => {
+                                                setIsOpen(false);
+                                                onDelete();
+                                            }}
+                                            className="block w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50"
+                                        >
+                                            Delete
+                                        </button>
+                                    </>
                                 )}
+                                {onVerificationChange && (
+                                    <>
+                                        <div className="border-t border-gray-100" />
+
+                                        <div className="px-4 py-1.5">
+                                            <p className="text-[11px] font-semibold uppercase tracking-wider text-gray-400">
+                                                Verification
+                                            </p>
+                                        </div>
+
+                                        <button
+                                            onClick={() =>
+                                                handleVerification("Verified")
+                                            }
+                                            disabled={
+                                                verificationStatus ===
+                                                "Verified"
+                                            }
+                                            className={`flex w-full items-center gap-2 px-4 py-2 text-left text-sm ${getVerificationClass(
+                                                "Verified",
+                                            )}`}
+                                        >
+                                            <CheckCircle
+                                                size={15}
+                                                className="text-green-600"
+                                            />
+                                            <span>Verified</span>
+
+                                            {verificationStatus ===
+                                                "Verified" && (
+                                                    <span className="ml-auto text-[10px] font-medium">
+                                                        Current
+                                                    </span>
+                                                )}
+                                        </button>
+
+                                        <button
+                                            onClick={() =>
+                                                handleVerification("Pending")
+                                            }
+                                            disabled={
+                                                verificationStatus ===
+                                                "Pending"
+                                            }
+                                            className={`flex w-full items-center gap-2 px-4 py-2 text-left text-sm ${getVerificationClass(
+                                                "Pending",
+                                            )}`}
+                                        >
+                                            <Clock3
+                                                size={15}
+                                                className="text-amber-600"
+                                            />
+                                            <span>Pending</span>
+
+                                            {verificationStatus ===
+                                                "Pending" && (
+                                                    <span className="ml-auto text-[10px] font-medium">
+                                                        Current
+                                                    </span>
+                                                )}
+                                        </button>
+
+                                        <button
+                                            onClick={() =>
+                                                handleVerification("Rejected")
+                                            }
+                                            disabled={
+                                                verificationStatus ===
+                                                "Rejected"
+                                            }
+                                            className={`flex w-full items-center gap-2 px-4 py-2 text-left text-sm ${getVerificationClass(
+                                                "Rejected",
+                                            )}`}
+                                        >
+                                            <XCircle
+                                                size={15}
+                                                className="text-red-600"
+                                            />
+                                            <span>Rejected</span>
+
+                                            {verificationStatus ===
+                                                "Rejected" && (
+                                                    <span className="ml-auto text-[10px] font-medium">
+                                                        Current
+                                                    </span>
+                                                )}
+                                        </button>
+                                    </>
+                                )}
+
+
                             </div>
                         </motion.div>
                     </AnimatePresence>,
-                    document.body
+                    document.body,
                 )}
         </>
     );

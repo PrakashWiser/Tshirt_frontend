@@ -1,17 +1,19 @@
 import { useEffect, useMemo, useState } from "react";
-import { Download, Plus, Filter, MapPin, Square, Eye, Tag } from "lucide-react";
+import { Download, Plus, Filter, MapPin, Square, Tag } from "lucide-react";
 import { DataTable } from "../../components/Table";
 import type { ColumnDef } from "../../components/TableTypes";
 import CreateProperty from "./CreateProperty";
 import { useAppDispatch, useAppSelector } from "../../hooks/hooks";
 import { addToast } from "../../store/slice/uiSlice";
 import {
+    changePropertyVerification,
     clearPropertyError,
     deleteProperty,
     getAllProperties,
     getPropertyFilters,
     type Property,
     type PropertyFilters,
+    type PropertyVerificationStatus,
 } from "../../store/slice/propertySlice";
 import DotMenu from "../../components/DotMenu";
 import ConfirmDeleteModal from "../../components/ConfirmDeleteModal";
@@ -31,6 +33,7 @@ interface PropertyRow {
     totalPrice: string;
     location: string;
     image: string;
+    status: string;
     isFeatured: boolean;
 }
 
@@ -41,7 +44,6 @@ export default function PropertyList() {
     const [deleteModal, setDeleteModal] = useState(false);
     const [deleteId, setDeleteId] = useState<string | null>(null);
     const [selectedProperty, setSelectedProperty] = useState<Property | null>(null);
-    const [showFilters, setShowFilters] = useState(false);
     const [filters, setFilters] = useState<PropertyFilters>({});
     const [currentPage, setCurrentPage] = useState(1);
     const [limit, setLimit] = useState(10);
@@ -116,16 +118,6 @@ export default function PropertyList() {
                 ),
             },
             {
-                key: "propertyAction",
-                header: "Action",
-                accessor: "propertyAction",
-                render: (value) => (
-                    <span className="text-sm bg-green-50 text-green-700 px-2 py-1 rounded-full">
-                        {String(value)}
-                    </span>
-                ),
-            },
-            {
                 key: "bhk",
                 header: "BHK",
                 accessor: "bhk",
@@ -160,16 +152,6 @@ export default function PropertyList() {
                         <MapPin size={14} className="text-slate-400" />
                         {String(value)}
                     </div>
-                ),
-            },
-            {
-                key: "isFeatured",
-                header: "Featured",
-                accessor: "isFeatured",
-                render: (value) => (
-                    <span className={`text-xs font-medium ${value ? "text-amber-500" : "text-slate-400"}`}>
-                        {value ? "★ Featured" : "—"}
-                    </span>
                 ),
             },
             {
@@ -209,11 +191,24 @@ export default function PropertyList() {
                 : property.location?.city || "N/A",
             image: property.image || "",
             isFeatured: property.isFeatured || false,
+            status: property.status || "Inactive",
         }));
     }, [properties]);
 
     const handleView = (id: string) => {
         navigate(`/properties/${id}`);
+    };
+
+    const handleVerificationChange = async (
+        id: string,
+        verification: PropertyVerificationStatus,
+    ) => {
+        await dispatch(
+            changePropertyVerification({
+                id,
+                verification: verification,
+            }),
+        );
     };
 
     const handleEdit = (property: Property) => {
@@ -236,17 +231,6 @@ export default function PropertyList() {
     const handleExport = () => {
         const exportColumns = columns.filter(col => col.key !== 'actions' && col.key !== 'image');
         exportTableData(tableData as any, exportColumns, "Properties");
-    };
-
-    const handleApplyFilters = () => {
-        setCurrentPage(1);
-        setShowFilters(false);
-    };
-
-    const handleClearFilters = () => {
-        setFilters({});
-        setCurrentPage(1);
-        setShowFilters(false);
     };
 
     if (openCreate) {
@@ -310,13 +294,13 @@ export default function PropertyList() {
                     <div className="bg-white border border-slate-200 rounded-xl p-4">
                         <p className="text-sm text-slate-500">Active</p>
                         <p className="text-2xl font-bold text-green-600">
-                            {properties.filter(p => p.status === 1).length}
+                            {properties.filter((p) => p.status === "Active").length}
                         </p>
                     </div>
                     <div className="bg-white border border-slate-200 rounded-xl p-4">
                         <p className="text-sm text-slate-500">Inactive</p>
                         <p className="text-2xl font-bold text-red-600">
-                            {properties.filter(p => p.status !== 1).length}
+                            {properties.filter((p) => p.status === "Inactive").length}
                         </p>
                     </div>
                     <div className="bg-white border border-slate-200 rounded-xl p-4">
@@ -327,84 +311,7 @@ export default function PropertyList() {
                     </div>
                 </div>
 
-                {showFilters && filterOptions && (
-                    <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
-                        <div className="flex items-center justify-between mb-4">
-                            <h3 className="font-semibold text-slate-900">Filters</h3>
-                            <div className="flex gap-2">
-                                <button
-                                    onClick={handleClearFilters}
-                                    className="px-3 py-1 text-sm text-slate-600 hover:text-slate-900"
-                                >
-                                    Clear All
-                                </button>
-                                <button
-                                    onClick={handleApplyFilters}
-                                    className="px-4 py-1 bg-black text-white rounded-lg text-sm"
-                                >
-                                    Apply Filters
-                                </button>
-                            </div>
-                        </div>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
-                            <div>
-                                <label className="text-sm text-slate-600">Property Type</label>
-                                <select
-                                    value={filters.propertyType || ""}
-                                    onChange={(e) => setFilters({ ...filters, propertyType: e.target.value })}
-                                    className="w-full mt-1 px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-black"
-                                >
-                                    <option value="">All Types</option>
-                                    {filterOptions.propertyTypes.map((type) => (
-                                        <option key={type._id} value={type._id}>{type.name}</option>
-                                    ))}
-                                </select>
-                            </div>
-                            <div>
-                                <label className="text-sm text-slate-600">Property Action</label>
-                                <select
-                                    value={filters.propertyAction || ""}
-                                    onChange={(e) => setFilters({ ...filters, propertyAction: e.target.value })}
-                                    className="w-full mt-1 px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-black"
-                                >
-                                    <option value="">All Actions</option>
-                                    {filterOptions.propertyActions.map((action) => (
-                                        <option key={action._id} value={action._id}>{action.name}</option>
-                                    ))}
-                                </select>
-                            </div>
-                            <div>
-                                <label className="text-sm text-slate-600">BHK</label>
-                                <select
-                                    value={filters.bhk || ""}
-                                    onChange={(e) => setFilters({ ...filters, bhk: Number(e.target.value) })}
-                                    className="w-full mt-1 px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-black"
-                                >
-                                    <option value="">All</option>
-                                    {filterOptions.bhkOptions.map((bhk) => (
-                                        <option key={bhk} value={bhk}>{bhk} BHK</option>
-                                    ))}
-                                </select>
-                            </div>
-                            <div>
-                                <label className="text-sm text-slate-600">City</label>
-                                <select
-                                    value={filters.city || ""}
-                                    onChange={(e) => setFilters({ ...filters, city: e.target.value })}
-                                    className="w-full mt-1 px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-black"
-                                >
-                                    <option value="">All Cities</option>
-                                    {filterOptions.cities.map((city) => (
-                                        <option key={city} value={city}>{city}</option>
-                                    ))}
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-                )}
-
-                <div
-                    className="bg-white border border-slate-200 rounded-2xl overflow-hidden hover:shadow-lg transition-shadow duration-300">
+                <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden hover:shadow-lg transition-shadow duration-300">
                     <div className="p-4">
                         {isLoading ? (
                             <div className="flex justify-center items-center py-12">
@@ -453,12 +360,28 @@ export default function PropertyList() {
                                                             Featured
                                                         </span>
                                                     )}
+                                                    <span
+                                                        className={`px-2 py-1 rounded-full text-xs font-medium ${row.status === "Active"
+                                                            ? "bg-green-100 text-green-700"
+                                                            : "bg-red-100 text-red-700"
+                                                            }`}
+                                                    >
+                                                        {row.status}
+                                                    </span>
                                                 </div>
                                                 <div className="absolute right-3 top-3">
                                                     <DotMenu
                                                         onView={() => handleView(row.id)}
-                                                        onEdit={() => originalProperty && handleEdit(originalProperty)}
+                                                        onEdit={() =>
+                                                            originalProperty && handleEdit(originalProperty)
+                                                        }
                                                         onDelete={() => handleDelete(row.id)}
+                                                        verificationStatus={
+                                                            originalProperty?.verification || "Pending"
+                                                        }
+                                                        onVerificationChange={(status) =>
+                                                            handleVerificationChange(row.id, status)
+                                                        }
                                                     />
                                                 </div>
                                             </div>
@@ -496,16 +419,22 @@ export default function PropertyList() {
                                                         {row.location}
                                                     </div>
                                                 </div>
-
-                                                <div className="mt-3 pt-3 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
-                                                    <span>ID: {row.id.substring(0, 8)}</span>
-                                                    <button
-                                                        onClick={() => handleView(row.id)}
-                                                        className="text-blue-600 hover:text-blue-800 flex items-center gap-1"
+                                                <div className="pt-3 flex items-center gap-1">
+                                                    <p className="text-xs font-medium text-slate-500 mb-1">
+                                                        Verification Status
+                                                    </p>
+                                                    <span
+                                                        className={`px-2 py-1 rounded-full text-xs font-medium ${originalProperty?.verification === "Verified"
+                                                            ? "bg-green-100 text-green-700"
+                                                            : originalProperty?.verification === "Rejected"
+                                                                ? "bg-red-100 text-red-700"
+                                                                : "bg-amber-100 text-amber-700"
+                                                            }`}
                                                     >
-                                                        <Eye size={14} />
-                                                        View
-                                                    </button>
+                                                        {originalProperty?.verification === "Verified"
+                                                            ? "Approved"
+                                                            : originalProperty?.verification || "Pending"}
+                                                    </span>
                                                 </div>
                                             </div>
                                         </div>

@@ -59,12 +59,13 @@ export interface Property {
   neighborhoods?: string[];
   image?: string;
   images?: string[];
-  status?: number;
+  status?: string;
   createdAt?: string;
   updatedAt?: string;
   isHighlighted?: boolean;
   isRecommended?: boolean;
   isFeatured?: boolean;
+  verification?: PropertyVerificationStatus;
   premiumAmenities?: Array<{
     _id: string;
     name: string;
@@ -123,7 +124,7 @@ export interface UpdatePropertyPayload {
   name?: string;
   propertyType?: string;
   propertyAction?: string;
-  bhk?: number;
+  bhk?: string;
   totalSquareFeet?: number;
   totalBuiltArea?: number;
   totalPrice?: number;
@@ -145,23 +146,46 @@ export interface UpdatePropertyPayload {
 export interface PropertyFilters {
   propertyType?: string;
   propertyAction?: string;
-  bhk?: number;
+  bhk?: string;
   minPrice?: number;
   maxPrice?: number;
   minSquareFeet?: number;
   maxSquareFeet?: number;
   city?: string;
   locality?: string;
+  status?: "Active" | "Inactive";
+  verification?: "Verified" | "Pending" | "Rejected";
+  recommended?: boolean;
+  highlighted?: boolean;
+  featured?: boolean;
+  furnished?: "furnished" | "semi_furnished" | "unfurnished";
+  userId?: string;
+  guestId?: string;
 }
-
 export interface FilterOptions {
-  propertyTypes: { _id: string; name: string }[];
-  propertyActions: { _id: string; name: string }[];
-  bhkOptions: number[];
-  cities: string[];
-  localities: string[];
-  priceRange: { min: number; max: number };
-  squareFeetRange: { min: number; max: number };
+  propertyType: {
+    _id: string;
+    name: string;
+  }[];
+
+  bhk: {
+    _id: string;
+    name: string;
+  }[];
+
+  lifeStyle: {
+    _id: string;
+    name: string;
+    image: string;
+  }[];
+
+  premiumAmenities: {
+    _id: string;
+    name: string;
+  }[];
+
+  min_price: number;
+  max_price: number;
 }
 
 export interface Pagination {
@@ -188,6 +212,8 @@ interface PropertyState {
   mediaMessage: string | null;
   pagination: Pagination | null;
 }
+
+export type PropertyVerificationStatus = "Verified" | "Pending" | "Rejected";
 
 const initialState: PropertyState = {
   properties: [],
@@ -232,9 +258,22 @@ export const getAllProperties = createAsyncThunk(
           queryParams.append("maxSquareFeet", String(filters.maxSquareFeet));
         if (filters.city) queryParams.append("city", filters.city);
         if (filters.locality) queryParams.append("locality", filters.locality);
+        if (filters.status) queryParams.append("status", filters.status);
+        if (filters.verification)
+          queryParams.append("verification", filters.verification);
+        if (filters.recommended !== undefined)
+          queryParams.append("recommended", String(filters.recommended));
+        if (filters.highlighted !== undefined)
+          queryParams.append("highlighted", String(filters.highlighted));
+        if (filters.featured !== undefined)
+          queryParams.append("featured", String(filters.featured));
+        if (filters.furnished)
+          queryParams.append("furnished", filters.furnished);
+        if (filters.userId) queryParams.append("userId", filters.userId);
+        if (filters.guestId) queryParams.append("guestId", filters.guestId);
       }
 
-      const endpoint = `/properties?${queryParams.toString()}`;
+      const endpoint = `/properties/admin?${queryParams.toString()}`;
       const res = await FetchApi<any>({
         endpoint,
         method: "GET",
@@ -496,6 +535,38 @@ export const deletePropertyMedia = createAsyncThunk(
   },
 );
 
+export const changePropertyVerification = createAsyncThunk(
+  "property/changeVerification",
+  async (
+    {
+      id,
+      verification,
+    }: {
+      id: string;
+      verification: PropertyVerificationStatus;
+    },
+    thunkAPI,
+  ) => {
+    try {
+      const state = thunkAPI.getState() as RootState;
+      const token = state.auth.accessToken;
+      const res = await FetchApi<any>({
+        endpoint: `/properties/change-verification/${id}`,
+        method: "PATCH",
+        body: {
+          verification,
+        },
+        token,
+      });
+      return res.data;
+    } catch (err: any) {
+      return thunkAPI.rejectWithValue(
+        err?.message || "Failed to change property verification status",
+      );
+    }
+  },
+);
+
 const propertySlice = createSlice({
   name: "property",
   initialState,
@@ -531,20 +602,18 @@ const propertySlice = createSlice({
         state.isLoading = false;
         state.error = action.payload;
       })
-
       .addCase(getPropertyFilters.pending, (state) => {
         state.isLoading = true;
         state.error = null;
       })
       .addCase(getPropertyFilters.fulfilled, (state, action) => {
         state.isLoading = false;
-        state.filters = action.payload?.data || null;
+        state.filters = action.payload || null;
       })
       .addCase(getPropertyFilters.rejected, (state, action: any) => {
         state.isLoading = false;
         state.error = action.payload;
       })
-
       .addCase(getHomeProperties.pending, (state) => {
         state.isLoading = true;
         state.error = null;
@@ -557,7 +626,6 @@ const propertySlice = createSlice({
         state.isLoading = false;
         state.error = action.payload;
       })
-
       .addCase(createProperty.pending, (state) => {
         state.isLoading = true;
         state.error = null;
@@ -572,7 +640,6 @@ const propertySlice = createSlice({
         state.isLoading = false;
         state.error = action.payload;
       })
-
       .addCase(updateProperty.pending, (state) => {
         state.isLoading = true;
         state.error = null;
@@ -587,7 +654,6 @@ const propertySlice = createSlice({
         state.isLoading = false;
         state.error = action.payload;
       })
-
       .addCase(deleteProperty.pending, (state) => {
         state.isLoading = true;
         state.error = null;
@@ -604,7 +670,6 @@ const propertySlice = createSlice({
         state.isLoading = false;
         state.error = action.payload;
       })
-
       .addCase(incrementPropertyVisit.pending, (state) => {
         state.isLoading = true;
         state.error = null;
@@ -616,7 +681,6 @@ const propertySlice = createSlice({
         state.isLoading = false;
         state.error = action.payload;
       })
-
       .addCase(getSimilarProperties.pending, (state) => {
         state.isLoading = true;
         state.error = null;
@@ -629,7 +693,6 @@ const propertySlice = createSlice({
         state.isLoading = false;
         state.error = action.payload;
       })
-
       .addCase(getPropertyById.pending, (state) => {
         state.isLoading = true;
         state.error = null;
@@ -642,7 +705,6 @@ const propertySlice = createSlice({
         state.isLoading = false;
         state.error = action.payload;
       })
-
       .addCase(updatePropertyMedia.pending, (state) => {
         state.isLoading = true;
         state.error = null;
@@ -657,7 +719,6 @@ const propertySlice = createSlice({
         state.isLoading = false;
         state.error = action.payload;
       })
-
       .addCase(deletePropertyMedia.pending, (state) => {
         state.isLoading = true;
         state.error = null;
@@ -669,6 +730,21 @@ const propertySlice = createSlice({
           action.payload?.message || "Media deleted successfully";
       })
       .addCase(deletePropertyMedia.rejected, (state, action: any) => {
+        state.isLoading = false;
+        state.error = action.payload;
+      })
+      .addCase(changePropertyVerification.pending, (state) => {
+        state.isLoading = true;
+        state.error = null;
+        state.message = null;
+      })
+      .addCase(changePropertyVerification.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.message =
+          action.payload?.message ||
+          "Property verification status updated successfully";
+      })
+      .addCase(changePropertyVerification.rejected, (state, action: any) => {
         state.isLoading = false;
         state.error = action.payload;
       });

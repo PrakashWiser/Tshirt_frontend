@@ -558,6 +558,13 @@ export default function CreateProperty({ selectedProperty, onClose, loading }: C
             multiple: true,
             onMediaDelete: handleDeleteMedia,
         },
+        {
+            name: "status",
+            label: "Active",
+            type: "checkbox",
+            required: false,
+            fullWidth: false,
+        },
     ];
     const handleSubmit = (values: Record<string, any>) => {
         const formData = new FormData();
@@ -566,6 +573,10 @@ export default function CreateProperty({ selectedProperty, onClose, loading }: C
         formData.append("propertyType", values.propertyType || "");
         formData.append("propertyAction", values.propertyAction || "");
         formData.append("bhk", String(values.bhk || ""));
+        formData.append(
+            "status",
+            values.status ? "Active" : "Inactive"
+        );
         formData.append(
             "totalSquareFeet",
             String(values.totalSquareFeet || "")
@@ -843,6 +854,7 @@ export default function CreateProperty({ selectedProperty, onClose, loading }: C
         isRecommended: formProperty?.isRecommended ?? false,
         isFeatured: formProperty?.isFeatured ?? false,
         description: formProperty?.description || "",
+        status: formProperty?.status || "",
         amenities: Array.isArray(formProperty?.premiumAmenities)
             ? formProperty.premiumAmenities.map((item: any) =>
                 typeof item === "object" && item !== null ? item._id : item
