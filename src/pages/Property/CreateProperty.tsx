@@ -21,6 +21,7 @@ import PropertyActionCreate from "../PropertyAction/CreatePropertyAction";
 import CreateAmenity from "../AmenitySection/CreateAmenitySection";
 import CreateLifestyle from "../Lifestyle/CreateLifestyle";
 import { addToast } from "../../store/slice/uiSlice";
+import { generateSlug } from "../../utils/generateSlug";
 
 interface CreatePropertyProps {
     selectedProperty?: Property | null;
@@ -582,6 +583,20 @@ export default function CreateProperty({ selectedProperty, onClose, loading }: C
     const handleSubmit = (values: Record<string, any>) => {
         const formData = new FormData();
 
+        const selectedBhk = bhks.find(
+            (item) => item._id === values.bhk
+        );
+
+        const selectedAction = propertyActions.find(
+            (item) => item._id === values.propertyAction
+        );
+        console.log(selectedAction);
+
+
+        const propertySlug = generateSlug(
+            `${selectedBhk?.name || ""}  ${selectedAction?.name || ""} ${values.name || ""} `
+        );
+        formData.append("slug", propertySlug);
         formData.append("name", values.name || "");
         formData.append("propertyType", values.propertyType || "");
         formData.append("propertyAction", values.propertyAction || "");
