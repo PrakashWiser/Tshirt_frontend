@@ -1,4 +1,3 @@
-
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import { FetchApi } from "../../api/Fetch";
 import type { RootState } from "../store";
@@ -93,6 +92,7 @@ export const getAllScheduleVisits = createAsyncThunk(
     params: {
       page?: number;
       limit?: number;
+      search?: string;
       status?: ScheduleVisitStatus;
     } = {},
     thunkAPI,
@@ -105,6 +105,9 @@ export const getAllScheduleVisits = createAsyncThunk(
       if (params.limit) queryParams.append("limit", String(params.limit));
       if (params.status) queryParams.append("status", params.status);
 
+      if (params.search?.trim()) {
+        queryParams.append("search", params.search.trim());
+      }
       const endpoint = `/schedule-visits?${queryParams.toString()}`;
       const res = await FetchApi<any>({
         endpoint,

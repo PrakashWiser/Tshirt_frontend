@@ -6,6 +6,14 @@ let sessionExpiredShown = false;
 export const resetSessionExpired = () => {
   sessionExpiredShown = false;
 };
+export const showSessionExpired = () => {
+  if (sessionExpiredShown) {
+    return;
+  }
+
+  sessionExpiredShown = true;
+  window.dispatchEvent(new CustomEvent("session-expired-popup"));
+};
 
 interface FetchApiProps {
   endpoint: string;
@@ -55,6 +63,7 @@ export const FetchApi = async <T = any>({
 
     if (response.status === 401) {
       const isLoginPage = window.location.pathname === "/login";
+
       if (!skipAuthHandler && !isLoginPage && !sessionExpiredShown) {
         const tryRefreshAndRetry = async () => {
           const globalAny: any = window as any;
@@ -71,18 +80,25 @@ export const FetchApi = async <T = any>({
             refreshed = await new Promise<boolean>((resolve) => {
               const onResult = (e: Event) => {
                 const detail = (e as CustomEvent)?.detail;
+
                 window.removeEventListener("refresh-result", onResult);
+
                 resolve(Boolean(detail?.success));
               };
 
               window.addEventListener("refresh-result", onResult);
+
               window.dispatchEvent(new CustomEvent("try-refresh"));
             });
           }
 
           if (refreshed) {
             const newToken = (window as any).__newAccessToken ?? token;
-            const retryHeaders: Record<string, string> = { ...headers };
+
+            const retryHeaders: Record<string, string> = {
+              ...headers,
+            };
+
             if (newToken) {
               retryHeaders["Authorization"] = `Bearer ${newToken}`;
             }
@@ -103,11 +119,11 @@ export const FetchApi = async <T = any>({
             clearTimeout(timeoutId);
 
             const retryContentType = retryResponse.headers.get("content-type");
+
             const retryRawText = await retryResponse.text();
 
             if (retryResponse.status === 401) {
-              sessionExpiredShown = true;
-              window.dispatchEvent(new CustomEvent("session-expired-popup"));
+              showSessionExpired();
               throw new Error("UNAUTHORIZED");
             }
 
@@ -119,6 +135,7 @@ export const FetchApi = async <T = any>({
               } catch {}
 
               const errorMessage =
+                json?.data?.error ||
                 json?.data?.message ||
                 json?.data?.errors ||
                 json?.errors ||
@@ -133,8 +150,8 @@ export const FetchApi = async <T = any>({
               : (retryRawText as T);
           }
 
-          sessionExpiredShown = true;
-          window.dispatchEvent(new CustomEvent("session-expired-popup"));
+          showSessionExpired();
+
           throw new Error("UNAUTHORIZED");
         };
 

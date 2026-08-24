@@ -23,7 +23,7 @@ const Button: React.FC<ButtonProps> = ({
     ...props
 }) => {
     const base =
-        "cursor-pointer rounded px-4 py-2.5 text-sm font-medium transition-all duration-300 sm:px-6 sm:py-3";
+        "cursor-pointer rounded px-4 py-2 text-sm font-medium transition-all duration-300 sm:px-6 ";
 
     const variants: Record<"primary" | "outline", string> = {
         primary:

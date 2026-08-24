@@ -113,7 +113,7 @@ export const loginUser = createAsyncThunk<
       body: payload,
     });
     const { accessToken, refreshToken } = response.data;
-    localStorage.setItem("tokenExpiry", String(Date.now() + 50 * 60 * 1000));
+    localStorage.setItem("tokenExpiry", String(Date.now() + 60 * 60 * 1000));
     localStorage.setItem("loginTimestamp", String(Date.now()));
     return {
       success: true,
@@ -174,7 +174,7 @@ export const refreshToken = createAsyncThunk<
       skipAuthHandler: true,
     });
     if (response?.data?.accessToken) {
-      localStorage.setItem("tokenExpiry", String(Date.now() + 50 * 60 * 1000));
+      localStorage.setItem("tokenExpiry", String(Date.now() + 60 * 60 * 1000));
     }
     return {
       accessToken: response.data.accessToken,

@@ -87,10 +87,6 @@ const OCCUPANCY_DATA = [
 
 const COLORS = ['#4f46e5', '#22c55e', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#14b8a6'];
 
-
-
-
-
 export default function DashboardHome() {
     const dispatch = useAppDispatch();
     const { stats } = useAppSelector((state: any) => state.stats);
@@ -232,7 +228,7 @@ export default function DashboardHome() {
                             {monthlyData.length > 0 ? `+${monthlyData[monthlyData.length - 1]?.properties || 0} new` : 'No data'}
                         </div>
                     </div>
-                    <div className="h-72">
+                    <div className="h-72 w-full min-w-0">
                         <ResponsiveContainer width="100%" height="100%">
                             <AreaChart data={monthlyData.length > 0 ? monthlyData : CHART_DATA} margin={{ top: 10, right: 10, left: -25, bottom: 0 }}>
                                 <defs>
@@ -261,7 +257,7 @@ export default function DashboardHome() {
 
                 <div className="bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800/80 rounded-2xl p-6">
                     <h3 className="text-base font-bold text-gray-900 dark:text-white mb-6">Property Types</h3>
-                    <div className="h-[260px]">
+                    <div className="h-[260px] w-full min-w-0">
                         <ResponsiveContainer width="100%" height="100%">
                             <PieChart>
                                 <Pie
@@ -296,12 +292,10 @@ export default function DashboardHome() {
                 </div>
             </div>
 
-
-
-            <div className="grid grid-cols-1  gap-5">
+            <div className="grid grid-cols-1 gap-5">
                 <div className="bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800/80 rounded-2xl p-6">
                     <h3 className="text-base font-bold text-gray-900 dark:text-white mb-6">Weekly Occupancy</h3>
-                    <div className="h-[260px]">
+                    <div className="h-[260px] w-full min-w-0">
                         <ResponsiveContainer width="100%" height="100%">
                             <AreaChart data={OCCUPANCY_DATA}>
                                 <CartesianGrid
@@ -361,7 +355,7 @@ export default function DashboardHome() {
                             Distribution by action type
                         </p>
                     </div>
-                    <div className="h-[260px]">
+                    <div className="h-[260px] w-full min-w-0">
                         <ResponsiveContainer width="100%" height="100%">
                             <BarChart data={propertyActions.length > 0 ? propertyActions : [{ _id: 'Buy', count: 10 }]}>
                                 <CartesianGrid

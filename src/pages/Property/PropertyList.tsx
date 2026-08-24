@@ -1,11 +1,12 @@
 import { useEffect, useMemo, useState } from "react";
-import { Download, Plus, Filter, MapPin, Square, Tag } from "lucide-react";
+import { Download, Plus, Filter, MapPin, Square, Tag, Upload } from "lucide-react";
 import { DataTable } from "../../components/Table";
 import type { ColumnDef } from "../../components/TableTypes";
 import CreateProperty from "./CreateProperty";
 import { useAppDispatch, useAppSelector } from "../../hooks/hooks";
 import { addToast } from "../../store/slice/uiSlice";
 import {
+    bulkUploadProperties,
     changePropertyVerification,
     clearPropertyError,
     deleteProperty,
@@ -22,6 +23,10 @@ import { useNavigate } from "react-router-dom";
 import CustomImage from "../../components/Image";
 import Button from "../../components/Button";
 import PropertyFilterCanvas from "./PropertyFilterCanvas";
+import BulkPropertyUploadModal from "../../utils/BulkPropertyUploadModal";
+import { downloadPropertyDemoExcel } from "../../utils/propertyBulkExcel";
+import { getAllPropertyActions } from "../../store/slice/propertyActionSlice";
+
 
 interface PropertyRow {
     id: string;
@@ -48,6 +53,14 @@ export default function PropertyList() {
     const [currentPage, setCurrentPage] = useState(1);
     const [limit, setLimit] = useState(10);
     const [showFilterCanvas, setShowFilterCanvas] = useState(false);
+    const [bulkUploadOpen, setBulkUploadOpen] = useState(false);
+    const [excelFile, setExcelFile] = useState<File | null>(null);
+    const [previewData, setPreviewData] = useState<
+        Record<string, unknown>[]
+    >([]);
+    const {
+        propertyActions,
+    } = useAppSelector((state) => state.propertyAction);
 
     const {
         properties,
@@ -55,6 +68,7 @@ export default function PropertyList() {
         error,
         message,
         pagination,
+        bulkUploadMessage, bulkUploadError,
         filters: filterOptions
     } = useAppSelector((state) => state.property);
 
@@ -66,6 +80,7 @@ export default function PropertyList() {
                 filters,
             })
         );
+        dispatch(getAllPropertyActions());
         dispatch(getPropertyFilters());
     }, [dispatch, currentPage, limit, filters]);
 
@@ -81,6 +96,49 @@ export default function PropertyList() {
             dispatch(clearPropertyError());
         }
     }, [message, error, dispatch, currentPage, limit, filters]);
+
+    useEffect(() => {
+        if (bulkUploadMessage) {
+            dispatch(
+                addToast({
+                    type: "success",
+                    text: bulkUploadMessage,
+                }),
+            );
+
+            dispatch(
+                getAllProperties({
+                    page: currentPage,
+                    limit,
+                    filters,
+                }),
+            );
+            setBulkUploadOpen(false);
+            setExcelFile(null);
+            setPreviewData([]);
+            dispatch(clearPropertyError());
+        }
+
+        if (bulkUploadError) {
+            dispatch(
+                addToast({
+                    type: "error",
+                    text: bulkUploadError,
+                }),
+            );
+
+            dispatch(clearPropertyError());
+        }
+    }, [
+        bulkUploadMessage,
+        bulkUploadError,
+        dispatch,
+        currentPage,
+        limit,
+        filters,
+    ]);
+
+
 
     const columns = useMemo<ColumnDef<PropertyRow>[]>(
         () => [
@@ -233,6 +291,38 @@ export default function PropertyList() {
         exportTableData(tableData as any, exportColumns, "Properties");
     };
 
+    const handleDownloadDemo = () => {
+        if (!filterOptions) {
+            dispatch(
+                addToast({
+                    type: "error",
+                    text: "Dropdown data is not loaded yet.",
+                })
+            );
+
+            return;
+        }
+
+        downloadPropertyDemoExcel({
+            propertyActions: propertyActions || [],
+            propertyTypes: filterOptions.propertyType || [],
+            bhks: filterOptions.bhk || [],
+            lifestyles: filterOptions.lifeStyle || [],
+            amenities: filterOptions.premiumAmenities || [],
+        });
+    };
+
+
+
+    const handleBulkUpload = (file: File) => {
+        const formData = new FormData();
+        formData.append("file", file);
+        for (const [key, value] of formData.entries()) {
+            console.log(key, value);
+        }
+        dispatch(bulkUploadProperties(formData));
+    };
+
     if (openCreate) {
         return (
             <CreateProperty
@@ -258,10 +348,11 @@ export default function PropertyList() {
                             Manage all properties, filter and export data.
                         </p>
                     </div>
-                    <div className="flex items-center gap-3 flex-wrap">
+                    <div className="flex items-center gap-1 flex-wrap">
+
                         <button
                             onClick={() => setShowFilterCanvas(true)}
-                            className="flex items-center gap-2 px-4 py-2 border border-slate-200 rounded-md hover:bg-slate-50 transition-colors text-sm font-medium"
+                            className="flex items-center gap-2 px-4 py-2 border border-slate-200 rounded-sm hover:bg-slate-50 transition-colors text-sm font-medium"
                         >
                             <Filter size={18} />
                             Filters
@@ -271,12 +362,28 @@ export default function PropertyList() {
                         </button>
                         <button
                             onClick={handleExport}
-                            className="flex items-center gap-2 px-4 py-2 border border-slate-200 rounded-md hover:bg-slate-50 transition-colors text-sm font-medium"
+                            className="flex items-center gap-2 px-4 py-2 border border-slate-200 rounded-sm hover:bg-slate-50 transition-colors text-sm font-medium"
                             disabled={tableData.length === 0}
                         >
                             <Download size={18} />
                             Export
                         </button>
+                        <Button
+                            onClick={() => setBulkUploadOpen(true)}
+                            className="flex items-center gap-2"
+                        >
+                            <Upload size={18} />
+                            Bulk Upload
+                        </Button>
+
+                        <Button
+                            onClick={handleDownloadDemo}
+                            className="flex items-center gap-2"
+                        >
+                            <Download size={18} />
+                            Download Demo
+                        </Button>
+
                         <Button onClick={() => setOpenCreate(true)}>
                             <Plus size={18} />
                             Add Property
@@ -326,6 +433,13 @@ export default function PropertyList() {
                                 searchKeys={["name", "propertyType", "propertyAction", "location"]}
                                 searchPlaceholder="Search properties..."
                                 paginationMode="server"
+                                onSearchChange={(search) => {
+                                    setFilters((prev) => ({
+                                        ...prev,
+                                        search: search.trim() || undefined,
+                                    }));
+                                    setCurrentPage(1);
+                                }}
                                 pagination={{
                                     currentPage: pagination?.page || 1,
                                     totalPages: pagination?.totalPages || 1,
@@ -445,6 +559,20 @@ export default function PropertyList() {
                     </div>
                 </div>
             </div>
+            <BulkPropertyUploadModal
+                open={bulkUploadOpen}
+                onClose={() => setBulkUploadOpen(false)}
+                excelFile={excelFile}
+                setExcelFile={setExcelFile}
+                previewData={previewData}
+                setPreviewData={setPreviewData}
+                propertyActions={propertyActions || []}
+                propertyTypes={filterOptions?.propertyType || []}
+                bhks={filterOptions?.bhk || []}
+                lifestyles={filterOptions?.lifeStyle || []}
+                amenities={filterOptions?.premiumAmenities || []}
+                onUpload={handleBulkUpload}
+            />
 
             <PropertyFilterCanvas
                 isOpen={showFilterCanvas}

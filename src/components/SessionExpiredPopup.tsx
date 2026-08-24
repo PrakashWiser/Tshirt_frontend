@@ -4,7 +4,8 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { motion, AnimatePresence } from "framer-motion";
-import { clearAuth,  logoutUser } from "../store/slice/authSlice";
+import { clearAuth, } from "../store/slice/authSlice";
+import { resetSessionExpired } from "../api/Fetch";
 
 export default function SessionExpiredPopup() {
     const [open, setOpen] = useState(false);
@@ -19,14 +20,13 @@ export default function SessionExpiredPopup() {
         };
     }, []);
 
-    const handleLogin = async () => {
+    const handleLogin = () => {
         setOpen(false);
-
-        setTimeout(async () => {
-            await dispatch(logoutUser() as any);
-            dispatch(clearAuth());
-            navigate("/login", { replace: true });
-        }, 250);
+        resetSessionExpired();
+        dispatch(clearAuth());
+        navigate("/login", {
+            replace: true,
+        });
     };
 
     return (

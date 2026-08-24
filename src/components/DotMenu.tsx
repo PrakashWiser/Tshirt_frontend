@@ -167,10 +167,10 @@ const DotMenu: React.FC<DotMenuProps> = ({
                                         Update
                                     </button>
                                 )}
+
                                 {onDelete && (
                                     <>
                                         <div />
-
                                         <button
                                             onClick={() => {
                                                 setIsOpen(false);
@@ -182,16 +182,10 @@ const DotMenu: React.FC<DotMenuProps> = ({
                                         </button>
                                     </>
                                 )}
+
                                 {onVerificationChange && (
                                     <>
-                                        <div className="border-t border-gray-100" />
-
-                                        <div className="px-4 py-1.5">
-                                            <p className="text-[11px] font-semibold uppercase tracking-wider text-gray-400">
-                                                Verification
-                                            </p>
-                                        </div>
-
+                                        <div />
                                         <button
                                             onClick={() =>
                                                 handleVerification("Verified")
@@ -212,7 +206,7 @@ const DotMenu: React.FC<DotMenuProps> = ({
 
                                             {verificationStatus ===
                                                 "Verified" && (
-                                                    <span className="ml-auto text-[10px] font-medium">
+                                                    <span className="ml-auto text-xs font-medium">
                                                         Current
                                                     </span>
                                                 )}
@@ -238,7 +232,7 @@ const DotMenu: React.FC<DotMenuProps> = ({
 
                                             {verificationStatus ===
                                                 "Pending" && (
-                                                    <span className="ml-auto text-[10px] font-medium">
+                                                    <span className="ml-auto text-xs font-medium">
                                                         Current
                                                     </span>
                                                 )}
@@ -264,15 +258,13 @@ const DotMenu: React.FC<DotMenuProps> = ({
 
                                             {verificationStatus ===
                                                 "Rejected" && (
-                                                    <span className="ml-auto text-[10px] font-medium">
+                                                    <span className="ml-auto text-xs font-medium">
                                                         Current
                                                     </span>
                                                 )}
                                         </button>
                                     </>
                                 )}
-
-
                             </div>
                         </motion.div>
                     </AnimatePresence>,

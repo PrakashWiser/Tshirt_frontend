@@ -384,8 +384,21 @@ export default function CreateProperty({ selectedProperty, onClose, loading }: C
             }
         },
         {
+            name: "units",
+            label: "Units",
+            type: "select",
+            required: true,
+            options: [
+                { label: "sq.ft", value: "sq.ft" },
+                { label: "sq.km", value: "sq.km" },
+                { label: "sq.m", value: "sq.m" },
+                { label: "acre", value: "acre" },
+                { label: "hectare", value: "hectare" },
+            ],
+        },
+        {
             name: "totalSquareFeet",
-            label: "Total Square Feet",
+            label: "Total Area",
             type: "number",
             placeholder: "e.g. 1800",
             required: true
@@ -582,6 +595,7 @@ export default function CreateProperty({ selectedProperty, onClose, loading }: C
             String(values.totalSquareFeet || "")
         );
 
+        formData.append("units", values.units || "");
         if (
             values.totalBuiltArea !== undefined &&
             values.totalBuiltArea !== null &&
@@ -855,6 +869,7 @@ export default function CreateProperty({ selectedProperty, onClose, loading }: C
         isFeatured: formProperty?.isFeatured ?? false,
         description: formProperty?.description || "",
         status: formProperty?.status || "",
+        units: formProperty?.units || "sq.ft",
         amenities: Array.isArray(formProperty?.premiumAmenities)
             ? formProperty.premiumAmenities.map((item: any) =>
                 typeof item === "object" && item !== null ? item._id : item

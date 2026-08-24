@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Download, Plus, Search, X } from "lucide-react";
+import { Download, Plus } from "lucide-react";
 import { DataTable } from "../../components/Table";
 import type { ColumnDef } from "../../components/TableTypes";
 import PropertyTypeCreate from "./CreatePropertyType";
@@ -28,7 +28,6 @@ export default function PropertyTypeList() {
     const [deleteModal, setDeleteModal] = useState(false);
     const [deleteId, setDeleteId] = useState<string | null>(null);
     const [selectedPropertyType, setSelectedPropertyType] = useState<PropertyType | null>(null);
-    const [searchTerm, setSearchTerm] = useState("");
 
     useEffect(() => {
         dispatch(getAllPropertyTypes());
@@ -47,17 +46,7 @@ export default function PropertyTypeList() {
         }
     }, [message, error, dispatch]);
 
-    const filteredPropertyTypes = useMemo(() => {
-        if (!searchTerm.trim()) return propertyTypes;
 
-        const searchLower = searchTerm.toLowerCase().trim();
-        return propertyTypes.filter(
-            (p) =>
-                p.name.toLowerCase().includes(searchLower) ||
-                p.slug.toLowerCase().includes(searchLower) ||
-                p.description.toLowerCase().includes(searchLower)
-        );
-    }, [propertyTypes, searchTerm]);
 
     const columns = useMemo<ColumnDef<PropertyTypeTableRow>[]>(
         () => [
@@ -185,7 +174,7 @@ export default function PropertyTypeList() {
     );
 
     const tableData: PropertyTypeTableRow[] = useMemo(() => {
-        return filteredPropertyTypes.map((propertyType) => ({
+        return propertyTypes.map((propertyType) => ({
             id: propertyType._id,
             name: propertyType.name,
             slug: propertyType.slug,
@@ -195,7 +184,7 @@ export default function PropertyTypeList() {
             status: propertyType.status,
             createdAt: propertyType.createdAt,
         }));
-    }, [filteredPropertyTypes]);
+    }, [propertyTypes]);
 
     const handleDelete = (id: string) => {
         setDeleteId(id);
@@ -214,9 +203,6 @@ export default function PropertyTypeList() {
         exportTableData(tableData as any, exportColumns, "PropertyTypes");
     };
 
-    const handleClearSearch = () => {
-        setSearchTerm("");
-    };
 
     if (openCreate) {
         return (
@@ -281,28 +267,6 @@ export default function PropertyTypeList() {
                 </div>
 
                 <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden hover:shadow-lg transition-shadow duration-300">
-                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between px-6 py-4 border-b border-slate-100 gap-3">
-                        <h3 className="font-semibold text-slate-900">All Property Types</h3>
-                        <div className="relative w-full sm:w-64">
-                            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400" size={16} />
-                            <input
-                                type="text"
-                                placeholder="Search property types..."
-                                value={searchTerm}
-                                onChange={(e) => setSearchTerm(e.target.value)}
-                                className="w-full pl-9 pr-8 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent"
-                            />
-                            {searchTerm && (
-                                <button
-                                    onClick={handleClearSearch}
-                                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-slate-600"
-                                >
-                                    <X size={14} />
-                                </button>
-                            )}
-                        </div>
-                    </div>
-
                     <div className="p-4">
                         {isLoading ? (
                             <div className="flex justify-center items-center py-12">

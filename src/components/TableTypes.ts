@@ -38,6 +38,8 @@ export interface DataTableProps<T extends object> {
   rowKey: keyof T | ((row: T) => string | number);
   searchKeys?: (keyof T)[];
   searchPlaceholder?: string;
+  onSearchChange?: (search: string) => void;
+
   defaultView?: ViewMode;
   renderGridCard?: (row: T, index: number) => ReactNode;
   gridClassName?: string;

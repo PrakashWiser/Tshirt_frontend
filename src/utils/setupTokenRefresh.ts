@@ -17,7 +17,7 @@ export const isLoginExpired = (): boolean => {
   }
 
   const sevenDays = 7 * 24 * 60 * 60 * 1000;
-  return Date.now() - Number(loginTimestamp) > sevenDays;
+  return Date.now() - Number(loginTimestamp) >= sevenDays;
 };
 
 export const setupTokenRefresh = ({
@@ -27,6 +27,9 @@ export const setupTokenRefresh = ({
 }: SetupTokenRefreshProps) => {
   if (isLoginExpired()) {
     store.dispatch(logoutAction());
+
+    window.dispatchEvent(new CustomEvent("session-expired-popup"));
+
     return;
   }
 
@@ -56,7 +59,7 @@ export const setupTokenRefresh = ({
   };
 
   const expiresIn = Number(tokenExpiry) - Date.now();
-  const refreshIn = expiresIn - 2 * 60 * 1000;
+  const refreshIn = expiresIn - 10 * 60 * 1000;
   if (refreshTimeout) {
     clearTimeout(refreshTimeout);
     refreshTimeout = null;

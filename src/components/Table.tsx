@@ -13,6 +13,7 @@ import {
 import { useDataTable } from "./useDataTable";
 import { Pagination } from "./Pagination";
 import type { ColumnDef, DataTableProps, SortState } from "./TableTypes";
+import { useEffect } from "react";
 
 const TableSkeleton = memo(() => (
     <div className="animate-pulse p-4 space-y-3">
@@ -207,14 +208,12 @@ export function DataTable<T extends object>({
     stickyHeader = false,
     className = "",
     style,
-    paginationMode = "client",
     pagination: externalPagination,
 }: DataTableProps<T>) {
     const {
         view,
         setView,
         query,
-        inputRef,
         handleQueryChange,
         clearQuery,
         sort,
@@ -231,7 +230,7 @@ export function DataTable<T extends object>({
         searchKeys,
         defaultView,
         defaultPageSize: initialPageSize,
-        paginationMode,
+        paginationMode: "client",
     });
 
     const isEmpty = !loading && pagedData.length === 0;
@@ -257,6 +256,12 @@ export function DataTable<T extends object>({
         }
     }, [externalPagination, setPageSize]);
 
+    useEffect(() => {
+        if (query === "") {
+            setPage(1);
+        }
+    }, [query, setPage]);
+
     return (
         <div className={["flex flex-col gap-4", className].join(" ")} style={style}>
             <div className="flex flex-wrap items-center gap-3">
@@ -267,25 +272,26 @@ export function DataTable<T extends object>({
                         className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"
                     />
                     <input
-                        ref={inputRef}
                         type="search"
                         value={query}
                         onChange={handleQueryChange}
+                        disabled={loading}
                         placeholder={searchPlaceholder}
                         aria-label={searchPlaceholder}
                         className={[
                             "w-full h-9 pl-9 pr-8 rounded-xl border border-slate-200",
                             "bg-white text-sm text-slate-800 placeholder:text-slate-400",
                             "outline-none transition-shadow duration-150",
-                            "focus:ring-2 focus:ring-blue-500/25 focus:border-blue-400",
+                            loading ? "opacity-60 cursor-not-allowed" : "",
                         ].join(" ")}
                     />
                     {query && (
                         <button
                             type="button"
                             onClick={clearQuery}
+                            disabled={loading}
                             aria-label="Clear search"
-                            className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors"
+                            className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                             <X size={13} />
                         </button>

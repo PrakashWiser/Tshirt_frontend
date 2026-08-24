@@ -53,6 +53,7 @@ export interface Property {
   description?: string;
   amenities?: AmenityRef[] | string[];
   lifestyles?: LifestyleRef[] | string[];
+  units: "sq.ft" | "sq.km" | "sq.m" | "acre" | "hectare";
   location: PropertyLocation;
   price?: string;
   price_per_sqfeet?: string;
@@ -65,6 +66,7 @@ export interface Property {
   isHighlighted?: boolean;
   isRecommended?: boolean;
   isFeatured?: boolean;
+
   verification?: PropertyVerificationStatus;
   premiumAmenities?: Array<{
     _id: string;
@@ -97,29 +99,6 @@ export interface Property {
   }[];
 }
 
-export interface CreatePropertyPayload {
-  name: string;
-  propertyType: string;
-  propertyAction: string;
-  bhk: number;
-  totalSquareFeet: number;
-  totalBuiltArea?: number;
-  totalPrice: number;
-  description?: string;
-  location: {
-    type: "Point";
-    coordinates: [number, number];
-    locality?: string;
-    city?: string;
-    state?: string;
-    country?: string;
-    pincode?: string;
-    address?: string;
-  };
-  images?: File[];
-  nearbyPlaces?: NearbyPlace[];
-}
-
 export interface UpdatePropertyPayload {
   name?: string;
   propertyType?: string;
@@ -144,6 +123,7 @@ export interface UpdatePropertyPayload {
 }
 
 export interface PropertyFilters {
+  search?: string;
   propertyType?: string;
   propertyAction?: string;
   bhk?: string;
@@ -211,6 +191,9 @@ interface PropertyState {
   message: string | null;
   mediaMessage: string | null;
   pagination: Pagination | null;
+  bulkUploadLoading: boolean;
+  bulkUploadError: string | null;
+  bulkUploadMessage: string | null;
 }
 
 export type PropertyVerificationStatus = "Verified" | "Pending" | "Rejected";
@@ -226,53 +209,92 @@ const initialState: PropertyState = {
   error: null,
   message: null,
   pagination: null,
+  bulkUploadLoading: false,
+  bulkUploadError: null,
+  bulkUploadMessage: null,
 };
 
 export const getAllProperties = createAsyncThunk(
   "property/getAll",
   async (
-    params: { page?: number; limit?: number; filters?: PropertyFilters } = {},
+    params: {
+      page?: number;
+      limit?: number;
+      filters?: PropertyFilters;
+    } = {},
     thunkAPI,
   ) => {
     try {
       const state = thunkAPI.getState() as RootState;
       const token = state.auth.accessToken;
       const queryParams = new URLSearchParams();
-      if (params.page) queryParams.append("page", String(params.page));
-      if (params.limit) queryParams.append("limit", String(params.limit));
-
-      if (params.filters) {
-        const { filters } = params;
-        if (filters.propertyType)
-          queryParams.append("propertyType", filters.propertyType);
-        if (filters.propertyAction)
-          queryParams.append("propertyAction", filters.propertyAction);
-        if (filters.bhk) queryParams.append("bhk", String(filters.bhk));
-        if (filters.minPrice)
-          queryParams.append("minPrice", String(filters.minPrice));
-        if (filters.maxPrice)
-          queryParams.append("maxPrice", String(filters.maxPrice));
-        if (filters.minSquareFeet)
-          queryParams.append("minSquareFeet", String(filters.minSquareFeet));
-        if (filters.maxSquareFeet)
-          queryParams.append("maxSquareFeet", String(filters.maxSquareFeet));
-        if (filters.city) queryParams.append("city", filters.city);
-        if (filters.locality) queryParams.append("locality", filters.locality);
-        if (filters.status) queryParams.append("status", filters.status);
-        if (filters.verification)
-          queryParams.append("verification", filters.verification);
-        if (filters.recommended !== undefined)
-          queryParams.append("recommended", String(filters.recommended));
-        if (filters.highlighted !== undefined)
-          queryParams.append("highlighted", String(filters.highlighted));
-        if (filters.featured !== undefined)
-          queryParams.append("featured", String(filters.featured));
-        if (filters.furnished)
-          queryParams.append("furnished", filters.furnished);
-        if (filters.userId) queryParams.append("userId", filters.userId);
-        if (filters.guestId) queryParams.append("guestId", filters.guestId);
+      if (params.page) {
+        queryParams.append("page", String(params.page));
       }
 
+      if (params.limit) {
+        queryParams.append("limit", String(params.limit));
+      }
+      if (params.filters) {
+        const { filters } = params;
+        if (filters.search?.trim()) {
+          queryParams.append("search", filters.search.trim());
+        }
+        if (filters.propertyType) {
+          queryParams.append("propertyType", filters.propertyType);
+        }
+        if (filters.propertyAction) {
+          queryParams.append("propertyAction", filters.propertyAction);
+        }
+        if (filters.bhk) {
+          queryParams.append("bhk", String(filters.bhk));
+        }
+        if (filters.minPrice !== undefined) {
+          queryParams.append("minPrice", String(filters.minPrice));
+        }
+
+        if (filters.maxPrice !== undefined) {
+          queryParams.append("maxPrice", String(filters.maxPrice));
+        }
+        if (filters.minSquareFeet !== undefined) {
+          queryParams.append("minSquareFeet", String(filters.minSquareFeet));
+        }
+
+        if (filters.maxSquareFeet !== undefined) {
+          queryParams.append("maxSquareFeet", String(filters.maxSquareFeet));
+        }
+        if (filters.city) {
+          queryParams.append("city", filters.city);
+        }
+        if (filters.locality) {
+          queryParams.append("locality", filters.locality);
+        }
+        if (filters.status) {
+          queryParams.append("status", filters.status);
+        }
+        if (filters.verification) {
+          queryParams.append("verification", filters.verification);
+        }
+        if (filters.recommended !== undefined) {
+          queryParams.append("recommended", String(filters.recommended));
+        }
+        if (filters.highlighted !== undefined) {
+          queryParams.append("highlighted", String(filters.highlighted));
+        }
+
+        if (filters.featured !== undefined) {
+          queryParams.append("featured", String(filters.featured));
+        }
+        if (filters.furnished) {
+          queryParams.append("furnished", filters.furnished);
+        }
+        if (filters.userId) {
+          queryParams.append("userId", filters.userId);
+        }
+        if (filters.guestId) {
+          queryParams.append("guestId", filters.guestId);
+        }
+      }
       const endpoint = `/properties/admin?${queryParams.toString()}`;
       const res = await FetchApi<any>({
         endpoint,
@@ -567,6 +589,35 @@ export const changePropertyVerification = createAsyncThunk(
   },
 );
 
+export const bulkUploadProperties = createAsyncThunk(
+  "property/bulkUpload",
+  async (payload: FormData, thunkAPI) => {
+    try {
+      const state = thunkAPI.getState() as RootState;
+      const token = state.auth.accessToken;
+
+      const res = await FetchApi<any>({
+        endpoint: "/properties/bulk-upload",
+        method: "POST",
+        body: payload,
+        token,
+      });
+
+      console.log("BULK UPLOAD RESPONSE:", res);
+
+      return res.data;
+    } catch (err: any) {
+      console.error("BULK UPLOAD ERROR:", err);
+
+      return thunkAPI.rejectWithValue(
+        err?.response?.data ||
+          err?.message ||
+          "Failed to bulk upload properties",
+      );
+    }
+  },
+);
+
 const propertySlice = createSlice({
   name: "property",
   initialState,
@@ -602,6 +653,7 @@ const propertySlice = createSlice({
         state.isLoading = false;
         state.error = action.payload;
       })
+
       .addCase(getPropertyFilters.pending, (state) => {
         state.isLoading = true;
         state.error = null;
@@ -614,6 +666,7 @@ const propertySlice = createSlice({
         state.isLoading = false;
         state.error = action.payload;
       })
+
       .addCase(getHomeProperties.pending, (state) => {
         state.isLoading = true;
         state.error = null;
@@ -626,6 +679,7 @@ const propertySlice = createSlice({
         state.isLoading = false;
         state.error = action.payload;
       })
+
       .addCase(createProperty.pending, (state) => {
         state.isLoading = true;
         state.error = null;
@@ -640,6 +694,7 @@ const propertySlice = createSlice({
         state.isLoading = false;
         state.error = action.payload;
       })
+
       .addCase(updateProperty.pending, (state) => {
         state.isLoading = true;
         state.error = null;
@@ -654,6 +709,7 @@ const propertySlice = createSlice({
         state.isLoading = false;
         state.error = action.payload;
       })
+
       .addCase(deleteProperty.pending, (state) => {
         state.isLoading = true;
         state.error = null;
@@ -670,6 +726,7 @@ const propertySlice = createSlice({
         state.isLoading = false;
         state.error = action.payload;
       })
+
       .addCase(incrementPropertyVisit.pending, (state) => {
         state.isLoading = true;
         state.error = null;
@@ -681,6 +738,7 @@ const propertySlice = createSlice({
         state.isLoading = false;
         state.error = action.payload;
       })
+
       .addCase(getSimilarProperties.pending, (state) => {
         state.isLoading = true;
         state.error = null;
@@ -693,6 +751,7 @@ const propertySlice = createSlice({
         state.isLoading = false;
         state.error = action.payload;
       })
+
       .addCase(getPropertyById.pending, (state) => {
         state.isLoading = true;
         state.error = null;
@@ -705,6 +764,7 @@ const propertySlice = createSlice({
         state.isLoading = false;
         state.error = action.payload;
       })
+
       .addCase(updatePropertyMedia.pending, (state) => {
         state.isLoading = true;
         state.error = null;
@@ -719,6 +779,7 @@ const propertySlice = createSlice({
         state.isLoading = false;
         state.error = action.payload;
       })
+
       .addCase(deletePropertyMedia.pending, (state) => {
         state.isLoading = true;
         state.error = null;
@@ -733,6 +794,7 @@ const propertySlice = createSlice({
         state.isLoading = false;
         state.error = action.payload;
       })
+
       .addCase(changePropertyVerification.pending, (state) => {
         state.isLoading = true;
         state.error = null;
@@ -747,6 +809,22 @@ const propertySlice = createSlice({
       .addCase(changePropertyVerification.rejected, (state, action: any) => {
         state.isLoading = false;
         state.error = action.payload;
+      })
+
+      .addCase(bulkUploadProperties.pending, (state) => {
+        state.bulkUploadLoading = true;
+        state.bulkUploadError = null;
+        state.bulkUploadMessage = null;
+      })
+      .addCase(bulkUploadProperties.fulfilled, (state, action) => {
+        state.bulkUploadLoading = false;
+        state.bulkUploadMessage =
+          action.payload?.message || "Properties uploaded successfully.";
+      })
+      .addCase(bulkUploadProperties.rejected, (state, action) => {
+        state.bulkUploadLoading = false;
+        state.bulkUploadError =
+          (action.payload as string) || "Failed to bulk upload properties";
       });
   },
 });

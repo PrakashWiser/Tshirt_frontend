@@ -4,6 +4,7 @@ import {
     User,
     LogOut,
     Bell,
+    X,
 } from "lucide-react";
 import {
     useLocation,
@@ -13,6 +14,7 @@ import {
     useState,
     useRef,
     useEffect,
+    useCallback,
 } from "react";
 import {
     useAppDispatch,
@@ -21,6 +23,7 @@ import {
 import CustomImage from "../Image";
 import { logoutUser } from "../../store/slice/authSlice";
 import useAdminNotifications from "../../hooks/useAdminNotifications";
+import { getAllProperties, type Property } from "../../store/slice/propertySlice";
 
 interface HeaderProps {
     sidebarOpen: boolean;
@@ -45,9 +48,15 @@ function Header({
 
     const [profileOpen, setProfileOpen] = useState(false);
     const [notificationsOpen, setNotificationsOpen] = useState(false);
+    const [searchQuery, setSearchQuery] = useState("");
+    const [searchResults, setSearchResults] = useState<Property[]>([]);
+    const [isSearching, setIsSearching] = useState(false);
+    const [showDropdown, setShowDropdown] = useState(false);
 
     const profileRef = useRef<HTMLDivElement>(null);
     const notificationRef = useRef<HTMLDivElement>(null);
+    const searchRef = useRef<HTMLDivElement>(null);
+    const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
     const pageTitle = location.pathname
         .split("/")
@@ -66,6 +75,10 @@ function Header({
 
             if (notificationRef.current && !notificationRef.current.contains(target)) {
                 setNotificationsOpen(false);
+            }
+
+            if (searchRef.current && !searchRef.current.contains(target)) {
+                setShowDropdown(false);
             }
         };
 
@@ -94,6 +107,73 @@ function Header({
         setNotificationsOpen((prev) => !prev);
     };
 
+    const performSearch = useCallback(async (query: string) => {
+        if (!query.trim()) {
+            setSearchResults([]);
+            setShowDropdown(false);
+            return;
+        }
+
+        setIsSearching(true);
+        try {
+            const result = await dispatch(
+                getAllProperties({
+                    page: 1,
+                    limit: 10,
+                    filters: { search: query }
+                })
+            ).unwrap();
+
+            if (result?.properties) {
+                setSearchResults(result.properties);
+                setShowDropdown(true);
+            }
+        } catch (error) {
+            console.error("Search error:", error);
+            setSearchResults([]);
+        } finally {
+            setIsSearching(false);
+        }
+    }, [dispatch]);
+
+    const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const value = e.target.value;
+        setSearchQuery(value);
+
+        if (debounceRef.current) {
+            clearTimeout(debounceRef.current);
+        }
+
+        debounceRef.current = setTimeout(() => {
+            performSearch(value);
+        }, 500);
+    };
+
+    const handleSearchClear = () => {
+        setSearchQuery("");
+        setSearchResults([]);
+        setShowDropdown(false);
+        if (debounceRef.current) {
+            clearTimeout(debounceRef.current);
+        }
+    };
+
+    const handlePropertySelect = (propertyId: string) => {
+        setShowDropdown(false);
+        setSearchQuery("");
+        setSearchResults([]);
+        navigate(`/properties/${propertyId}`);
+    };
+
+    const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+        if (e.key === "Enter" && searchResults.length > 0) {
+            handlePropertySelect(searchResults[0].id);
+        }
+        if (e.key === "Escape") {
+            handleSearchClear();
+        }
+    };
+
     return (
         <header className="h-20 bg-white flex items-center border-b border-gray-100 justify-between px-6">
             <div className="flex items-center gap-4">
@@ -112,16 +192,107 @@ function Header({
             </div>
 
             <div className="flex items-center gap-4">
-                <div className="relative hidden md:block">
-                    <Search
-                        size={18}
-                        className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
-                    />
-                    <input
-                        type="text"
-                        placeholder="Search..."
-                        className="w-72 pl-10 pr-4 py-1.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    />
+                <div className="relative hidden md:block" ref={searchRef}>
+                    <div className="relative">
+                        <Search
+                            size={18}
+                            className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+                        />
+                        <input
+                            type="text"
+                            placeholder="Search properties..."
+                            value={searchQuery}
+                            onChange={handleSearchChange}
+                            onKeyDown={handleKeyDown}
+                            onFocus={() => {
+                                if (searchResults.length > 0) {
+                                    setShowDropdown(true);
+                                }
+                            }}
+                            className="w-72 pl-10 pr-10 py-1.5 border border-gray-300 rounded-lg focus:outline-none"
+                        />
+                        {searchQuery && (
+                            <button
+                                onClick={handleSearchClear}
+                                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                            >
+                                <X size={16} />
+                            </button>
+                        )}
+                    </div>
+
+                    {showDropdown && (
+                        <div className="absolute top-full left-0 mt-2 w-72 max-h-96 overflow-y-auto bg-white rounded-xl shadow-xl border border-gray-200 z-50">
+                            {isSearching ? (
+                                <div className="flex items-center justify-center py-8">
+                                    <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
+                                </div>
+                            ) : searchResults.length > 0 ? (
+                                <>
+                                    <div className="px-4 py-2 border-b border-gray-100">
+                                        <span className="text-xs font-medium text-gray-500">
+                                            {searchResults.length} results found
+                                        </span>
+                                    </div>
+                                    {searchResults.map((property) => (
+                                        <button
+                                            key={property.id}
+                                            onClick={() => handlePropertySelect(property.id)}
+                                            className="w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors text-left border-b border-gray-50 last:border-b-0"
+                                        >
+                                            <CustomImage
+                                                src={property.image || ""}
+                                                alt={property.name}
+                                                className="w-12 h-12 rounded-lg object-cover flex-shrink-0"
+                                            />
+                                            <div className="min-w-0 flex-1">
+                                                <p className="text-sm font-medium text-gray-900 truncate">
+                                                    {property.name}
+                                                </p>
+                                                <div className="flex items-center gap-2 mt-0.5">
+                                                    <span className="text-xs text-gray-500">
+                                                        {typeof property.propertyType === "object"
+                                                            ? property.propertyType?.name
+                                                            : property.propertyType}
+                                                    </span>
+                                                    <span className="text-xs text-gray-300">•</span>
+                                                    <span className="text-xs text-gray-500">
+                                                        {property.bhk} BHK
+                                                    </span>
+                                                    <span className="text-xs text-gray-300">•</span>
+                                                    <span className="text-xs font-medium text-emerald-600">
+                                                        {property.price}
+                                                    </span>
+                                                </div>
+                                                <p className="text-xs text-gray-400 truncate mt-0.5">
+                                                    {typeof property.location === "object"
+                                                        ? `${property.location?.locality || ""}, ${property.location?.city || ""}`
+                                                        : property.location}
+                                                </p>
+                                            </div>
+                                        </button>
+                                    ))}
+                                    <div className="px-4 py-2 border-t border-gray-100">
+                                        <span className="text-xs text-gray-400">
+                                            Press Enter to view first result
+                                        </span>
+                                    </div>
+                                </>
+                            ) : searchQuery.trim() ? (
+                                <div className="flex flex-col items-center justify-center py-8 px-4 text-center">
+                                    <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-gray-100">
+                                        <Search size={20} className="text-gray-400" />
+                                    </div>
+                                    <p className="text-sm font-medium text-gray-700">
+                                        No properties found
+                                    </p>
+                                    <p className="text-xs text-gray-400 mt-1">
+                                        Try adjusting your search terms
+                                    </p>
+                                </div>
+                            ) : null}
+                        </div>
+                    )}
                 </div>
 
                 <div
@@ -176,10 +347,8 @@ function Header({
                             </div>
 
                             <div className="max-h-[420px] overflow-y-auto">
-
                                 {notifications.length === 0 ? (
                                     <div className="flex flex-col items-center justify-center px-6 py-14 text-center">
-
                                         <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-gray-100">
                                             <svg
                                                 className="h-6 w-6 text-gray-400"
@@ -219,7 +388,6 @@ function Header({
                                                 }
                         `}
                                         >
-
                                             <div className="flex-shrink-0 pt-0.5">
                                                 <div
                                                     className={`flex h-9 w-9 items-center justify-center rounded-full
@@ -245,7 +413,6 @@ function Header({
                                                 </div>
                                             </div>
                                             <div className="min-w-0 flex-1">
-
                                                 <div className="flex items-start justify-between gap-2">
                                                     <p
                                                         className={`line-clamp-2 text-sm leading-5
@@ -263,13 +430,11 @@ function Header({
                                                     )}
                                                 </div>
                                                 <div className="mt-2 space-y-1.5">
-
                                                     {notification.data?.fullName && (
                                                         <div className="flex items-center gap-1.5 text-xs text-gray-500">
                                                             <span className="font-medium text-gray-600">
                                                                 Customer:
                                                             </span>
-
                                                             <span className="truncate">
                                                                 {notification.data.fullName}
                                                             </span>
@@ -281,7 +446,6 @@ function Header({
                                                             <span className="font-medium text-gray-600">
                                                                 Phone:
                                                             </span>
-
                                                             <span>
                                                                 {notification.data.phone}
                                                             </span>
@@ -293,7 +457,6 @@ function Header({
                                                             <span className="font-medium text-gray-600">
                                                                 Property:
                                                             </span>
-
                                                             <span className="truncate">
                                                                 {notification.data.propertyId.name}
                                                             </span>
@@ -308,7 +471,6 @@ function Header({
                                                             {notification.data.specialRequest}
                                                         </div>
                                                     )}
-
                                                 </div>
                                                 <p className="mt-2.5 text-[10px] font-medium text-gray-400">
                                                     {notification.timestamp
