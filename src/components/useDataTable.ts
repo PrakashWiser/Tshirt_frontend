@@ -14,6 +14,7 @@ interface Options<T extends object> {
   defaultView?: ViewMode;
   defaultPageSize?: number;
   paginationMode?: "server" | "client";
+  onSearchChange?: (search: string) => void;
 }
 
 export interface DataTableState<T> {
@@ -41,75 +42,122 @@ export function useDataTable<T extends object>({
   defaultView = "table",
   defaultPageSize = 10,
   paginationMode = "client",
+  onSearchChange,
 }: Options<T>): DataTableState<T> {
   const [view, setView] = useState<ViewMode>(defaultView);
   const [query, setQuery] = useState("");
-  const [sort, setSort] = useState<SortState>({ key: null, direction: null });
+  const [sort, setSort] = useState<SortState>({
+    key: null,
+    direction: null,
+  });
   const [page, setPageRaw] = useState(1);
   const [pageSize, setPageSizeRaw] = useState(defaultPageSize);
+
   const inputRef = useRef<HTMLInputElement>(null!);
 
-  const handleQueryChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
-    setQuery(e.target.value);
-    setPageRaw(1);
-  }, []);
+  const handleQueryChange = useCallback(
+    (e: ChangeEvent<HTMLInputElement>) => {
+      const value = e.target.value;
+      setQuery(value);
+      setPageRaw(1);
+      if (paginationMode === "server") {
+        onSearchChange?.(value);
+      }
+    },
+    [paginationMode, onSearchChange],
+  );
 
   const clearQuery = useCallback(() => {
     setQuery("");
     setPageRaw(1);
+    if (paginationMode === "server") {
+      onSearchChange?.("");
+    }
     inputRef.current?.focus();
-  }, []);
+  }, [paginationMode, onSearchChange]);
 
   const handleSort = useCallback((key: string) => {
     setSort((prev) => {
-      if (prev.key !== key) return { key, direction: "asc" };
-      if (prev.direction === "asc") return { key, direction: "desc" };
-      return { key: null, direction: null };
+      if (prev.key !== key) {
+        return {
+          key,
+          direction: "asc",
+        };
+      }
+      if (prev.direction === "asc") {
+        return {
+          key,
+          direction: "desc",
+        };
+      }
+      return {
+        key: null,
+        direction: null,
+      };
     });
     setPageRaw(1);
   }, []);
 
-  const setPage = useCallback((p: number) => setPageRaw(p), []);
+  const setPage = useCallback((p: number) => {
+    setPageRaw(p);
+  }, []);
+
   const setPageSize = useCallback((s: number) => {
     setPageSizeRaw(s);
     setPageRaw(1);
   }, []);
 
   const filteredData = useMemo<T[]>(() => {
-    if (paginationMode === "server") return data;
+    if (paginationMode === "server") {
+      return data;
+    }
     const q = query.trim().toLowerCase();
-    if (!q || searchKeys.length === 0) return data;
+    if (!q || searchKeys.length === 0) {
+      return data;
+    }
     return data.filter((row) =>
-      searchKeys.some((k) => {
-        const v = row[k];
-        return v != null && String(v).toLowerCase().includes(q);
+      searchKeys.some((key) => {
+        const value = row[key];
+        return value != null && String(value).toLowerCase().includes(q);
       }),
     );
   }, [data, query, searchKeys, paginationMode]);
 
   const sortedData = useMemo<T[]>(() => {
-    if (paginationMode === "server") return filteredData;
-    if (!sort.key || !sort.direction) return filteredData;
+    if (paginationMode === "server") {
+      return filteredData;
+    }
+    if (!sort.key || !sort.direction) {
+      return filteredData;
+    }
     const { key, direction } = sort;
     return [...filteredData].sort((a, b) => {
       const av = (a as Record<string, unknown>)[key];
       const bv = (b as Record<string, unknown>)[key];
-      if (av == null && bv == null) return 0;
-      if (av == null) return 1;
-      if (bv == null) return -1;
-      const cmp =
+      if (av == null && bv == null) {
+        return 0;
+      }
+      if (av == null) {
+        return 1;
+      }
+      if (bv == null) {
+        return -1;
+      }
+      const comparison =
         typeof av === "number" && typeof bv === "number"
           ? av - bv
           : String(av).localeCompare(String(bv), undefined, {
               numeric: true,
               sensitivity: "base",
             });
-      return direction === "asc" ? cmp : -cmp;
+      return direction === "asc" ? comparison : -comparison;
     });
   }, [filteredData, sort, paginationMode]);
 
   const pagedData = useMemo<T[]>(() => {
-    if (paginationMode === "server") return sortedData;
+    if (paginationMode === "server") {
+      return sortedData;
+    }
     const totalCount = sortedData.length;
     const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
     const safePage = Math.min(page, totalPages);

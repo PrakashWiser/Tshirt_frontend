@@ -39,7 +39,6 @@ export interface DataTableProps<T extends object> {
   searchKeys?: (keyof T)[];
   searchPlaceholder?: string;
   onSearchChange?: (search: string) => void;
-
   defaultView?: ViewMode;
   renderGridCard?: (row: T, index: number) => ReactNode;
   gridClassName?: string;
@@ -54,4 +53,5 @@ export interface DataTableProps<T extends object> {
   style?: CSSProperties;
   paginationMode?: PaginationMode;
   pagination?: PaginationProps;
+  debounceDelay?: number;
 }
