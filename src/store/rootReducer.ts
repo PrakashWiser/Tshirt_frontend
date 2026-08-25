@@ -18,6 +18,7 @@ import usersReducer from "./slice/usersSlice";
 import statsReducer from "./slice/statsSlice";
 import getNotificationReducer from "./slice/getNotificationSlice";
 import propertyVideoReducer from "./slice/propertyVideoSlice";
+import contactSupportReducer from "./slice/contactSupportSlice";
 
 const rootReducer = combineReducers({
   auth: authReducer,
@@ -39,6 +40,7 @@ const rootReducer = combineReducers({
   stats: statsReducer,
   getNotifications: getNotificationReducer,
   propertyVideo: propertyVideoReducer,
+  contactSupport: contactSupportReducer,
 });
 
 export default rootReducer;

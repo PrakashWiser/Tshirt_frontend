@@ -19,6 +19,7 @@ import {
     MessageSquareText,
     Sparkles,
     CalendarCheck,
+    Headphones,
 } from "lucide-react";
 import { NavLink, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
@@ -105,11 +106,11 @@ export default function Sidebar({
                     path: "/users",
                     icon: Users,
                 },
-                // {
-                //     label: "Vendors",
-                //     path: "/vendors",
-                //     icon: Store,
-                // },
+                {
+                    label: "Contact",
+                    path: "/contact",
+                    icon: Headphones,
+                },
             ],
         },
         // {
@@ -161,11 +162,11 @@ export default function Sidebar({
                     path: "/roles",
                     icon: Shield,
                 },
-                
+
 
             ],
         },
-        
+
     ];
 
     const handleLogout = () => {

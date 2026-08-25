@@ -28,6 +28,7 @@ const AuditLogs = React.lazy(() => import('../pages/AuditLogs/AuditLogs'));
 const Roles = React.lazy(() => import('../pages/Roles/Roles'));
 const ProfileSection = React.lazy(() => import('../pages/Profile/Profile'));
 const ScheduleVisitList = React.lazy(() => import('../pages/Schedule/ScheduleVisitList'));
+const Contact = React.lazy(() => import('../pages/Contact/Contact'));
 
 function ViewportSpinner() {
   return (
@@ -96,6 +97,7 @@ export default function AppRoutes() {
                 element={<PropertyView />}
               />
               <Route path="/amenity" element={<AmenitySection />} />
+              <Route path="/contact" element={<Contact />} />
               <Route path="/life-style" element={<LifestyleList />} />
               <Route path="/enquiries" element={<EnquiryList />} />
               <Route path="/payments" element={<PaymentSection />} />
