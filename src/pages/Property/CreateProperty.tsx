@@ -74,7 +74,7 @@ export default function CreateProperty({ selectedProperty, onClose, loading }: C
 
 
     useEffect(() => {
-        if (selectedProperty?.id) dispatch(getPropertyById(selectedProperty.id));
+        if (selectedProperty?.slug) dispatch(getPropertyById(selectedProperty.slug));
     }, [dispatch, selectedProperty]);
 
     const refreshPropertyOptions = () => {
@@ -590,7 +590,6 @@ export default function CreateProperty({ selectedProperty, onClose, loading }: C
         const selectedAction = propertyActions.find(
             (item) => item._id === values.propertyAction
         );
-        console.log(selectedAction);
 
 
         const propertySlug = generateSlug(

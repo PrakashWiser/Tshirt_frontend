@@ -66,7 +66,7 @@ export interface Property {
   isHighlighted?: boolean;
   isRecommended?: boolean;
   isFeatured?: boolean;
-
+  slug: string;
   verification?: PropertyVerificationStatus;
   premiumAmenities?: Array<{
     _id: string;
@@ -97,29 +97,6 @@ export interface Property {
     url: string;
     category: string;
   }[];
-}
-
-export interface UpdatePropertyPayload {
-  name?: string;
-  propertyType?: string;
-  propertyAction?: string;
-  bhk?: string;
-  totalSquareFeet?: number;
-  totalBuiltArea?: number;
-  totalPrice?: number;
-  description?: string;
-  location?: {
-    type: "Point";
-    coordinates: [number, number];
-    locality?: string;
-    city?: string;
-    state?: string;
-    country?: string;
-    pincode?: string;
-    address?: string;
-  };
-  images?: File[];
-  nearbyPlaces?: NearbyPlace[];
 }
 
 export interface PropertyFilters {
@@ -469,13 +446,13 @@ export const getSimilarProperties = createAsyncThunk(
 
 export const getPropertyById = createAsyncThunk(
   "property/getById",
-  async (id: string, thunkAPI) => {
+  async (slug: string, thunkAPI) => {
     try {
       const state = thunkAPI.getState() as RootState;
       const token = state.auth.accessToken;
 
       const res = await FetchApi<any>({
-        endpoint: `/properties/${id}`,
+        endpoint: `/properties/${slug}`,
         method: "GET",
         token,
       });
