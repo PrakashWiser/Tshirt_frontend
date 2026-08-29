@@ -165,7 +165,7 @@ export default function CreateProperty({ selectedProperty, onClose, loading }: C
                     text: mediaMessage,
                 })
             );
-            if (selectedProperty?.id) dispatch(getPropertyById(selectedProperty.id));
+            if (selectedProperty?.slug) dispatch(getPropertyById(selectedProperty.slug));
             dispatch(clearMediaMessage());
         }
     }, [mediaMessage, dispatch, selectedProperty]);

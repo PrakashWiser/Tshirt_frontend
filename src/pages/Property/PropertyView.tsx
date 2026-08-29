@@ -90,20 +90,21 @@ function InfoRow({ label, value }: { label: string; value: React.ReactNode }) {
 }
 
 export default function PropertyView() {
-    const { id } = useParams<{ id: string }>();
+    const { slug } = useParams<{ slug: string }>();
     const navigate = useNavigate();
     const dispatch = useAppDispatch();
     const { property, isLoading } = useAppSelector((state) => state.property);
     const [activeImage, setActiveImage] = useState(0);
-
     const propertyDetail = property as any | null;
+    console.log(slug);
+    
 
     useEffect(() => {
-        if (id) {
-            dispatch(getPropertyById(id));
+        if (slug) {
+            dispatch(getPropertyById(slug));
             setActiveImage(0);
         }
-    }, [dispatch, id]);
+    }, [dispatch, slug]);
 
     const images = useMemo<string[]>(() => {
         if (!propertyDetail) return [];
@@ -321,7 +322,7 @@ export default function PropertyView() {
                         <Home size={22} className="text-blue-600" />
                         <div>
                             <h3 className="text-2xl font-bold text-blue-600">
-                                {propertyDetail?.bhk || "—"}
+                                {propertyDetail?.bhk?.name || "—"}
                             </h3>
                             <p className="text-xs text-slate-500 mt-1">BHK</p>
                         </div>
@@ -500,7 +501,7 @@ export default function PropertyView() {
                     <InfoCard title="Property Details">
                         <InfoRow label="Property Type" value={getPropertyTypeName()} />
                         <InfoRow label="Property Action" value={getPropertyActionName()} />
-                        <InfoRow label="BHK" value={propertyDetail?.bhk || "—"} />
+                        <InfoRow label="BHK" value={propertyDetail?.bhk?.name || "—"} />
                         {propertyDetail?.furnished && (
                             <InfoRow label="Furnished" value={propertyDetail.furnished} />
                         )}

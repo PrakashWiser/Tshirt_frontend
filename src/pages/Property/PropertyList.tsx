@@ -38,6 +38,7 @@ interface PropertyRow {
     totalPrice: string;
     location: string;
     image: string;
+    slug: string,
     status: string;
     isFeatured: boolean;
 }
@@ -220,7 +221,7 @@ export default function PropertyList() {
                     const property = properties.find((p) => p.id === row.id);
                     return (
                         <DotMenu
-                            onView={() => handleView(row.id)}
+                            onView={() => handleView(row.slug)}
                             onEdit={() => property && handleEdit(property)}
                             onDelete={() => handleDelete(row.id)}
                         />
@@ -249,12 +250,15 @@ export default function PropertyList() {
                 : property.location?.city || "N/A",
             image: property.image || "",
             isFeatured: property.isFeatured || false,
+            slug: property.slug,
             status: property.status || "Inactive",
         }));
     }, [properties]);
 
-    const handleView = (id: string) => {
-        navigate(`/properties/${id}`);
+    const handleView = (slug: string) => {
+        console.log(slug);
+        
+        navigate(`/properties/${slug}`);
     };
 
     const handleVerificationChange = async (
@@ -485,7 +489,7 @@ export default function PropertyList() {
                                                 </div>
                                                 <div className="absolute right-3 top-3">
                                                     <DotMenu
-                                                        onView={() => handleView(row.id)}
+                                                        onView={() => handleView(row.slug)}
                                                         onEdit={() =>
                                                             originalProperty && handleEdit(originalProperty)
                                                         }

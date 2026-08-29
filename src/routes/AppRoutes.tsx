@@ -93,7 +93,7 @@ export default function AppRoutes() {
               <Route path="/bhk" element={<BhkSection />} />
               <Route path="/properties-action" element={<PropertyActionList />} />
               <Route
-                path="/properties/:id"
+                path="/properties/:slug"
                 element={<PropertyView />}
               />
               <Route path="/amenity" element={<AmenitySection />} />
