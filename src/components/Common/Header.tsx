@@ -24,6 +24,7 @@ import CustomImage from "../Image";
 import { logoutUser } from "../../store/slice/authSlice";
 import useAdminNotifications from "../../hooks/useAdminNotifications";
 import { getAllProperties, type Property } from "../../store/slice/propertySlice";
+import type { RootState } from "../../store/store";
 
 interface HeaderProps {
     sidebarOpen: boolean;
@@ -37,7 +38,7 @@ function Header({
     const location = useLocation();
     const navigate = useNavigate();
     const dispatch = useAppDispatch();
-    const { user } = useAppSelector((state) => state.auth);
+    const { user } = useAppSelector((state: RootState) => state.auth);
 
     const {
         notifications,
