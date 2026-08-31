@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import { store } from "../store/store";
 import { refreshToken, logoutUser } from "../store/slice/authSlice";
 import { setupTokenRefresh } from "../utils/setupTokenRefresh";
+import { showSessionExpired } from "../api/Fetch";
 
 export default function AuthBootstrap(): null {
     useEffect(() => {
@@ -14,11 +15,14 @@ export default function AuthBootstrap(): null {
         });
 
         const handleTryRefresh = async () => {
-            const globalAny: any = window as any;
+            const globalAny = window as any;
 
             if (globalAny.__refreshPromise) {
                 try {
                     await globalAny.__refreshPromise;
+
+                    globalAny.__newAccessToken =
+                        store.getState().auth.accessToken;
 
                     window.dispatchEvent(
                         new CustomEvent("refresh-result", {
@@ -63,9 +67,7 @@ export default function AuthBootstrap(): null {
                     })
                 );
 
-                window.dispatchEvent(
-                    new CustomEvent("session-expired-popup")
-                );
+                showSessionExpired();
             } finally {
                 globalAny.__refreshPromise = null;
             }

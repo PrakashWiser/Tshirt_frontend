@@ -8,11 +8,14 @@ import {
 } from "../store/slice/notificationSlice";
 import type { Notification } from "../store/slice/notificationSlice";
 import socket from "../utils/socket";
+import type { RootState } from "../store/store";
 
 const useAdminNotifications = () => {
   const dispatch = useAppDispatch();
 
-  const notifications = useAppSelector((state) => state.notifications.list);
+  const notifications = useAppSelector(
+    (state: RootState) => state.notifications.list,
+  );
   const unreadCount = useAppSelector(
     (state) => state.notifications.unreadCount,
   );

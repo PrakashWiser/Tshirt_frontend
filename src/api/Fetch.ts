@@ -6,12 +6,14 @@ let sessionExpiredShown = false;
 export const resetSessionExpired = () => {
   sessionExpiredShown = false;
 };
+
 export const showSessionExpired = () => {
   if (sessionExpiredShown) {
     return;
   }
 
   sessionExpiredShown = true;
+
   window.dispatchEvent(new CustomEvent("session-expired-popup"));
 };
 
@@ -22,6 +24,30 @@ interface FetchApiProps {
   token?: string | null;
   skipAuthHandler?: boolean;
 }
+
+const waitForRefreshResult = (): Promise<boolean> => {
+  return new Promise((resolve) => {
+    const timeout = setTimeout(() => {
+      window.removeEventListener("refresh-result", onResult);
+
+      resolve(false);
+    }, 15000);
+
+    const onResult = (e: Event) => {
+      clearTimeout(timeout);
+
+      window.removeEventListener("refresh-result", onResult);
+
+      const detail = (e as CustomEvent)?.detail;
+
+      resolve(Boolean(detail?.success));
+    };
+
+    window.addEventListener("refresh-result", onResult);
+
+    window.dispatchEvent(new CustomEvent("try-refresh"));
+  });
+};
 
 export const FetchApi = async <T = any>({
   endpoint,
@@ -56,53 +82,53 @@ export const FetchApi = async <T = any>({
       signal: controller.signal,
     });
 
-    clearTimeout(timeoutId);
-
     const contentType = response.headers.get("content-type");
+
     const rawText = await response.text();
 
     if (response.status === 401) {
       const isLoginPage = window.location.pathname === "/login";
 
       if (!skipAuthHandler && !isLoginPage && !sessionExpiredShown) {
-        const tryRefreshAndRetry = async () => {
-          const globalAny: any = window as any;
-          let refreshed = false;
+        const globalAny = window as any;
 
-          if (globalAny.__refreshPromise) {
-            try {
-              await globalAny.__refreshPromise;
-              refreshed = true;
-            } catch {
-              refreshed = false;
-            }
-          } else {
-            refreshed = await new Promise<boolean>((resolve) => {
-              const onResult = (e: Event) => {
-                const detail = (e as CustomEvent)?.detail;
+        let refreshed = false;
 
-                window.removeEventListener("refresh-result", onResult);
+        if (globalAny.__refreshPromise) {
+          try {
+            await globalAny.__refreshPromise;
 
-                resolve(Boolean(detail?.success));
-              };
+            globalAny.__newAccessToken = globalAny.__newAccessToken ?? token;
 
-              window.addEventListener("refresh-result", onResult);
+            refreshed = true;
+          } catch {
+            refreshed = false;
+          }
+        } else {
+          refreshed = await waitForRefreshResult();
+        }
 
-              window.dispatchEvent(new CustomEvent("try-refresh"));
-            });
+        if (refreshed) {
+          const newToken = globalAny.__newAccessToken;
+
+          if (!newToken) {
+            showSessionExpired();
+
+            throw new Error("UNAUTHORIZED");
           }
 
-          if (refreshed) {
-            const newToken = (window as any).__newAccessToken ?? token;
+          const retryHeaders: Record<string, string> = {
+            ...headers,
+            Authorization: `Bearer ${newToken}`,
+          };
 
-            const retryHeaders: Record<string, string> = {
-              ...headers,
-            };
+          const retryController = new AbortController();
 
-            if (newToken) {
-              retryHeaders["Authorization"] = `Bearer ${newToken}`;
-            }
+          const retryTimeoutId = setTimeout(() => {
+            retryController.abort();
+          }, FETCH_TIMEOUT);
 
+          try {
             const retryResponse = await fetch(`${API_URL}${endpoint}`, {
               method,
               headers: retryHeaders,
@@ -113,10 +139,8 @@ export const FetchApi = async <T = any>({
                     ? JSON.stringify(body)
                     : null,
               credentials: "include",
-              signal: controller.signal,
+              signal: retryController.signal,
             });
-
-            clearTimeout(timeoutId);
 
             const retryContentType = retryResponse.headers.get("content-type");
 
@@ -124,6 +148,7 @@ export const FetchApi = async <T = any>({
 
             if (retryResponse.status === 401) {
               showSessionExpired();
+
               throw new Error("UNAUTHORIZED");
             }
 
@@ -148,14 +173,14 @@ export const FetchApi = async <T = any>({
             return retryContentType?.includes("application/json")
               ? (JSON.parse(retryRawText) as T)
               : (retryRawText as T);
+          } finally {
+            clearTimeout(retryTimeoutId);
           }
+        }
 
-          showSessionExpired();
+        showSessionExpired();
 
-          throw new Error("UNAUTHORIZED");
-        };
-
-        return await tryRefreshAndRetry();
+        throw new Error("UNAUTHORIZED");
       }
 
       throw new Error("UNAUTHORIZED");

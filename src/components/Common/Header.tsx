@@ -257,7 +257,9 @@ function Header({
                                                     </span>
                                                     <span className="text-xs text-gray-300">•</span>
                                                     <span className="text-xs text-gray-500">
-                                                        {property.bhk} BHK
+                                                        {typeof property.bhk === "object"
+                                                            ? property.bhk.name
+                                                            : property.bhk}
                                                     </span>
                                                     <span className="text-xs text-gray-300">•</span>
                                                     <span className="text-xs font-medium text-emerald-600">

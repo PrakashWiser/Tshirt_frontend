@@ -242,7 +242,7 @@ export default function PropertyList() {
             propertyAction: typeof property.propertyAction === "object"
                 ? property.propertyAction.name
                 : "Unknown",
-            bhk: `${property.bhk} BHK`,
+            bhk: `${property.bhk}`,
             totalSquareFeet: property.totalSquareFeet,
             totalPrice: property.price || "N/A",
             location: property.location?.locality

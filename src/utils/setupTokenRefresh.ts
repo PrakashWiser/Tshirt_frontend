@@ -1,3 +1,5 @@
+import { showSessionExpired } from "../api/Fetch";
+
 let refreshTimeout: ReturnType<typeof setTimeout> | null = null;
 let isRefreshing = false;
 
@@ -17,7 +19,17 @@ export const isLoginExpired = (): boolean => {
   }
 
   const sevenDays = 7 * 24 * 60 * 60 * 1000;
+
   return Date.now() - Number(loginTimestamp) >= sevenDays;
+};
+
+export const clearTokenRefresh = () => {
+  if (refreshTimeout) {
+    clearTimeout(refreshTimeout);
+    refreshTimeout = null;
+  }
+
+  isRefreshing = false;
 };
 
 export const setupTokenRefresh = ({
@@ -25,10 +37,12 @@ export const setupTokenRefresh = ({
   logoutAction,
   refreshTokenAction,
 }: SetupTokenRefreshProps) => {
+  clearTokenRefresh();
+
   if (isLoginExpired()) {
     store.dispatch(logoutAction());
 
-    window.dispatchEvent(new CustomEvent("session-expired-popup"));
+    showSessionExpired();
 
     return;
   }
@@ -41,29 +55,33 @@ export const setupTokenRefresh = ({
 
   const refreshNow = async () => {
     refreshTimeout = null;
-    if (isRefreshing) return;
+
+    if (isRefreshing) {
+      return;
+    }
+
     isRefreshing = true;
 
     try {
       await store.dispatch(refreshTokenAction()).unwrap();
+
       setupTokenRefresh({
         store,
         logoutAction,
         refreshTokenAction,
       });
-    } catch (error) {
-      window.dispatchEvent(new CustomEvent("session-expired-popup"));
+    } catch {
+      store.dispatch(logoutAction());
+
+      showSessionExpired();
     } finally {
       isRefreshing = false;
     }
   };
 
   const expiresIn = Number(tokenExpiry) - Date.now();
+
   const refreshIn = expiresIn - 10 * 60 * 1000;
-  if (refreshTimeout) {
-    clearTimeout(refreshTimeout);
-    refreshTimeout = null;
-  }
 
   if (refreshIn <= 0) {
     refreshNow();
@@ -77,12 +95,4 @@ export const setupTokenRefresh = ({
       refreshTimeout = null;
     }
   };
-};
-
-export const clearTokenRefresh = () => {
-  if (refreshTimeout) {
-    clearTimeout(refreshTimeout);
-    refreshTimeout = null;
-  }
-  isRefreshing = false;
 };

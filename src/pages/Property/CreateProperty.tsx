@@ -855,11 +855,15 @@ export default function CreateProperty({ selectedProperty, onClose, loading }: C
             typeof formProperty?.propertyAction === "object" && formProperty?.propertyAction !== null
                 ? formProperty.propertyAction._id
                 : "",
-        bhk: bhks.find(
-            (bhk) =>
-                String(bhk.name).trim().toLowerCase() ===
-                String(formProperty?.bhk || "").trim().toLowerCase()
-        )?._id || "",
+
+        bhk:
+            typeof formProperty?.bhk === "object" &&
+                formProperty?.bhk !== null
+                ? formProperty.bhk._id
+                : formProperty?.bhk || "",
+
+
+
         totalSquareFeet: formProperty?.totalSquareFeet || "",
         totalBuiltArea: formProperty?.totalBuiltArea || "",
         totalPrice: (() => {

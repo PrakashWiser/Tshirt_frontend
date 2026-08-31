@@ -41,12 +41,17 @@ export interface LifestyleRef {
   name: string;
 }
 
+export interface BhkRef {
+  _id: string;
+  name: string;
+}
+
 export interface Property {
   id: string;
   name: string;
   propertyType: PropertyTypeRef | string;
   propertyAction: PropertyActionRef | string;
-  bhk: string;
+  bhk: BhkRef | string;
   totalSquareFeet: number;
   totalBuiltArea?: number;
   totalPrice: number;
