@@ -2,6 +2,7 @@ import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import { FetchApi } from "../../api/Fetch";
 import type { RootState } from "../store";
 import type { Booking } from "../../types";
+import { USE_MOCK_MODULE_DATA, MOCK_BOOKINGS } from "../../utils/mockModuleData";
 
 interface BookingState {
   bookings: Booking[];
@@ -23,6 +24,10 @@ export const getAllBookings = createAsyncThunk(
   "booking/getAll",
   async (_, thunkAPI) => {
     try {
+      if (USE_MOCK_MODULE_DATA) {
+        return MOCK_BOOKINGS;
+      }
+
       const token = (thunkAPI.getState() as RootState).auth.accessToken;
 
       const res = await FetchApi<any>({

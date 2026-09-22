@@ -107,8 +107,8 @@ export const getAllContactSupports = createAsyncThunk<
     const queryString = queryParams.toString();
 
     const endpoint = queryString
-      ? `/contact-support?${queryString}`
-      : "/contact-support";
+      ? `/contact?${queryString}`
+      : "/contact";
 
     const res = await FetchApi<ApiResponse<ContactSupportListResponse>>({
       endpoint,
@@ -136,7 +136,7 @@ export const getContactSupportById = createAsyncThunk<
     const token = thunkAPI.getState().auth.accessToken;
 
     const res = await FetchApi<ApiResponse<ContactSupport>>({
-      endpoint: `/contact-support/${id}`,
+      endpoint: `/contact/${id}`,
       method: "GET",
       token,
     });
@@ -161,7 +161,7 @@ export const deleteContactSupport = createAsyncThunk<
     const token = thunkAPI.getState().auth.accessToken;
 
     await FetchApi({
-      endpoint: `/contact-support/${id}`,
+      endpoint: `/contact/${id}`,
       method: "DELETE",
       token,
     });
@@ -189,7 +189,7 @@ export const updateContactSupportStatus = createAsyncThunk<
     const token = thunkAPI.getState().auth.accessToken;
 
     const res = await FetchApi<ApiResponse<ContactSupport>>({
-      endpoint: `/contact-support/${id}/status`,
+      endpoint: `/contact/${id}/status`,
       method: "PATCH",
       body: {
         status,

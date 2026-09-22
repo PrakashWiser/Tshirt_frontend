@@ -3,11 +3,18 @@ import type { PayloadAction } from "@reduxjs/toolkit";
 import { FetchApi, resetSessionExpired } from "../../api/Fetch";
 import type { RootState } from "../store";
 import { clearTokenRefresh } from "../../utils/setupTokenRefresh";
+import {
+  USE_MOCK_MODULE_DATA,
+  MOCK_LOGIN_RESPONSE,
+  MOCK_PROFILE_RESPONSE,
+  MOCK_ADMIN_USER,
+} from "../../utils/mockModuleData";
 
 export interface User {
   _id: string;
   name: string;
   email: string;
+  mobile?: string;
   role: string;
   profilePhoto: string;
 }
@@ -35,16 +42,19 @@ interface AuthResponse {
   user?: User;
   accessToken?: string;
   refreshToken?: string;
+  token?: string;
 }
 
 interface LoginApiResponse {
   success: boolean;
-  statusCode: number;
+  statusCode?: number;
+  message?: string;
   data: {
-    message: string;
-    accessToken: string;
-    refreshToken: string;
-    user: User;
+    message?: string;
+    token?: string;
+    accessToken?: string;
+    refreshToken?: string;
+    user?: Partial<User> & { name?: string; email?: string; role?: string };
   };
 }
 
@@ -63,8 +73,10 @@ interface LogoutResponse {
 }
 
 interface UpdateProfilePayload {
-  name: string;
-  email: string;
+  name?: string;
+  email?: string;
+  mobile?: string;
+  profilePhoto?: string;
 }
 
 interface ChangePasswordPayload {
@@ -107,19 +119,49 @@ export const loginUser = createAsyncThunk<
   }
 >("auth/loginUser", async (payload, thunkAPI) => {
   try {
+    if (USE_MOCK_MODULE_DATA) {
+      const response = MOCK_LOGIN_RESPONSE as LoginApiResponse;
+      const { accessToken, refreshToken } = response.data;
+      localStorage.setItem("tokenExpiry", String(Date.now() + 60 * 60 * 1000));
+      localStorage.setItem("loginTimestamp", String(Date.now()));
+      return {
+        success: true,
+        message: response?.data?.message || "Admin login successful",
+        accessToken,
+        refreshToken,
+      };
+    }
+
     const response = await FetchApi<LoginApiResponse>({
-      endpoint: "/admin/login",
+      endpoint: "/auth/login",
       method: "POST",
       body: payload,
     });
-    const { accessToken, refreshToken } = response.data;
+
+    const token = response?.data?.token || response?.data?.accessToken || "";
+    const refreshToken = response?.data?.refreshToken || null;
+    const user = response?.data?.user;
+
+    const safeUser = user
+      ? {
+          _id: (user as any)._id || user.email || "admin-user",
+          name: user.name || "Admin User",
+          email: user.email || "",
+          mobile: (user as any).mobile || "",
+          role: user.role || "admin",
+          profilePhoto: "",
+        }
+      : undefined;
+
     localStorage.setItem("tokenExpiry", String(Date.now() + 60 * 60 * 1000));
     localStorage.setItem("loginTimestamp", String(Date.now()));
+
     return {
       success: true,
-      message: response?.data?.message,
-      accessToken,
-      refreshToken,
+      message: response?.message || response?.data?.message || "Admin login successful",
+      accessToken: token,
+      refreshToken: refreshToken || undefined,
+      user: safeUser,
     };
   } catch (err: any) {
     return thunkAPI.rejectWithValue(err?.message || "Login failed");
@@ -136,16 +178,46 @@ export const getProfile = createAsyncThunk<
 >("auth/getProfile", async (_, thunkAPI) => {
   const token = thunkAPI.getState().auth.accessToken;
   try {
-    const response = await FetchApi<{
-      success: boolean;
-      data: User;
-    }>({
-      endpoint: "/admin/profile",
-      method: "GET",
-      token: token ?? "",
-    });
+    if (USE_MOCK_MODULE_DATA) {
+      return (MOCK_PROFILE_RESPONSE.data || MOCK_ADMIN_USER) as User;
+    }
 
-    return response.data;
+    const endpoints = ["/auth/me", "/admin/profile"];
+
+    let lastError: any = null;
+
+    for (const endpoint of endpoints) {
+      try {
+        const response = await FetchApi<{
+          success: boolean;
+          data: User | { user?: User } | { data?: User };
+        }>({
+          endpoint,
+          method: "GET",
+          token: token ?? "",
+        });
+
+        const rawData = response?.data as any;
+        const profile = rawData?.user ?? rawData?.data ?? rawData;
+
+        if (profile) {
+          const normalized = profile as User;
+
+          return {
+            _id: normalized._id || "admin-user",
+            name: normalized.name || "Admin User",
+            email: normalized.email || "",
+            mobile: normalized.mobile || "",
+            role: normalized.role || "admin",
+            profilePhoto: normalized.profilePhoto || "",
+          };
+        }
+      } catch (error) {
+        lastError = error;
+      }
+    }
+
+    throw lastError || new Error("Failed to load profile");
   } catch (err: any) {
     return thunkAPI.rejectWithValue(err?.message || "Failed to load profile");
   }
@@ -168,7 +240,7 @@ export const refreshToken = createAsyncThunk<
   }
   try {
     const response = await FetchApi<RefreshTokenResponse>({
-      endpoint: "/admin/refresh-token",
+      endpoint: "/auth/refresh-token",
       method: "POST",
       token: refreshTokenValue,
       skipAuthHandler: true,
@@ -321,6 +393,7 @@ const authSlice = createSlice({
           state.isLoading = false;
           state.accessToken = action.payload.accessToken || null;
           state.refreshToken = action.payload.refreshToken || null;
+          state.user = action.payload.user || state.user;
           state.isAuthenticated = true;
           state.message = action.payload.message || "Login successful";
           state.error = null;

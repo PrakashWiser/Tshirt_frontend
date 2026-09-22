@@ -2,6 +2,7 @@ import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import type { PayloadAction } from "@reduxjs/toolkit";
 import { FetchApi } from "../../api/Fetch";
 import type { RootState } from "../store";
+import { USE_MOCK_MODULE_DATA, MOCK_NOTIFICATIONS } from "../../utils/mockModuleData";
 
 export interface Notification {
   _id: string;
@@ -85,8 +86,20 @@ export const getNotifications = createAsyncThunk<
   const limit = params.limit ?? 10;
 
   try {
+    if (USE_MOCK_MODULE_DATA) {
+      return {
+        success: true,
+        statusCode: 200,
+        message: "Notifications fetched successfully",
+        data: {
+          notification_: MOCK_NOTIFICATIONS.notifications as Notification[],
+          pagination: MOCK_NOTIFICATIONS.pagination as NotificationPagination,
+        },
+      } as NotificationResponse;
+    }
+
     const response = await FetchApi<NotificationResponse>({
-      endpoint: `/notifications?page=${page}&limit=${limit}`,
+      endpoint: `/admin/notifications?page=${page}&limit=${limit}`,
       method: "GET",
       token: token ?? "",
     });

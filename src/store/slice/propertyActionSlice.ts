@@ -1,6 +1,7 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import { FetchApi } from "../../api/Fetch";
 import type { RootState } from "../store";
+import { USE_MOCK_MODULE_DATA, MOCK_PROPERTY_ACTIONS } from "../../utils/mockModuleData";
 
 export interface PropertyAction {
   _id: string;
@@ -81,6 +82,10 @@ export const getAllPropertyActions = createAsyncThunk(
   "propertyAction/getAll",
   async (_, thunkAPI) => {
     try {
+      if (USE_MOCK_MODULE_DATA) {
+        return MOCK_PROPERTY_ACTIONS?.propertyActions ?? [];
+      }
+
       const state = thunkAPI.getState() as RootState;
       const token = state.auth.accessToken;
 

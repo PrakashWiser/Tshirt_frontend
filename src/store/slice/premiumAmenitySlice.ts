@@ -1,6 +1,7 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import { FetchApi } from "../../api/Fetch";
 import type { RootState } from "../store";
+import { USE_MOCK_MODULE_DATA, MOCK_AMENITIES } from "../../utils/mockModuleData";
 
 export interface PremiumAmenity {
   _id: string;
@@ -91,6 +92,13 @@ export const getAllAmenities = createAsyncThunk<
 >("premiumAmenities/getAllAmenities", async (params, thunkAPI) => {
   const token = thunkAPI.getState().auth.accessToken;
   try {
+    if (USE_MOCK_MODULE_DATA) {
+      return {
+        amenities: MOCK_AMENITIES.amenities as unknown as PremiumAmenity[],
+        pagination: MOCK_AMENITIES.pagination,
+      };
+    }
+
     const queryParams = new URLSearchParams();
     if (params) {
       if (params.page) queryParams.append("page", String(params.page));

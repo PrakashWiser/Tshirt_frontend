@@ -44,6 +44,8 @@ export function useDataTable<T extends object>({
   paginationMode = "client",
   onSearchChange,
 }: Options<T>): DataTableState<T> {
+  const safeData = Array.isArray(data) ? data : [];
+
   const [view, setView] = useState<ViewMode>(defaultView);
   const [query, setQuery] = useState("");
   const [sort, setSort] = useState<SortState>({
@@ -109,19 +111,19 @@ export function useDataTable<T extends object>({
 
   const filteredData = useMemo<T[]>(() => {
     if (paginationMode === "server") {
-      return data;
+      return safeData;
     }
     const q = query.trim().toLowerCase();
     if (!q || searchKeys.length === 0) {
-      return data;
+      return safeData;
     }
-    return data.filter((row) =>
+    return safeData.filter((row) =>
       searchKeys.some((key) => {
         const value = row[key];
         return value != null && String(value).toLowerCase().includes(q);
       }),
     );
-  }, [data, query, searchKeys, paginationMode]);
+  }, [safeData, query, searchKeys, paginationMode]);
 
   const sortedData = useMemo<T[]>(() => {
     if (paginationMode === "server") {
@@ -158,7 +160,7 @@ export function useDataTable<T extends object>({
     if (paginationMode === "server") {
       return sortedData;
     }
-    const totalCount = sortedData.length;
+    const totalCount = sortedData?.length;
     const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
     const safePage = Math.min(page, totalPages);
     const start = (safePage - 1) * pageSize;

@@ -1,6 +1,7 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import type { RootState } from "../store";
 import { FetchApi } from "../../api/Fetch";
+import { USE_MOCK_MODULE_DATA, MOCK_STATS } from "../../utils/mockModuleData";
 
 export interface DashboardStats {
   totalUsers: number;
@@ -41,6 +42,10 @@ export const getDashboardStats = createAsyncThunk<
   const token = thunkAPI.getState().auth.accessToken;
 
   try {
+    if (USE_MOCK_MODULE_DATA) {
+      return MOCK_STATS as DashboardStats;
+    }
+
     const response = await FetchApi<StatsResponse>({
       endpoint: "/admin/stats",
       method: "GET",

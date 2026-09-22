@@ -259,7 +259,7 @@ export default function AuditLogs() {
                             }
                             className={`px-3 py-1.5 cursor-pointer rounded-lg text-xs font-medium transition-colors ${selectedSeverity ===
                                 severity
-                                ? "bg-black text-white"
+                                ? "bg-[#3A29AA] text-white"
                                 : "bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800"
                                 }`}
                         >
@@ -506,7 +506,7 @@ export default function AuditLogs() {
                             }
                             className={`w-9 h-9 rounded-lg text-sm font-medium transition-colors ${currentPage ===
                                 page
-                                ? "bg-black text-white"
+                                ? "bg-[#3A29AA] text-white"
                                 : "bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800"
                                 }`}
                         >

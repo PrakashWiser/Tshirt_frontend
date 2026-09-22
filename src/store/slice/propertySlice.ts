@@ -1,6 +1,7 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import { FetchApi } from "../../api/Fetch";
 import type { RootState } from "../store";
+import { USE_MOCK_MODULE_DATA, MOCK_PROPERTIES } from "../../utils/mockModuleData";
 
 export interface NearbyPlace {
   type: string;
@@ -207,6 +208,10 @@ export const getAllProperties = createAsyncThunk(
     thunkAPI,
   ) => {
     try {
+      if (USE_MOCK_MODULE_DATA) {
+        return MOCK_PROPERTIES;
+      }
+
       const state = thunkAPI.getState() as RootState;
       const token = state.auth.accessToken;
       const queryParams = new URLSearchParams();
@@ -297,6 +302,16 @@ export const getPropertyFilters = createAsyncThunk(
   "property/getFilters",
   async (_, thunkAPI) => {
     try {
+      if (USE_MOCK_MODULE_DATA) {
+        return {
+          filters: {
+            propertyTypes: ["Apartment", "Villa", "Plot", "Commercial"],
+            bhks: ["1 BHK", "2 BHK", "3 BHK", "4 BHK"],
+            cities: ["Mumbai", "Pune", "Bengaluru", "Hyderabad"],
+          },
+        };
+      }
+
       const state = thunkAPI.getState() as RootState;
       const token = state.auth.accessToken;
 

@@ -2,6 +2,7 @@ import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import { FetchApi } from "../../api/Fetch";
 import type { RootState } from "../store";
 import type { Coupon, CreateCouponPayload } from "../../types";
+import { USE_MOCK_MODULE_DATA, MOCK_COUPONS } from "../../utils/mockModuleData";
 
 interface CouponState {
   coupons: Coupon[];
@@ -42,6 +43,10 @@ export const getAllCoupons = createAsyncThunk<
   { state: RootState; rejectValue: string }
 >("coupon/getAll", async (_, thunkAPI) => {
   try {
+    if (USE_MOCK_MODULE_DATA) {
+      return MOCK_COUPONS as unknown as CouponListResponse;
+    }
+
     const token = thunkAPI.getState().auth.accessToken;
     const res = await FetchApi<ApiResponse<CouponListResponse>>({
       endpoint: "/admin/coupons",

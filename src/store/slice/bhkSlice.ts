@@ -1,6 +1,7 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import { FetchApi } from "../../api/Fetch";
 import type { RootState } from "../store";
+import { USE_MOCK_MODULE_DATA, MOCK_BHKS } from "../../utils/mockModuleData";
 
 export interface BHK {
   _id: string;
@@ -64,6 +65,10 @@ export const getAllBHKs = createAsyncThunk(
   "bhk/getAll",
   async (_, thunkAPI) => {
     try {
+      if (USE_MOCK_MODULE_DATA) {
+        return MOCK_BHKS;
+      }
+
       const state = thunkAPI.getState() as RootState;
       const token = state.auth.accessToken;
 

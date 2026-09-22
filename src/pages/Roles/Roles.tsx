@@ -17,48 +17,57 @@ import { useAppDispatch } from '../../hooks/hooks';
 import Button from '../../components/Button';
 import Permissions from './Permissions';
 
-const DUMMY_ROLES = [
-    {
-        id: 1,
-        name: 'Super Admin',
-        description: 'Full system access',
-        userCount: 2,
-        icon: Shield,
-        color: 'bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-200 dark:border-purple-800/30'
-    },
-    {
-        id: 2,
-        name: 'Platform Admin',
-        description: 'Manage all properties and users',
-        userCount: 5,
-        icon: Building2,
-        color: 'bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-200 dark:border-blue-800/30'
-    },
-    {
-        id: 3,
-        name: 'Finance Manager',
-        description: 'Payments, refunds, reports',
-        userCount: 8,
-        icon: CreditCard,
-        color: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800/30'
-    },
-    {
-        id: 4,
-        name: 'Property Manager',
-        description: 'Manage assigned properties',
-        userCount: 2,
-        icon: Building2,
-        color: 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-200 dark:border-amber-800/30'
-    },
-    {
-        id: 5,
-        name: 'Support Agent',
-        description: 'View bookings, resolve tickets',
-        userCount: 32,
-        icon: Headphones,
-        color: 'bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-200 dark:border-rose-800/30'
+const DUMMY_ROLES_RESPONSE = {
+    success: true,
+    statusCode: 200,
+    message: 'Roles fetched successfully',
+    data: {
+        roles: [
+            {
+                id: 1,
+                name: 'System Owner',
+                description: 'Full access to all admin modules and system settings',
+                userCount: 1,
+                icon: Shield,
+                color: 'bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-200 dark:border-purple-800/30'
+            },
+            {
+                id: 2,
+                name: 'Branch Manager',
+                description: 'Manage all properties, users, and local operations',
+                userCount: 4,
+                icon: Building2,
+                color: 'bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-200 dark:border-blue-800/30'
+            },
+            {
+                id: 3,
+                name: 'Finance Lead',
+                description: 'Handle payments, deals, invoices, and financial reports',
+                userCount: 6,
+                icon: CreditCard,
+                color: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800/30'
+            },
+            {
+                id: 4,
+                name: 'Property Manager',
+                description: 'Control listing updates, assignments, and property tasks',
+                userCount: 9,
+                icon: Building2,
+                color: 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-200 dark:border-amber-800/30'
+            },
+            {
+                id: 5,
+                name: 'Support Executive',
+                description: 'Resolve customer enquiries and manage support tickets',
+                userCount: 12,
+                icon: Headphones,
+                color: 'bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-200 dark:border-rose-800/30'
+            }
+        ]
     }
-];
+};
+
+const DUMMY_ROLES = DUMMY_ROLES_RESPONSE.data.roles;
 
 export default function Roles() {
     const dispatch = useAppDispatch();
@@ -100,7 +109,7 @@ export default function Roles() {
                 </div>
                 <Button
                     onClick={() => setOpen(true)}
-                    className="flex items-center gap-2 px-4 py-2 bg-black hover:bg-gray-800 text-white rounded-md text-sm font-medium transition-colors">
+                    className="flex items-center gap-2 px-4 py-2 bg-[#3A29AA] hover:bg-[#2f218f] text-white rounded-md text-sm font-medium transition-colors">
                     <Plus className="w-4 h-4" />
                     New Role
                 </Button>

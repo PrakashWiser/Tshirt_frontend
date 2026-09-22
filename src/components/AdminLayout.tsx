@@ -19,7 +19,7 @@ export default function AdminLayout({ children }: { children?: React.ReactNode }
     }
   }, [darkMode]);
   return (
-    <div id="admin-app-root" className="h-screen w-screen overflow-hidden flex bg-slate-50 dark:bg-slate-950 font-sans transition-colors duration-300">
+    <div id="admin-app-root" className="h-screen w-screen overflow-hidden flex bg-slate-50 dark:bg-slate-950  transition-colors duration-300">
       <Sidebar sidebarOpen={sidebarOpen}
         setSidebarOpen={setSidebarOpen} />
       <div className="flex-1 flex flex-col min-w-0 h-full overflow-hidden">

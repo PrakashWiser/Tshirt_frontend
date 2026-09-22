@@ -1,6 +1,7 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import { FetchApi } from "../../api/Fetch";
 import type { RootState } from "../store";
+import { USE_MOCK_MODULE_DATA, MOCK_VENDORS } from "../../utils/mockModuleData";
 
 export interface VendorPermission {
   id: string;
@@ -69,6 +70,10 @@ export const getVendors = createAsyncThunk(
   "vendor/getAll",
   async (_, thunkAPI) => {
     try {
+      if (USE_MOCK_MODULE_DATA) {
+        return MOCK_VENDORS;
+      }
+
       const token = (thunkAPI.getState() as RootState).auth.accessToken;
       const res = await FetchApi<any>({
         endpoint: "/admin/vendors",

@@ -2,6 +2,7 @@ import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import { FetchApi } from "../../api/Fetch";
 import type { RootState } from "../store";
 import type { PricingRule } from "../../types";
+import { USE_MOCK_MODULE_DATA, MOCK_PRICING_RULES } from "../../utils/mockModuleData";
 
 interface PricingRuleState {
   pricingRules: PricingRule[];
@@ -23,6 +24,10 @@ export const getAllPricingRules = createAsyncThunk(
   "pricingRule/getAll",
   async (_, thunkAPI) => {
     try {
+      if (USE_MOCK_MODULE_DATA) {
+        return MOCK_PRICING_RULES;
+      }
+
       const state = thunkAPI.getState() as RootState;
       const token = state.auth.accessToken;
 

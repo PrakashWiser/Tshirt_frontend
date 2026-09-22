@@ -104,7 +104,7 @@ export default function CreateRole({ onCancel, onSave }: createRoleProps) {
                     </button>
                     <button
                         onClick={handleSave}
-                        className="px-4 py-2 bg-black cursor-pointer text-white rounded-lg text-sm font-medium flex items-center gap-2 shadow-sm"
+                        className="px-4 py-2 bg-[#3A29AA] hover:bg-[#2f218f] cursor-pointer text-white rounded-lg text-sm font-medium flex items-center gap-2 shadow-sm"
                     >
                         <Save className="w-4 h-4" />
                         Create Role

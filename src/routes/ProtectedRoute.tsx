@@ -13,7 +13,7 @@ const ProtectedRoute = () => {
       <div className="min-h-screen flex flex-col items-center justify-center gap-4">
         <motion.img
           src="/logo.png"
-          alt="Landly"
+          alt="Tshirt Admin"
           className="h-16 w-16 rounded-full"
           animate={{ rotate: 360 }}
           transition={{
@@ -32,7 +32,7 @@ const ProtectedRoute = () => {
             ease: "easeInOut",
           }}
         >
-          Landly
+          Tshirt Admin
         </motion.span>
       </div>
     );

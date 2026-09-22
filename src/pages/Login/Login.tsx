@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { LogIn } from "lucide-react";
+import { LogIn, Shirt } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAppDispatch, useAppSelector } from "../../hooks/hooks";
 import InputField from "../../components/CommonInput";
@@ -65,19 +65,20 @@ function Login() {
   }, [message, error, dispatch, navigate]);
 
   return (
-    <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-slate-950">
-      <div className="absolute inset-0 bg-[url('https://assets.webdads2u.com/images/1786538115762-rectangle-1.png')] bg-cover bg-center" />
+    <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-[#f8f3ee]">
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(249,115,22,0.2),transparent_38%),linear-gradient(135deg,_#fff7ed_0%,_#fff_35%,_#f9fafb_100%)]" />
 
-      <div className="absolute inset-0 bg-black/60 backdrop-blur-xs" />
-      <div className="relative z-10 w-full max-w-lg px-5">
-        <div className="rounded-xl border border-white/20 bg-white/10 p-8 shadow-2xl backdrop-blur-xl">
+      <div className="relative z-10 w-full max-w-xl px-5">
+        <div className="rounded-[28px] border border-orange-100 bg-white/90 p-8 shadow-[0_30px_80px_rgba(15,23,42,0.12)] backdrop-blur-xl ring-1 ring-slate-200">
           <div className="mb-8 flex flex-col items-center">
-            <img src="./logo.png" className="rounded-full" alt="landly admin" />
-            <h1 className="text-2xl font-bold text-white">
-              Landy Admin
+            <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-[#111827] text-orange-400 shadow-lg shadow-orange-200/80">
+              <Shirt size={32} />
+            </div>
+            <h1 className="text-3xl font-black tracking-tight text-slate-900">
+              Tshirt Admin
             </h1>
-            <p className="mt-1 text-center text-sm text-slate-300 capitalize">
-              Sign in to manage Land, bookings and guests
+            <p className="mt-2 text-center text-sm text-slate-600">
+              Manage products, orders, customers and store performance
             </p>
           </div>
 
@@ -86,8 +87,8 @@ function Login() {
               <InputField
                 type="email"
                 name="email"
-                placeholder="admin@example.com"
-                className=" text-white"
+                placeholder="admin@tshirtstore.com"
+                className="text-slate-900"
                 value={formData.email}
                 onChange={handleChange}
                 required
@@ -95,17 +96,15 @@ function Login() {
             </div>
 
             <div>
-              <div className="relative">
-                <InputField
-                  type="password"
-                  name="password"
-                  placeholder="Enter password"
-                  className=" text-white"
-                  value={formData.password}
-                  onChange={handleChange}
-                  required
-                />
-              </div>
+              <InputField
+                type="password"
+                name="password"
+                placeholder="Enter password"
+                className="text-slate-900"
+                value={formData.password}
+                onChange={handleChange}
+                required
+              />
             </div>
 
             <Button
@@ -113,12 +112,12 @@ function Login() {
               full
               leftIcon={!isLoading ? <LogIn size={18} /> : undefined}
               disabled={isLoading}
-              className="flex items-center justify-center py-3 text-base font-semibold"
+              className="flex items-center justify-center bg-[#111827] py-3 text-base font-semibold text-white hover:bg-[#1f2937]"
             >
               {isLoading ? (
                 <div className="flex items-center gap-2">
                   <span className="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent" />
-                  login In...
+                  Logging in...
                 </div>
               ) : (
                 "Login"
