@@ -3,10 +3,10 @@ import { FetchApi } from "../../api/Fetch";
 import type { RootState } from "../store";
 
 export type ContactSupportStatus =
-  | "New"
-  | "In Progress"
-  | "Resolved"
-  | "Closed";
+  | "new"
+  | "in progress"
+  | "resolved"
+  | "closed";
 
 export interface ContactSupport {
   _id: string;
@@ -15,34 +15,13 @@ export interface ContactSupport {
   mobile: string;
   message: string;
   status: ContactSupportStatus;
-  adminNotes?: string | null;
-  resolvedAt?: string | null;
-  resolvedBy?: string | null;
   createdAt: string;
   updatedAt: string;
   __v?: number;
 }
 
-export interface ContactSupportListParams {
-  page?: number;
-  limit?: number;
-  status?: ContactSupportStatus;
-  search?: string;
-}
-
-export interface ContactSupportListResponse {
-  requests: ContactSupport[];
-  pagination: {
-    total: number;
-    page: number;
-    limit: number;
-    totalPages: number;
-  };
-}
-
 export interface ApiResponse<T> {
   success: boolean;
-  statusCode: number;
   message: string;
   data: T;
 }
@@ -50,12 +29,6 @@ export interface ApiResponse<T> {
 interface ContactSupportState {
   contactSupports: ContactSupport[];
   contactSupport: ContactSupport | null;
-  pagination: {
-    total: number;
-    page: number;
-    limit: number;
-    totalPages: number;
-  };
   isLoading: boolean;
   error: string | null;
   message: string | null;
@@ -64,54 +37,24 @@ interface ContactSupportState {
 const initialState: ContactSupportState = {
   contactSupports: [],
   contactSupport: null,
-  pagination: {
-    total: 0,
-    page: 1,
-    limit: 10,
-    totalPages: 0,
-  },
   isLoading: false,
   error: null,
   message: null,
 };
 
 export const getAllContactSupports = createAsyncThunk<
-  ContactSupportListResponse,
-  ContactSupportListParams | undefined,
+  ContactSupport[],
+  void,
   {
     state: RootState;
     rejectValue: string;
   }
->("contactSupport/getAll", async (params = {}, thunkAPI) => {
+>("contactSupport/getAll", async (_, thunkAPI) => {
   try {
     const token = thunkAPI.getState().auth.accessToken;
 
-    const queryParams = new URLSearchParams();
-
-    if (params.page !== undefined) {
-      queryParams.append("page", String(params.page));
-    }
-
-    if (params.limit !== undefined) {
-      queryParams.append("limit", String(params.limit));
-    }
-
-    if (params.status) {
-      queryParams.append("status", params.status);
-    }
-
-    if (params.search?.trim()) {
-      queryParams.append("search", params.search.trim());
-    }
-
-    const queryString = queryParams.toString();
-
-    const endpoint = queryString
-      ? `/contact?${queryString}`
-      : "/contact";
-
-    const res = await FetchApi<ApiResponse<ContactSupportListResponse>>({
-      endpoint,
+    const res = await FetchApi<ApiResponse<ContactSupport[]>>({
+      endpoint: "/contact",
       method: "GET",
       token,
     });
@@ -218,12 +161,6 @@ const contactSupportSlice = createSlice({
     },
     clearContactSupports: (state) => {
       state.contactSupports = [];
-      state.pagination = {
-        total: 0,
-        page: 1,
-        limit: 10,
-        totalPages: 0,
-      };
     },
   },
   extraReducers: (builder) => {
@@ -234,13 +171,7 @@ const contactSupportSlice = createSlice({
       })
       .addCase(getAllContactSupports.fulfilled, (state, action) => {
         state.isLoading = false;
-        state.contactSupports = action.payload?.requests || [];
-        state.pagination = action.payload?.pagination || {
-          total: 0,
-          page: 1,
-          limit: 10,
-          totalPages: 0,
-        };
+        state.contactSupports = action.payload;
       })
       .addCase(getAllContactSupports.rejected, (state, action) => {
         state.isLoading = false;
@@ -272,8 +203,6 @@ const contactSupportSlice = createSlice({
         state.contactSupports = state.contactSupports.filter(
           (item) => item._id !== action.payload,
         );
-
-        state.pagination.total = Math.max(0, state.pagination.total - 1);
 
         state.message = "Contact support request deleted successfully";
       })

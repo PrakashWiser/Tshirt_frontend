@@ -329,37 +329,6 @@ export const CouponTriggerType = {
   COUPON_CODE: "coupon_code",
 } as const;
 
-export type CouponTriggerType =
-  (typeof CouponTriggerType)[keyof typeof CouponTriggerType];
-
-export const TRIGGER_TYPE_LABELS: Record<CouponTriggerType, string> = {
-  [CouponTriggerType.ALL_USERS]: "All Users",
-  [CouponTriggerType.FIRST_BOOKING]: "First Booking",
-  [CouponTriggerType.FIRST_TIME_USER]: "First Time User",
-  [CouponTriggerType.CHECKOUT_PAGE]: "Checkout Page",
-  [CouponTriggerType.APP_ONLY]: "App Only",
-  [CouponTriggerType.ADMIN_BOOKING]: "Admin Booking",
-  [CouponTriggerType.VENDOR_SPECIFIC]: "Vendor Specific",
-  [CouponTriggerType.PROPERTY_SPECIFIC]: "Property Specific",
-  [CouponTriggerType.ROOM_SPECIFIC]: "Room Specific",
-  [CouponTriggerType.LOCATION_SPECIFIC]: "Location Specific",
-  [CouponTriggerType.CATEGORY_SPECIFIC]: "Category Specific",
-  [CouponTriggerType.MINIMUM_BOOKING_AMOUNT]: "Minimum Booking Amount",
-  [CouponTriggerType.DATE_RANGE]: "Date Range",
-  [CouponTriggerType.STAY_TYPE_DAILY]: "Stay Type - Daily",
-  [CouponTriggerType.STAY_TYPE_HOURLY]: "Stay Type - Hourly",
-  [CouponTriggerType.PAYMENT_METHOD]: "Payment Method",
-  [CouponTriggerType.USER_SEGMENT]: "User Segment",
-  [CouponTriggerType.COUPON_CODE]: "Coupon Code",
-};
-
-export const getTriggerTypeOptions = () => {
-  return Object.values(CouponTriggerType).map((value) => ({
-    label: TRIGGER_TYPE_LABELS[value],
-    value,
-  }));
-};
-
 export interface CouponValidationResult {
   valid: boolean;
   discount?: number;
@@ -372,25 +341,30 @@ export interface Coupon {
   title: string;
   code: string;
   description?: string;
-  triggerType: string;
   discountType: "percentage" | "fixed";
   discountValue: number;
-  maxDiscountAmount?: number;
-  minimumBookingAmount?: number;
-  validFrom: string;
-  validUntil: string;
-  perUserUsageLimit: number;
-  firstBookingOnly: boolean;
-  showOnListing: boolean;
-  status: number;
-  usedCount?: number;
-  isActive?: boolean;
-  applicableSources: string[];
+  minimumOrder: number;
+  maximumDiscount: number;
+  startDate: string;
+  endDate: string;
+  usageLimit: number;
+  usedCount: number;
+  isActive: boolean;
   createdAt: string;
   updatedAt: string;
 }
 
-export type CreateCouponPayload = Omit<
-  Coupon,
-  "_id" | "createdAt" | "updatedAt"
->;
+
+export interface CreateCouponPayload {
+    title: string;
+    code: string;
+    description?: string;
+    discountType: "percentage" | "fixed";
+    discountValue: number;
+    minimumOrder?: number;
+    maximumDiscount?: number;
+    startDate: string;
+    endDate: string;
+    usageLimit?: number;
+    isActive?: boolean;
+}
