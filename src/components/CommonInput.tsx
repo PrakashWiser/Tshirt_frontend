@@ -68,7 +68,7 @@ const InputField: React.FC<InputFieldProps> = ({
           required={required}
           disabled={disabled}
           autoComplete={autoComplete}
-          className={`w-full rounded-sm border border-gray-200 px-2 py-2 focus:outline-none  disabled:bg-gray-100 disabled:cursor-not-allowed ${isPassword ? "pr-10" : ""
+          className={`w-full rounded-lg border border-gray-200 px-2 py-2 focus:outline-none  disabled:bg-gray-100 disabled:cursor-not-allowed ${isPassword ? "pr-10" : ""
             } ${className}`}
         />
 

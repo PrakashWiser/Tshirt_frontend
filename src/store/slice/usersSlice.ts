@@ -5,7 +5,10 @@ import {
 } from "@reduxjs/toolkit";
 import { FetchApi } from "../../api/Fetch";
 import type { RootState } from "../store";
-import { USE_MOCK_MODULE_DATA, MOCK_USERS_RESPONSE } from "../../utils/mockModuleData";
+import {
+  USE_MOCK_MODULE_DATA,
+  MOCK_USERS_RESPONSE,
+} from "../../utils/mockModuleData";
 
 const normalizeUsersResponse = (
   payload: UsersResponse["data"] | User[] | null | undefined,
@@ -29,7 +32,10 @@ const normalizeUsersResponse = (
         total: payload.length,
         page: 1,
         limit: payload.length || 10,
-        totalPages: Math.max(1, Math.ceil(payload.length / (payload.length || 1))),
+        totalPages: Math.max(
+          1,
+          Math.ceil(payload.length / (payload.length || 1)),
+        ),
       },
     };
   }
@@ -115,17 +121,23 @@ export const getUsers = createAsyncThunk<
       return MOCK_USERS_RESPONSE as UsersResponse["data"];
     }
 
-    const response = await FetchApi<UsersResponse | { data: UsersResponse["data"] | User[] } | User[]>({
+    const response = await FetchApi<
+      UsersResponse | { data: UsersResponse["data"] | User[] } | User[]
+    >({
       endpoint: "/admin/customers",
       method: "GET",
       token: token ?? "",
     });
 
     if (response && typeof response === "object" && "data" in response) {
-      return normalizeUsersResponse((response as { data: UsersResponse["data"] | User[] }).data);
+      return normalizeUsersResponse(
+        (response as { data: UsersResponse["data"] | User[] }).data,
+      );
     }
 
-    return normalizeUsersResponse(response as UsersResponse["data"] | User[] | null | undefined);
+    return normalizeUsersResponse(
+      response as UsersResponse["data"] | User[] | null | undefined,
+    );
   } catch (err: any) {
     return thunkAPI.rejectWithValue(err?.message || "Failed to load users");
   }

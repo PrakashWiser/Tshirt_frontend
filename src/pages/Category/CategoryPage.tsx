@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useState } from "react";
-import { Plus, Pencil, Trash2, Search, FolderOpen, Download, LayoutGrid, List } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Plus, Download, FolderOpen } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "../../hooks/hooks";
 import { addToast } from "../../store/slice/uiSlice";
 import {
@@ -12,11 +12,13 @@ import {
 } from "../../store/slice/categorySlice";
 import Button from "../../components/Button";
 import ConfirmDeleteModal from "../../components/ConfirmDeleteModal";
-import ImageUploadField from "../../components/ImageUploadField";
 import CustomImage from "../../components/Image";
 import DotMenu from "../../components/DotMenu";
 import { FetchApi } from "../../api/Fetch";
 import { exportTableData } from "../../utils/exportToExcel";
+import { DataTable } from "../../components/Table";
+import type { ColumnDef } from "../../components/TableTypes";
+import ReusableForm, { type FormField } from "../../components/ReusableForm";
 
 const makeSlug = (value: string) =>
   value
@@ -28,31 +30,33 @@ const makeSlug = (value: string) =>
 
 export default function CategoryPage() {
   const dispatch = useAppDispatch();
-  const { categories, isLoading, error, message } = useAppSelector((state: any) => state.category);
-  const [search, setSearch] = useState("");
-  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
+
+  const { categories, isLoading, error, message } = useAppSelector(
+    (state: any) => state.category,
+  );
+
+  const accessToken = useAppSelector((state: any) => state.auth.accessToken);
+
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);
-  const [form, setForm] = useState({
-    name: "",
-    description: "",
-    image: "",
-    isActive: true,
-  });
 
   const uploadImageToServer = async (file: File) => {
     const formData = new FormData();
     formData.append("file", file);
 
-    const response = await FetchApi<{ success: boolean; data?: { imageUrl?: string } }>({
+    const response = await FetchApi<{
+      success: boolean;
+      data?: { imageUrl?: string };
+    }>({
       endpoint: "/upload",
       method: "POST",
       body: formData,
-      token: (useAppSelector((state: any) => state.auth.accessToken) ?? "") || undefined,
+      token: accessToken ?? "",
     });
 
     const uploadedUrl = response?.data?.imageUrl || "";
+
     if (!uploadedUrl) {
       throw new Error("Image upload failed");
     }
@@ -68,7 +72,6 @@ export default function CategoryPage() {
     if (message) {
       dispatch(addToast({ type: "success", text: message }));
       dispatch(clearCategoryError());
-      setForm({ name: "", description: "", image: "", isActive: true });
       setEditingId(null);
       setIsFormOpen(false);
       dispatch(getAllCategories());
@@ -80,56 +83,13 @@ export default function CategoryPage() {
     }
   }, [message, error, dispatch]);
 
-  const filteredCategories = useMemo(() => {
-    const query = search.trim().toLowerCase();
-    if (!query) return categories;
-
-    return categories.filter((item: Category) => {
-      return (
-        item.name.toLowerCase().includes(query) ||
-        (item.description || "").toLowerCase().includes(query) ||
-        item.slug.toLowerCase().includes(query)
-      );
-    });
-  }, [categories, search]);
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    if (!form.name.trim()) {
-      dispatch(addToast({ type: "error", text: "Category name is required" }));
-      return;
-    }
-
-    const payload = {
-      name: form.name.trim(),
-      slug: makeSlug(form.name),
-      description: form.description.trim(),
-      image: form.image.trim(),
-      isActive: form.isActive,
-    };
-
-    if (editingId) {
-      await dispatch(updateCategory({ id: editingId, data: payload }));
-    } else {
-      await dispatch(createCategory(payload));
-    }
-  };
-
   const openEdit = (category: Category) => {
     setEditingId(category._id);
-    setForm({
-      name: category.name,
-      description: category.description || "",
-      image: category.image || "",
-      isActive: category.isActive ?? true,
-    });
     setIsFormOpen(true);
   };
 
   const openCreate = () => {
     setEditingId(null);
-    setForm({ name: "", description: "", image: "", isActive: true });
     setIsFormOpen(true);
   };
 
@@ -139,25 +99,209 @@ export default function CategoryPage() {
     setDeleteId(null);
   };
 
+  const getInitialValues = (category?: Category | null) => {
+    if (!category) {
+      return {
+        name: "",
+        description: "",
+        image: "",
+        isActive: true,
+      };
+    }
+    return {
+      name: category.name || "",
+      description: category.description || "",
+      image: category.image || "",
+      isActive: category.isActive ?? true,
+    };
+  };
+
+  const editingCategory = editingId
+    ? categories.find((c: Category) => c._id === editingId) || null
+    : null;
+
+  const fields: FormField[] = [
+    {
+      name: "name",
+      label: "Name",
+      type: "text",
+      placeholder: "Men T-Shirts",
+      required: true,
+      fullWidth: true,
+    },
+    {
+      name: "description",
+      label: "Description",
+      type: "textarea",
+      placeholder: "Describe this category",
+      fullWidth: true,
+    },
+    {
+      name: "image",
+      label: "Category image",
+      type: "file",
+      fullWidth: true,
+      onUpload: async (file) => {
+        if (!file) return "";
+        try {
+          return await uploadImageToServer(file);
+        } catch (err: any) {
+          dispatch(
+            addToast({
+              type: "error",
+              text: err?.message || "Image upload failed",
+            }),
+          );
+          return "";
+        }
+      },
+    },
+    {
+      name: "isActive",
+      label: "Active",
+      type: "checkbox",
+      fullWidth: true,
+    },
+  ];
+
+  const handleSubmit = async (values: Record<string, any>) => {
+    if (!values.name?.trim()) {
+      dispatch(
+        addToast({
+          type: "error",
+          text: "Category name is required",
+        }),
+      );
+      return;
+    }
+
+    const payload = {
+      name: values.name.trim(),
+      slug: makeSlug(values.name),
+      description: values.description?.trim() || "",
+      image: (values.image || "").trim(),
+      isActive: Boolean(values.isActive),
+    };
+
+    if (editingId) {
+      await dispatch(
+        updateCategory({
+          id: editingId,
+          data: payload,
+        }),
+      );
+    } else {
+      await dispatch(createCategory(payload));
+    }
+  };
+
   const handleExport = () => {
     exportTableData(
-      filteredCategories,
+      categories,
       [
         { key: "name", header: "Name", accessor: "name" },
         { key: "slug", header: "Slug", accessor: "slug" },
-        { key: "description", header: "Description", accessor: (row: Category) => row.description || "" },
-        { key: "status", header: "Status", accessor: (row: Category) => (row.isActive ? "Active" : "Inactive") },
+        {
+          key: "description",
+          header: "Description",
+          accessor: (row: Category) => row.description || "",
+        },
+        {
+          key: "status",
+          header: "Status",
+          accessor: (row: Category) => (row.isActive ? "Active" : "Inactive"),
+        },
       ],
-      "Categories"
+      "Categories",
     );
   };
+
+  const columns: ColumnDef<Category>[] = [
+    {
+      key: "image",
+      header: "Image",
+      accessor: "image",
+      width: 100,
+      render: (value, row) => (
+        <div className="h-12 w-16 overflow-hidden rounded-lg border border-slate-200 bg-slate-100">
+          {value ? (
+            <CustomImage
+              src={String(value)}
+              alt={row.name}
+              className="h-full w-full object-cover"
+            />
+          ) : (
+            <div className="flex h-full w-full items-center justify-center">
+              <FolderOpen size={20} className="text-slate-300" />
+            </div>
+          )}
+        </div>
+      ),
+    },
+    {
+      key: "name",
+      header: "Name",
+      accessor: "name",
+      sortable: true,
+    },
+    {
+      key: "slug",
+      header: "Slug",
+      accessor: "slug",
+      sortable: true,
+    },
+    {
+      key: "description",
+      header: "Description",
+      accessor: (row: Category) => row.description || "",
+      render: (value) => (
+        <div className="max-w-xs truncate text-sm text-slate-600">
+          {String(value || "No description")}
+        </div>
+      ),
+    },
+    {
+      key: "status",
+      header: "Status",
+      accessor: (row: Category) => (row.isActive ? "Active" : "Inactive"),
+      sortable: true,
+      render: (value, row) => (
+        <span
+          className={`inline-flex rounded-full px-2.5 py-1 text-xs font-medium ${
+            row.isActive
+              ? "bg-emerald-100 text-emerald-700"
+              : "bg-slate-100 text-slate-600"
+          }`}
+        >
+          {String(value)}
+        </span>
+      ),
+    },
+    {
+      key: "actions",
+      header: "Actions",
+      accessor: "_id",
+      align: "right",
+      render: (_, row) => (
+        <div onClick={(e) => e.stopPropagation()}>
+          <DotMenu
+            onEdit={() => openEdit(row)}
+            onDelete={() => setDeleteId(row._id)}
+          />
+        </div>
+      ),
+    },
+  ];
 
   return (
     <div className="space-y-6">
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
           <h1 className="text-2xl font-extrabold text-slate-900">Categories</h1>
-          <p className="text-sm text-slate-500">Manage product groupings for your store</p>
+
+          <p className="text-sm text-slate-500">
+            Manage product groupings for your store
+          </p>
         </div>
 
         {!isFormOpen && (
@@ -169,232 +313,85 @@ export default function CategoryPage() {
       </div>
 
       {isFormOpen && (
-        <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-          <div className="mb-4 flex items-center justify-between gap-3">
-            <h2 className="text-lg font-semibold text-slate-900">{editingId ? "Edit category" : "Create category"}</h2>
-            <button
-              type="button"
-              onClick={() => setIsFormOpen(false)}
-              className="rounded-xl border border-slate-200 px-3 py-1.5 text-sm font-medium text-slate-600"
-            >
-              Back
-            </button>
-          </div>
-
-          <form onSubmit={handleSubmit} className="grid gap-4 md:grid-cols-2">
-            <div className="md:col-span-2">
-              <label className="mb-2 block text-sm font-medium text-slate-700">Name</label>
-              <input
-                value={form.name}
-                onChange={(e) => setForm({ ...form, name: e.target.value })}
-                className="w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm outline-none focus:border-orange-400"
-                placeholder="Men T-Shirts"
-              />
-            </div>
-
-            <div className="md:col-span-2">
-              <label className="mb-2 block text-sm font-medium text-slate-700">Description</label>
-              <textarea
-                value={form.description}
-                onChange={(e) => setForm({ ...form, description: e.target.value })}
-                className="h-28 w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm outline-none focus:border-orange-400"
-                placeholder="Describe this category"
-              />
-            </div>
-
-            <div className="md:col-span-2">
-              <ImageUploadField
-                label="Category image"
-                value={form.image || null}
-                onChange={async (file) => {
-                  if (!file) {
-                    setForm({ ...form, image: "" });
-                    return;
-                  }
-
-                  try {
-                    const uploadedUrl = await uploadImageToServer(file);
-                    setForm({ ...form, image: uploadedUrl });
-                  } catch (err: any) {
-                    dispatch(addToast({ type: "error", text: err?.message || "Image upload failed" }));
-                  }
-                }}
-              />
-
-              {form.image && (
-                <div className="mt-3">
-                  <CustomImage src={form.image} alt={form.name || "Category image"} className="h-28 w-28 rounded-xl object-cover border border-slate-200" />
-                </div>
-              )}
-            </div>
-
-            <div className="flex items-center gap-2 md:col-span-2">
-              <input
-                id="category-status"
-                type="checkbox"
-                checked={form.isActive}
-                onChange={(e) => setForm({ ...form, isActive: e.target.checked })}
-                className="h-4 w-4 rounded border-slate-300 text-orange-600"
-              />
-              <label htmlFor="category-status" className="text-sm text-slate-700">Active</label>
-            </div>
-
-            <div className="md:col-span-2 flex items-center justify-end gap-3">
-              <button
-                type="button"
-                onClick={() => setIsFormOpen(false)}
-                className="rounded-xl border border-slate-200 px-4 py-2 text-sm font-medium text-slate-600"
-              >
-                Cancel
-              </button>
-              <Button type="submit"  disabled={isLoading}>
-                {isLoading ? "Saving..." : editingId ? "Update category" : "Create category"}
-              </Button>
-            </div>
-          </form>
-        </div>
+        <ReusableForm
+          title={editingId ? "Edit category" : "Create category"}
+          fields={fields}
+          initialValues={getInitialValues(editingCategory)}
+          submitText={editingId ? "Update category" : "Create category"}
+          onClose={() => {
+            setIsFormOpen(false);
+            setEditingId(null);
+          }}
+          loading={isLoading}
+          onSubmit={handleSubmit}
+          resetKey={editingId ?? "new"}
+        />
       )}
 
       {!isFormOpen && (
-        <>
-          <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-            <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-              <div className="relative max-w-md flex-1">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
-                <input
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  placeholder="Search categories"
-                  className="w-full rounded-xl border border-slate-200 bg-slate-50 py-2.5 pl-9 pr-3 text-sm outline-none focus:border-orange-400"
-                />
-              </div>
-
-              <div className="flex items-center gap-2 self-end md:self-auto">
-                <Button
-                  variant="outline"
-                  onClick={handleExport}
-                  className="flex items-center gap-2 rounded-xl border border-slate-200 bg-white text-sm"
-                >
-                  <Download size={15} />
-                  Export
-                </Button>
-
-                <div className="flex items-center gap-1 rounded-xl border border-slate-200 bg-slate-50 p-1">
-                  <button
-                    type="button"
-                    onClick={() => setViewMode("grid")}
-                    className={`flex items-center gap-1 rounded-lg px-2.5 py-1.5 text-sm ${viewMode === "grid" ? "bg-[#3A29AA] text-white" : "text-slate-600 hover:bg-slate-100"}`}
-                  >
-                    <LayoutGrid size={14} />
-                    <span className="hidden sm:inline">Grid</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setViewMode("list")}
-                    className={`flex items-center gap-1 rounded-lg px-2.5 py-1.5 text-sm ${viewMode === "list" ? "bg-[#3A29AA] text-white" : "text-slate-600 hover:bg-slate-100"}`}
-                  >
-                    <List size={14} />
-                    <span className="hidden sm:inline">List</span>
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {viewMode === "grid" ? (
-            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-              {filteredCategories.length === 0 ? (
-                <div className="md:col-span-2 xl:col-span-3 rounded-2xl border border-dashed border-slate-200 bg-white p-10 text-center text-slate-500">
-                  <FolderOpen className="mx-auto mb-3 text-slate-300" size={32} />
-                  No categories found.
-                </div>
-              ) : (
-                filteredCategories.map((category: Category) => (
-                  <div key={category._id} className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-                    <div className="mb-4 flex items-center justify-between gap-4">
-                      <div className="flex items-center gap-3">
-                        {category.image ? (
-                          <CustomImage src={category.image} alt={category.name} className="h-11 w-11 rounded-xl object-cover border border-slate-200" />
-                        ) : (
-                          <div className="flex h-11 w-11 items-center justify-center overflow-hidden rounded-xl bg-gradient-to-br from-orange-100 to-amber-100 text-lg font-bold text-orange-600">
-                            {category.name.charAt(0).toUpperCase()}
-                          </div>
-                        )}
-                        <div>
-                          <h3 className="text-base font-semibold text-slate-900">{category.name}</h3>
-                          <p className="text-xs text-slate-500">/{category.slug}</p>
-                        </div>
-                      </div>
-
-                      <DotMenu
-                        onEdit={() => openEdit(category)}
-                        onDelete={() => setDeleteId(category._id)}
-                      />
-                    </div>
-
-                    <p className="text-sm text-slate-600">{category.description || "No description added yet."}</p>
-
-                    <div className="mt-4 flex items-center justify-between text-xs">
-                      <span className={`rounded-full px-2 py-1 ${category.isActive === false ? "bg-slate-100 text-slate-600" : "bg-emerald-100 text-emerald-700"}`}>
-                        {category.isActive === false ? "Inactive" : "Active"}
-                      </span>
-                      <span className="text-slate-400">{category.image ? "Has image" : "No image"}</span>
-                    </div>
+        <DataTable
+          data={categories}
+          columns={columns}
+          rowKey="_id"
+          searchKeys={["name", "slug", "description"]}
+          searchPlaceholder="Search categories..."
+          defaultView="grid"
+          loading={isLoading}
+          pageSize={10}
+          pageSizeOptions={[10, 20, 50, 100]}
+          paginationMode="client"
+          actions={
+            <Button
+              variant="outline"
+              onClick={handleExport}
+              className="flex items-center gap-2 rounded-xl border border-slate-200 bg-white text-sm"
+            >
+              <Download size={15} />
+              Export
+            </Button>
+          }
+          gridClassName="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5"
+          renderGridCard={(category: Category) => (
+            <div className="group relative overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+              <div className="relative aspect-[16/10] w-full overflow-hidden bg-slate-100">
+                {category.image ? (
+                  <CustomImage
+                    src={category.image}
+                    alt={category.name}
+                    className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                  />
+                ) : (
+                  <div className="flex h-full w-full items-center justify-center bg-slate-100">
+                    <FolderOpen className="text-slate-300" size={42} />
                   </div>
-                ))
-              )}
-            </div>
-          ) : (
-            <div className="space-y-3">
-              {filteredCategories.length === 0 ? (
-                <div className="rounded-2xl border border-dashed border-slate-200 bg-white p-10 text-center text-slate-500">
-                  <FolderOpen className="mx-auto mb-3 text-slate-300" size={32} />
-                  No categories found.
-                </div>
-              ) : (
-                filteredCategories.map((category: Category) => (
-                  <div key={category._id} className="flex items-center justify-between gap-4 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-                    <div className="flex items-center gap-3">
-                      {category.image ? (
-                        <CustomImage src={category.image} alt={category.name} className="h-12 w-12 rounded-xl object-cover border border-slate-200" />
-                      ) : (
-                        <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-orange-100 text-lg font-bold text-orange-600">
-                          {category.name.charAt(0).toUpperCase()}
-                        </div>
-                      )}
-                      <div>
-                        <h3 className="font-semibold text-slate-900">{category.name}</h3>
-                        <p className="text-xs text-slate-500">{category.slug || "category"}</p>
-                      </div>
-                    </div>
+                )}
 
-                    <div className="flex items-center gap-2">
-                      <span className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium ${category.isActive ? "bg-emerald-100 text-emerald-700" : "bg-slate-100 text-slate-600"}`}>
-                        {category.isActive ? "Active" : "Inactive"}
-                      </span>
-                      <button
-                        type="button"
-                        onClick={() => openEdit(category)}
-                        className="rounded-lg border border-slate-200 p-2 text-slate-600 hover:bg-slate-50"
-                        aria-label="Edit category"
-                      >
-                        <Pencil size={15} />
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setDeleteId(category._id)}
-                        className="rounded-lg border border-red-200 p-2 text-red-600 hover:bg-red-50"
-                        aria-label="Delete category"
-                      >
-                        <Trash2 size={15} />
-                      </button>
-                    </div>
-                  </div>
-                ))
-              )}
+                <div className="absolute right-3 top-3">
+                  <DotMenu
+                    onEdit={() => openEdit(category)}
+                    onDelete={() => setDeleteId(category._id)}
+                  />
+                </div>
+
+                <div className="absolute bottom-0 left-0 right-0 flex items-center justify-between bg-gradient-to-t from-black/75 to-transparent px-4 pb-4 pt-12">
+                  <span className="max-w-[70%] truncate rounded-full bg-white/90 px-3 py-1.5 text-xs font-semibold text-slate-800">
+                    {category.name}
+                  </span>
+
+                  <span
+                    className={`rounded-full px-2.5 py-1.5 text-xs font-semibold ${
+                      category.isActive
+                        ? "bg-emerald-500 text-white"
+                        : "bg-slate-500 text-white"
+                    }`}
+                  >
+                    {category.isActive ? "Active" : "Inactive"}
+                  </span>
+                </div>
+              </div>
             </div>
           )}
-        </>
+        />
       )}
 
       <ConfirmDeleteModal

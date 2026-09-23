@@ -184,7 +184,7 @@ export default function ImageUploadField({
                     <p className="text-xs text-slate-500 mt-1">
                         {isVideo
                             ? "MP4, MOV, WEBM • Max 50MB"
-                            : "JPG, PNG, JPEG, WEBP • Max 5MB each"}
+                            : "JPG, PNG, JPEG, WEBP • Max 2MB each"}
                     </p>
                 </div>
             </div>
