@@ -17,6 +17,7 @@ type BannerItem = {
   title: string;
   subtitle?: string;
   image: string;
+  imagePublicId?: string;
   link?: string;
   isActive?: boolean;
   sortOrder?: number;
@@ -26,6 +27,7 @@ type BannerForm = {
   title: string;
   subtitle: string;
   image: string;
+  imageFile: File | null;
   link: string;
   isActive: boolean;
   sortOrder: string;
@@ -35,6 +37,7 @@ const emptyForm = (): BannerForm => ({
   title: "",
   subtitle: "",
   image: "",
+  imageFile: null,
   link: "",
   isActive: true,
   sortOrder: "1",
@@ -43,9 +46,7 @@ const emptyForm = (): BannerForm => ({
 export default function BannerPage() {
   const dispatch = useAppDispatch();
 
-  const { accessToken } = useAppSelector(
-    (state: any) => state.auth
-  );
+  const { accessToken } = useAppSelector((state: any) => state.auth);
 
   const [banners, setBanners] = useState<BannerItem[]>([]);
   const [isFormOpen, setIsFormOpen] = useState(false);
@@ -53,31 +54,6 @@ export default function BannerPage() {
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [form, setForm] = useState<BannerForm>(emptyForm());
-
-  const uploadImageToServer = async (file: File) => {
-    const formData = new FormData();
-    formData.append("file", file);
-
-    const response = await FetchApi<{
-      success: boolean;
-      data?: {
-        imageUrl?: string;
-      };
-    }>({
-      endpoint: "/upload",
-      method: "POST",
-      body: formData,
-      token: accessToken ?? "",
-    });
-
-    const uploadedUrl = response?.data?.imageUrl || "";
-
-    if (!uploadedUrl) {
-      throw new Error("Image upload failed");
-    }
-
-    return uploadedUrl;
-  };
 
   const fetchBanners = async () => {
     if (!accessToken) return;
@@ -95,7 +71,7 @@ export default function BannerPage() {
 
       const items = Array.isArray(response?.data)
         ? response.data
-        : response?.data ?? [];
+        : (response?.data ?? []);
 
       setBanners(items as BannerItem[]);
     } catch (err: any) {
@@ -103,7 +79,7 @@ export default function BannerPage() {
         addToast({
           type: "error",
           text: err?.message || "Failed to load banners",
-        })
+        }),
       );
     } finally {
       setLoading(false);
@@ -127,6 +103,7 @@ export default function BannerPage() {
       title: banner.title || "",
       subtitle: banner.subtitle || "",
       image: banner.image || "",
+      imageFile: null,
       link: banner.link || "",
       isActive: banner.isActive ?? true,
       sortOrder: String(banner.sortOrder ?? 1),
@@ -135,59 +112,104 @@ export default function BannerPage() {
     setIsFormOpen(true);
   };
 
-  const handleSubmit = async (event: React.FormEvent) => {
-    event.preventDefault();
+  const handleImageChange = (file: File | null) => {
+    if (!file) {
+      setForm((prev) => ({
+        ...prev,
+        image: editingId ? prev.image : "",
+        imageFile: null,
+      }));
 
-    if (!form.title.trim() || !form.image.trim()) {
-      dispatch(
-        addToast({
-          type: "error",
-          text: "Title and image are required",
-        })
-      );
       return;
     }
 
-    const payload = {
-      title: form.title.trim(),
-      subtitle: form.subtitle.trim(),
-      image: form.image.trim(),
-      link: form.link.trim(),
-      isActive: form.isActive,
-      sortOrder: Number(form.sortOrder || 1),
-    };
+    const previewUrl = URL.createObjectURL(file);
+
+    setForm((prev) => {
+      if (prev.image?.startsWith("blob:")) {
+        URL.revokeObjectURL(prev.image);
+      }
+
+      return {
+        ...prev,
+        image: previewUrl,
+        imageFile: file,
+      };
+    });
+  };
+
+  const handleSubmit = async (event: React.FormEvent) => {
+    event.preventDefault();
+
+    if (!form.title.trim()) {
+      dispatch(
+        addToast({
+          type: "error",
+          text: "Title is required",
+        }),
+      );
+
+      return;
+    }
+
+    if (!editingId && !form.imageFile) {
+      dispatch(
+        addToast({
+          type: "error",
+          text: "Banner image is required",
+        }),
+      );
+
+      return;
+    }
 
     setLoading(true);
 
     try {
+      const formData = new FormData();
+
+      formData.append("title", form.title.trim());
+      formData.append("subtitle", form.subtitle.trim());
+      formData.append("link", form.link.trim());
+      formData.append("isActive", String(form.isActive));
+      formData.append("sortOrder", String(Number(form.sortOrder || 1)));
+
+      if (form.imageFile) {
+        formData.append("image", form.imageFile);
+      }
+
       if (editingId) {
         await FetchApi({
           endpoint: `/banners/${editingId}`,
           method: "PUT",
           token: accessToken,
-          body: payload,
+          body: formData,
         });
 
         dispatch(
           addToast({
             type: "success",
             text: "Banner updated successfully",
-          })
+          }),
         );
       } else {
         await FetchApi({
           endpoint: "/banners",
           method: "POST",
           token: accessToken,
-          body: payload,
+          body: formData,
         });
 
         dispatch(
           addToast({
             type: "success",
             text: "Banner created successfully",
-          })
+          }),
         );
+      }
+
+      if (form.image?.startsWith("blob:")) {
+        URL.revokeObjectURL(form.image);
       }
 
       setIsFormOpen(false);
@@ -200,7 +222,7 @@ export default function BannerPage() {
         addToast({
           type: "error",
           text: err?.message || "Unable to save banner",
-        })
+        }),
       );
     } finally {
       setLoading(false);
@@ -223,7 +245,7 @@ export default function BannerPage() {
         addToast({
           type: "success",
           text: "Banner deleted successfully",
-        })
+        }),
       );
 
       setDeleteId(null);
@@ -234,7 +256,7 @@ export default function BannerPage() {
         addToast({
           type: "error",
           text: err?.message || "Failed to delete banner",
-        })
+        }),
       );
     } finally {
       setLoading(false);
@@ -253,29 +275,25 @@ export default function BannerPage() {
         {
           key: "subtitle",
           header: "Subtitle",
-          accessor: (row: BannerItem) =>
-            row.subtitle || "",
+          accessor: (row: BannerItem) => row.subtitle || "",
         },
         {
           key: "link",
           header: "Link",
-          accessor: (row: BannerItem) =>
-            row.link || "",
+          accessor: (row: BannerItem) => row.link || "",
         },
         {
           key: "sortOrder",
           header: "Order",
-          accessor: (row: BannerItem) =>
-            row.sortOrder ?? 1,
+          accessor: (row: BannerItem) => row.sortOrder ?? 1,
         },
         {
           key: "status",
           header: "Status",
-          accessor: (row: BannerItem) =>
-            row.isActive ? "Active" : "Inactive",
+          accessor: (row: BannerItem) => (row.isActive ? "Active" : "Inactive"),
         },
       ],
-      "Banners"
+      "Banners",
     );
   };
 
@@ -295,10 +313,7 @@ export default function BannerPage() {
             />
           ) : (
             <div className="flex h-full w-full items-center justify-center">
-              <ImageIcon
-                size={20}
-                className="text-slate-300"
-              />
+              <ImageIcon size={20} className="text-slate-300" />
             </div>
           )}
         </div>
@@ -313,8 +328,7 @@ export default function BannerPage() {
     {
       key: "subtitle",
       header: "Subtitle",
-      accessor: (row: BannerItem) =>
-        row.subtitle || "",
+      accessor: (row: BannerItem) => row.subtitle || "",
       render: (value) => (
         <div className="max-w-xs truncate text-sm text-slate-600">
           {String(value || "No subtitle")}
@@ -324,8 +338,7 @@ export default function BannerPage() {
     {
       key: "link",
       header: "Link",
-      accessor: (row: BannerItem) =>
-        row.link || "",
+      accessor: (row: BannerItem) => row.link || "",
       render: (value) => (
         <div className="max-w-xs truncate text-sm text-slate-500">
           {String(value || "No link")}
@@ -335,15 +348,13 @@ export default function BannerPage() {
     {
       key: "sortOrder",
       header: "Order",
-      accessor: (row: BannerItem) =>
-        row.sortOrder ?? 1,
+      accessor: (row: BannerItem) => row.sortOrder ?? 1,
       sortable: true,
     },
     {
       key: "status",
       header: "Status",
-      accessor: (row: BannerItem) =>
-        row.isActive ? "Active" : "Inactive",
+      accessor: (row: BannerItem) => (row.isActive ? "Active" : "Inactive"),
       sortable: true,
       render: (value, row) => (
         <span
@@ -377,9 +388,7 @@ export default function BannerPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-extrabold text-slate-900">
-            Banners
-          </h1>
+          <h1 className="text-2xl font-extrabold text-slate-900">Banners</h1>
 
           <p className="text-sm text-slate-500">
             Manage homepage promotional banners
@@ -387,10 +396,7 @@ export default function BannerPage() {
         </div>
 
         {!isFormOpen && (
-          <Button
-            onClick={openCreate}
-            className="flex items-center gap-2"
-          >
+          <Button onClick={openCreate} className="flex items-center gap-2">
             <Plus size={16} />
             Add banner
           </Button>
@@ -406,17 +412,20 @@ export default function BannerPage() {
 
             <button
               type="button"
-              onClick={() => setIsFormOpen(false)}
+              onClick={() => {
+                if (form.image?.startsWith("blob:")) {
+                  URL.revokeObjectURL(form.image);
+                }
+
+                setIsFormOpen(false);
+              }}
               className="rounded-xl border border-slate-200 px-3 py-1.5 text-sm font-medium text-slate-600"
             >
               Back
             </button>
           </div>
 
-          <form
-            onSubmit={handleSubmit}
-            className="grid gap-4 md:grid-cols-2"
-          >
+          <form onSubmit={handleSubmit} className="grid gap-4 md:grid-cols-2">
             <div className="md:col-span-2">
               <label className="mb-2 block text-sm font-medium text-slate-700">
                 Title
@@ -425,10 +434,10 @@ export default function BannerPage() {
               <input
                 value={form.title}
                 onChange={(e) =>
-                  setForm({
-                    ...form,
+                  setForm((prev) => ({
+                    ...prev,
                     title: e.target.value,
-                  })
+                  }))
                 }
                 className="w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm outline-none focus:border-orange-400"
               />
@@ -442,10 +451,10 @@ export default function BannerPage() {
               <textarea
                 value={form.subtitle}
                 onChange={(e) =>
-                  setForm({
-                    ...form,
+                  setForm((prev) => ({
+                    ...prev,
                     subtitle: e.target.value,
-                  })
+                  }))
                 }
                 className="h-24 w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm outline-none focus:border-orange-400"
               />
@@ -455,34 +464,7 @@ export default function BannerPage() {
               <ImageUploadField
                 label="Banner image"
                 value={form.image || null}
-                onChange={async (file) => {
-                  if (!file) {
-                    setForm({
-                      ...form,
-                      image: "",
-                    });
-                    return;
-                  }
-
-                  try {
-                    const uploadedUrl =
-                      await uploadImageToServer(file);
-
-                    setForm({
-                      ...form,
-                      image: uploadedUrl,
-                    });
-                  } catch (err: any) {
-                    dispatch(
-                      addToast({
-                        type: "error",
-                        text:
-                          err?.message ||
-                          "Image upload failed",
-                      })
-                    );
-                  }
-                }}
+                onChange={handleImageChange}
               />
 
               {form.image && (
@@ -504,10 +486,10 @@ export default function BannerPage() {
               <input
                 value={form.link}
                 onChange={(e) =>
-                  setForm({
-                    ...form,
+                  setForm((prev) => ({
+                    ...prev,
                     link: e.target.value,
-                  })
+                  }))
                 }
                 placeholder="/products"
                 className="w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm outline-none focus:border-orange-400"
@@ -523,10 +505,10 @@ export default function BannerPage() {
                 type="number"
                 value={form.sortOrder}
                 onChange={(e) =>
-                  setForm({
-                    ...form,
+                  setForm((prev) => ({
+                    ...prev,
                     sortOrder: e.target.value,
-                  })
+                  }))
                 }
                 className="w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm outline-none focus:border-orange-400"
               />
@@ -538,18 +520,15 @@ export default function BannerPage() {
                 type="checkbox"
                 checked={form.isActive}
                 onChange={(e) =>
-                  setForm({
-                    ...form,
+                  setForm((prev) => ({
+                    ...prev,
                     isActive: e.target.checked,
-                  })
+                  }))
                 }
                 className="h-4 w-4 rounded border-slate-300 text-orange-600"
               />
 
-              <label
-                htmlFor="banner-status"
-                className="text-sm text-slate-700"
-              >
+              <label htmlFor="banner-status" className="text-sm text-slate-700">
                 Active
               </label>
             </div>
@@ -557,7 +536,13 @@ export default function BannerPage() {
             <div className="flex items-center justify-end gap-3 md:col-span-2">
               <button
                 type="button"
-                onClick={() => setIsFormOpen(false)}
+                onClick={() => {
+                  if (form.image?.startsWith("blob:")) {
+                    URL.revokeObjectURL(form.image);
+                  }
+
+                  setIsFormOpen(false);
+                }}
                 className="rounded-xl border border-slate-200 px-4 py-2 text-sm font-medium text-slate-600"
               >
                 Cancel
@@ -584,11 +569,7 @@ export default function BannerPage() {
           data={banners}
           columns={columns}
           rowKey="_id"
-          searchKeys={[
-            "title",
-            "subtitle",
-            "link",
-          ]}
+          searchKeys={["title", "subtitle", "link"]}
           searchPlaceholder="Search banners..."
           defaultView="grid"
           loading={loading}
@@ -617,19 +598,14 @@ export default function BannerPage() {
                   />
                 ) : (
                   <div className="flex h-full w-full items-center justify-center bg-slate-100">
-                    <ImageIcon
-                      className="text-slate-300"
-                      size={40}
-                    />
+                    <ImageIcon className="text-slate-300" size={40} />
                   </div>
                 )}
 
                 <div className="absolute right-3 top-3">
                   <DotMenu
                     onEdit={() => openEdit(banner)}
-                    onDelete={() =>
-                      setDeleteId(banner._id)
-                    }
+                    onDelete={() => setDeleteId(banner._id)}
                   />
                 </div>
 
@@ -647,9 +623,7 @@ export default function BannerPage() {
                         : "bg-slate-500 text-white"
                     }`}
                   >
-                    {banner.isActive
-                      ? "Active"
-                      : "Inactive"}
+                    {banner.isActive ? "Active" : "Inactive"}
                   </span>
                 </div>
               </div>

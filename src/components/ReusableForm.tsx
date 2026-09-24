@@ -255,24 +255,30 @@ function RepeatableGroupField({
                               return;
                             }
 
-                            const urls: string[] = [];
-                            for (const x of list) {
-                              if (typeof x === "string") urls.push(x);
-                              else if (x && typeof x === "object" && "url" in x)
-                                urls.push(x.url);
-                              else if (
-                                x instanceof File &&
-                                field.onItemImageUpload
-                              ) {
-                                const url = await field.onItemImageUpload(
-                                  index,
-                                  x,
-                                  item,
-                                );
-                                if (url) urls.push(url);
+                            if (field.onItemImageUpload) {
+                              const urls: string[] = [];
+                              for (const x of list) {
+                                if (typeof x === "string") urls.push(x);
+                                else if (
+                                  x &&
+                                  typeof x === "object" &&
+                                  "url" in x
+                                )
+                                  urls.push(x.url);
+                                else if (x instanceof File) {
+                                  const url = await field.onItemImageUpload(
+                                    index,
+                                    x,
+                                    item,
+                                  );
+                                  if (url) urls.push(url);
+                                }
                               }
+                              updateItem(index, sub.name, urls);
+                              return;
                             }
-                            updateItem(index, sub.name, urls);
+
+                            updateItem(index, sub.name, list);
                             return;
                           }
 
@@ -280,6 +286,7 @@ function RepeatableGroupField({
                             updateItem(index, sub.name, "");
                             return;
                           }
+
                           if (field.onItemImageUpload) {
                             const url = await field.onItemImageUpload(
                               index,
@@ -287,7 +294,10 @@ function RepeatableGroupField({
                               item,
                             );
                             updateItem(index, sub.name, url);
+                            return;
                           }
+
+                          updateItem(index, sub.name, incoming);
                         }}
                       />
                     </div>

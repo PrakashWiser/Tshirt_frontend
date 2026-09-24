@@ -14,7 +14,6 @@ import Button from "../../components/Button";
 import ConfirmDeleteModal from "../../components/ConfirmDeleteModal";
 import CustomImage from "../../components/Image";
 import DotMenu from "../../components/DotMenu";
-import { FetchApi } from "../../api/Fetch";
 import { exportTableData } from "../../utils/exportToExcel";
 import { DataTable } from "../../components/Table";
 import type { ColumnDef } from "../../components/TableTypes";
@@ -35,34 +34,9 @@ export default function CategoryPage() {
     (state: any) => state.category,
   );
 
-  const accessToken = useAppSelector((state: any) => state.auth.accessToken);
-
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);
-
-  const uploadImageToServer = async (file: File) => {
-    const formData = new FormData();
-    formData.append("file", file);
-
-    const response = await FetchApi<{
-      success: boolean;
-      data?: { imageUrl?: string };
-    }>({
-      endpoint: "/upload",
-      method: "POST",
-      body: formData,
-      token: accessToken ?? "",
-    });
-
-    const uploadedUrl = response?.data?.imageUrl || "";
-
-    if (!uploadedUrl) {
-      throw new Error("Image upload failed");
-    }
-
-    return uploadedUrl;
-  };
 
   useEffect(() => {
     dispatch(getAllCategories());
@@ -70,7 +44,13 @@ export default function CategoryPage() {
 
   useEffect(() => {
     if (message) {
-      dispatch(addToast({ type: "success", text: message }));
+      dispatch(
+        addToast({
+          type: "success",
+          text: message,
+        }),
+      );
+
       dispatch(clearCategoryError());
       setEditingId(null);
       setIsFormOpen(false);
@@ -78,7 +58,13 @@ export default function CategoryPage() {
     }
 
     if (error) {
-      dispatch(addToast({ type: "error", text: error }));
+      dispatch(
+        addToast({
+          type: "error",
+          text: error,
+        }),
+      );
+
       dispatch(clearCategoryError());
     }
   }, [message, error, dispatch]);
@@ -95,6 +81,7 @@ export default function CategoryPage() {
 
   const confirmDelete = async () => {
     if (!deleteId) return;
+
     await dispatch(deleteCategory(deleteId));
     setDeleteId(null);
   };
@@ -104,10 +91,11 @@ export default function CategoryPage() {
       return {
         name: "",
         description: "",
-        image: "",
+        image: null,
         isActive: true,
       };
     }
+
     return {
       name: category.name || "",
       description: category.description || "",
@@ -117,7 +105,8 @@ export default function CategoryPage() {
   };
 
   const editingCategory = editingId
-    ? categories.find((c: Category) => c._id === editingId) || null
+    ? categories.find((category: Category) => category._id === editingId) ||
+      null
     : null;
 
   const fields: FormField[] = [
@@ -141,20 +130,6 @@ export default function CategoryPage() {
       label: "Category image",
       type: "file",
       fullWidth: true,
-      onUpload: async (file) => {
-        if (!file) return "";
-        try {
-          return await uploadImageToServer(file);
-        } catch (err: any) {
-          dispatch(
-            addToast({
-              type: "error",
-              text: err?.message || "Image upload failed",
-            }),
-          );
-          return "";
-        }
-      },
     },
     {
       name: "isActive",
@@ -172,26 +147,46 @@ export default function CategoryPage() {
           text: "Category name is required",
         }),
       );
+
       return;
     }
 
-    const payload = {
-      name: values.name.trim(),
-      slug: makeSlug(values.name),
-      description: values.description?.trim() || "",
-      image: (values.image || "").trim(),
-      isActive: Boolean(values.isActive),
-    };
+    const imageFile = values.image instanceof File ? values.image : null;
+
+    if (!editingId && !imageFile) {
+      dispatch(
+        addToast({
+          type: "error",
+          text: "Category image is required",
+        }),
+      );
+
+      return;
+    }
+
+    const formData = new FormData();
+
+    formData.append("name", values.name.trim());
+
+    formData.append("slug", makeSlug(values.name));
+
+    formData.append("description", values.description?.trim() || "");
+
+    formData.append("isActive", String(Boolean(values.isActive)));
+
+    if (imageFile) {
+      formData.append("image", imageFile);
+    }
 
     if (editingId) {
       await dispatch(
         updateCategory({
           id: editingId,
-          data: payload,
+          data: formData,
         }),
       );
     } else {
-      await dispatch(createCategory(payload));
+      await dispatch(createCategory(formData));
     }
   };
 
@@ -199,8 +194,16 @@ export default function CategoryPage() {
     exportTableData(
       categories,
       [
-        { key: "name", header: "Name", accessor: "name" },
-        { key: "slug", header: "Slug", accessor: "slug" },
+        {
+          key: "name",
+          header: "Name",
+          accessor: "name",
+        },
+        {
+          key: "slug",
+          header: "Slug",
+          accessor: "slug",
+        },
         {
           key: "description",
           header: "Description",

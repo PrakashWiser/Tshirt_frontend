@@ -1,25 +1,42 @@
-import React, { Suspense, useEffect } from 'react';
-import { BrowserRouter, Routes, Route, Navigate, Outlet } from 'react-router-dom';
-import ProtectedRoute from './ProtectedRoute';
-import ToastContainer from '../components/ToastContainer';
-import AdminLayout from '../components/AdminLayout';
-import { useAppDispatch, useAppSelector } from '../hooks/hooks';
-import { getProfile } from '../store/slice/authSlice';
-import SessionExpiredPopup from '../components/SessionExpiredPopup';
-import ScrollToTop from '../components/Common/ScrollToTop';
-import EnquiryList from '../pages/Enquiry/EnquiryList';
+import React, { Suspense, useEffect } from "react";
+import {
+  BrowserRouter,
+  Routes,
+  Route,
+  Navigate,
+  Outlet,
+} from "react-router-dom";
+import ProtectedRoute from "./ProtectedRoute";
+import ToastContainer from "../components/ToastContainer";
+import AdminLayout from "../components/AdminLayout";
+import { useAppDispatch, useAppSelector } from "../hooks/hooks";
+import { getProfile } from "../store/slice/authSlice";
+import SessionExpiredPopup from "../components/SessionExpiredPopup";
+import ScrollToTop from "../components/Common/ScrollToTop";
+import EnquiryList from "../pages/Enquiry/EnquiryList";
+import ProductDetailsPage from "../pages/Product/ProductDetailsPage";
 
-const Login = React.lazy(() => import('../pages/Login/Login'));
-const DashboardHome = React.lazy(() => import('../pages/DashboardHome/DashboardHome'));
-const AdminNotFound = React.lazy(() => import('../pages/AdminNotFound/AdminNotFoundt'));
-const UserSection = React.lazy(() => import('../pages/UserSection/UserSection'));
-const OffersPromotionSection = React.lazy(() => import('../pages/OffersPromotionSection/OffersPromotionSection'));
-const Contact = React.lazy(() => import('../pages/Contact/Contact'));
-const CategoryPage = React.lazy(() => import('../pages/Category/CategoryPage'));
-const ProductPage = React.lazy(() => import('../pages/Product/ProductPage'));
-const BannerPage = React.lazy(() => import('../pages/Banner/BannerPage'));
-const PaymentSection = React.lazy(() => import('../pages/PaymentSection/PaymentSection'));
-const ProfilePage = React.lazy(() => import('../pages/Profile/ProfilePage'));
+const Login = React.lazy(() => import("../pages/Login/Login"));
+const DashboardHome = React.lazy(
+  () => import("../pages/DashboardHome/DashboardHome"),
+);
+const AdminNotFound = React.lazy(
+  () => import("../pages/AdminNotFound/AdminNotFoundt"),
+);
+const UserSection = React.lazy(
+  () => import("../pages/UserSection/UserSection"),
+);
+const OffersPromotionSection = React.lazy(
+  () => import("../pages/OffersPromotionSection/OffersPromotionSection"),
+);
+const Contact = React.lazy(() => import("../pages/Contact/Contact"));
+const CategoryPage = React.lazy(() => import("../pages/Category/CategoryPage"));
+const ProductPage = React.lazy(() => import("../pages/Product/ProductPage"));
+const BannerPage = React.lazy(() => import("../pages/Banner/BannerPage"));
+const PaymentSection = React.lazy(
+  () => import("../pages/PaymentSection/PaymentSection"),
+);
+const ProfilePage = React.lazy(() => import("../pages/Profile/ProfilePage"));
 
 function ViewportSpinner() {
   return (
@@ -38,7 +55,6 @@ function AuthenticatedLayoutWrapper() {
 }
 
 export default function AppRoutes() {
-
   const dispatch = useAppDispatch();
   const { accessToken } = useAppSelector((state) => state.auth);
 
@@ -50,9 +66,11 @@ export default function AppRoutes() {
 
   useEffect(() => {
     const enableInteraction = () => {
-      (window as Window & {
-        __USER_INTERACTED__?: boolean;
-      }).__USER_INTERACTED__ = true;
+      (
+        window as Window & {
+          __USER_INTERACTED__?: boolean;
+        }
+      ).__USER_INTERACTED__ = true;
     };
 
     window.addEventListener("click", enableInteraction);
@@ -63,7 +81,6 @@ export default function AppRoutes() {
       window.removeEventListener("keydown", enableInteraction);
     };
   }, []);
-
 
   return (
     <BrowserRouter>
@@ -88,6 +105,7 @@ export default function AppRoutes() {
               <Route path="/banners" element={<BannerPage />} />
               <Route path="/payments" element={<PaymentSection />} />
               <Route path="/profile" element={<ProfilePage />} />
+              <Route path="/products/:slug" element={<ProductDetailsPage />} />
             </Route>
             <Route path="*" element={<AdminNotFound />} />
           </Route>

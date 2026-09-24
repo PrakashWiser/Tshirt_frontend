@@ -8,6 +8,7 @@ export interface Category {
   slug: string;
   description?: string;
   image?: string;
+  imagePublicId?: string;
   isActive?: boolean;
   createdAt?: string;
   updatedAt?: string;
@@ -43,6 +44,7 @@ export const getAllCategories = createAsyncThunk<
 >("category/getAll", async (_, thunkAPI) => {
   try {
     const token = thunkAPI.getState().auth.accessToken;
+
     const res = await FetchApi<ApiResponse<Category[]>>({
       endpoint: "/categories",
       method: "GET",
@@ -51,37 +53,43 @@ export const getAllCategories = createAsyncThunk<
 
     return res.data;
   } catch (err: any) {
-    return thunkAPI.rejectWithValue(err?.message || "Failed to fetch categories");
+    return thunkAPI.rejectWithValue(
+      err?.message || "Failed to fetch categories",
+    );
   }
 });
 
 export const createCategory = createAsyncThunk<
   Category,
-  { name: string; slug?: string; description?: string; image?: string; isActive?: boolean },
+  FormData,
   { state: RootState; rejectValue: string }
->("category/create", async (payload, thunkAPI) => {
+>("category/create", async (formData, thunkAPI) => {
   try {
     const token = thunkAPI.getState().auth.accessToken;
+
     const res = await FetchApi<ApiResponse<Category>>({
       endpoint: "/categories",
       method: "POST",
-      body: payload,
+      body: formData,
       token,
     });
 
     return res.data;
   } catch (err: any) {
-    return thunkAPI.rejectWithValue(err?.message || "Failed to create category");
+    return thunkAPI.rejectWithValue(
+      err?.message || "Failed to create category",
+    );
   }
 });
 
 export const updateCategory = createAsyncThunk<
   Category,
-  { id: string; data: Partial<Category> },
+  { id: string; data: FormData },
   { state: RootState; rejectValue: string }
 >("category/update", async ({ id, data }, thunkAPI) => {
   try {
     const token = thunkAPI.getState().auth.accessToken;
+
     const res = await FetchApi<ApiResponse<Category>>({
       endpoint: `/categories/${id}`,
       method: "PUT",
@@ -91,7 +99,9 @@ export const updateCategory = createAsyncThunk<
 
     return res.data;
   } catch (err: any) {
-    return thunkAPI.rejectWithValue(err?.message || "Failed to update category");
+    return thunkAPI.rejectWithValue(
+      err?.message || "Failed to update category",
+    );
   }
 });
 
@@ -102,6 +112,7 @@ export const deleteCategory = createAsyncThunk<
 >("category/delete", async (id, thunkAPI) => {
   try {
     const token = thunkAPI.getState().auth.accessToken;
+
     await FetchApi({
       endpoint: `/categories/${id}`,
       method: "DELETE",
@@ -110,7 +121,9 @@ export const deleteCategory = createAsyncThunk<
 
     return id;
   } catch (err: any) {
-    return thunkAPI.rejectWithValue(err?.message || "Failed to delete category");
+    return thunkAPI.rejectWithValue(
+      err?.message || "Failed to delete category",
+    );
   }
 });
 
@@ -129,50 +142,77 @@ const categorySlice = createSlice({
         state.isLoading = true;
         state.error = null;
       })
+
       .addCase(getAllCategories.fulfilled, (state, action) => {
         state.isLoading = false;
         state.categories = action.payload;
         state.error = null;
       })
+
       .addCase(getAllCategories.rejected, (state, action) => {
         state.isLoading = false;
         state.error = action.payload || "Failed to load categories";
       })
+
       .addCase(createCategory.pending, (state) => {
         state.isLoading = true;
         state.error = null;
+        state.message = null;
       })
+
       .addCase(createCategory.fulfilled, (state, action) => {
         state.isLoading = false;
         state.message = "Category created successfully";
         state.category = action.payload;
+
+        state.categories.unshift(action.payload);
       })
+
       .addCase(createCategory.rejected, (state, action) => {
         state.isLoading = false;
         state.error = action.payload || "Failed to create category";
       })
+
       .addCase(updateCategory.pending, (state) => {
         state.isLoading = true;
         state.error = null;
+        state.message = null;
       })
+
       .addCase(updateCategory.fulfilled, (state, action) => {
         state.isLoading = false;
         state.message = "Category updated successfully";
         state.category = action.payload;
+
+        const index = state.categories.findIndex(
+          (item) => item._id === action.payload._id,
+        );
+
+        if (index !== -1) {
+          state.categories[index] = action.payload;
+        }
       })
+
       .addCase(updateCategory.rejected, (state, action) => {
         state.isLoading = false;
         state.error = action.payload || "Failed to update category";
       })
+
       .addCase(deleteCategory.pending, (state) => {
         state.isLoading = true;
         state.error = null;
+        state.message = null;
       })
+
       .addCase(deleteCategory.fulfilled, (state, action) => {
         state.isLoading = false;
         state.message = "Category deleted successfully";
-        state.categories = state.categories.filter((item) => item._id !== action.payload);
+
+        state.categories = state.categories.filter(
+          (item) => item._id !== action.payload,
+        );
       })
+
       .addCase(deleteCategory.rejected, (state, action) => {
         state.isLoading = false;
         state.error = action.payload || "Failed to delete category";
@@ -181,4 +221,5 @@ const categorySlice = createSlice({
 });
 
 export const { clearCategoryError } = categorySlice.actions;
+
 export default categorySlice.reducer;
