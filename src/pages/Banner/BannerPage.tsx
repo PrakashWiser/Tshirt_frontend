@@ -2,26 +2,22 @@ import { useEffect, useState } from "react";
 import { Plus, Download, ImageIcon } from "lucide-react";
 import Button from "../../components/Button";
 import ConfirmDeleteModal from "../../components/ConfirmDeleteModal";
-import { FetchApi } from "../../api/Fetch";
 import { useAppSelector, useAppDispatch } from "../../hooks/hooks";
 import { addToast } from "../../store/slice/uiSlice";
+import {
+  clearBannerError,
+  createBanner,
+  deleteBanner,
+  getAllBanners,
+  updateBanner,
+  type BannerItem,
+} from "../../store/slice/bannerSlice";
 import ImageUploadField from "../../components/ImageUploadField";
 import CustomImage from "../../components/Image";
 import DotMenu from "../../components/DotMenu";
 import { exportTableData } from "../../utils/exportToExcel";
 import { DataTable } from "../../components/Table";
 import type { ColumnDef } from "../../components/TableTypes";
-
-type BannerItem = {
-  _id: string;
-  title: string;
-  subtitle?: string;
-  image: string;
-  imagePublicId?: string;
-  link?: string;
-  isActive?: boolean;
-  sortOrder?: number;
-};
 
 type BannerForm = {
   title: string;
@@ -46,49 +42,27 @@ const emptyForm = (): BannerForm => ({
 export default function BannerPage() {
   const dispatch = useAppDispatch();
 
-  const { accessToken } = useAppSelector((state: any) => state.auth);
-
-  const [banners, setBanners] = useState<BannerItem[]>([]);
+  const { accessToken } = useAppSelector((state) => state.auth);
+  const {
+    banners,
+    isLoading: loading,
+    error,
+  } = useAppSelector((state) => state.banner);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
   const [form, setForm] = useState<BannerForm>(emptyForm());
 
-  const fetchBanners = async () => {
-    if (!accessToken) return;
-
-    setLoading(true);
-
-    try {
-      const res = await FetchApi<any>({
-        endpoint: "/banners/all",
-        method: "GET",
-        token: accessToken,
-      });
-
-      const response = res as any;
-
-      const items = Array.isArray(response?.data)
-        ? response.data
-        : (response?.data ?? []);
-
-      setBanners(items as BannerItem[]);
-    } catch (err: any) {
-      dispatch(
-        addToast({
-          type: "error",
-          text: err?.message || "Failed to load banners",
-        }),
-      );
-    } finally {
-      setLoading(false);
-    }
-  };
+  useEffect(() => {
+    if (accessToken) dispatch(getAllBanners());
+  }, [accessToken, dispatch]);
 
   useEffect(() => {
-    fetchBanners();
-  }, [accessToken]);
+    if (error) {
+      dispatch(addToast({ type: "error", text: error }));
+      dispatch(clearBannerError());
+    }
+  }, [error, dispatch]);
 
   const openCreate = () => {
     setEditingId(null);
@@ -163,103 +137,62 @@ export default function BannerPage() {
       return;
     }
 
-    setLoading(true);
+    const formData = new FormData();
 
-    try {
-      const formData = new FormData();
+    formData.append("title", form.title.trim());
+    formData.append("subtitle", form.subtitle.trim());
+    formData.append("link", form.link.trim());
+    formData.append("isActive", String(form.isActive));
+    formData.append("sortOrder", String(Number(form.sortOrder || 1)));
 
-      formData.append("title", form.title.trim());
-      formData.append("subtitle", form.subtitle.trim());
-      formData.append("link", form.link.trim());
-      formData.append("isActive", String(form.isActive));
-      formData.append("sortOrder", String(Number(form.sortOrder || 1)));
-
-      if (form.imageFile) {
-        formData.append("image", form.imageFile);
-      }
-
-      if (editingId) {
-        await FetchApi({
-          endpoint: `/banners/${editingId}`,
-          method: "PUT",
-          token: accessToken,
-          body: formData,
-        });
-
-        dispatch(
-          addToast({
-            type: "success",
-            text: "Banner updated successfully",
-          }),
-        );
-      } else {
-        await FetchApi({
-          endpoint: "/banners",
-          method: "POST",
-          token: accessToken,
-          body: formData,
-        });
-
-        dispatch(
-          addToast({
-            type: "success",
-            text: "Banner created successfully",
-          }),
-        );
-      }
-
-      if (form.image?.startsWith("blob:")) {
-        URL.revokeObjectURL(form.image);
-      }
-
-      setIsFormOpen(false);
-      setEditingId(null);
-      setForm(emptyForm());
-
-      await fetchBanners();
-    } catch (err: any) {
-      dispatch(
-        addToast({
-          type: "error",
-          text: err?.message || "Unable to save banner",
-        }),
-      );
-    } finally {
-      setLoading(false);
+    if (form.imageFile) {
+      formData.append("image", form.imageFile);
     }
+
+    const result = editingId
+      ? await dispatch(updateBanner({ id: editingId, data: formData }))
+      : await dispatch(createBanner(formData));
+
+    if (
+      !createBanner.fulfilled.match(result) &&
+      !updateBanner.fulfilled.match(result)
+    ) {
+      return;
+    }
+
+    dispatch(
+      addToast({
+        type: "success",
+        text: editingId
+          ? "Banner updated successfully"
+          : "Banner created successfully",
+      }),
+    );
+
+    if (form.image?.startsWith("blob:")) {
+      URL.revokeObjectURL(form.image);
+    }
+
+    setIsFormOpen(false);
+    setEditingId(null);
+    setForm(emptyForm());
+    dispatch(getAllBanners());
   };
 
   const confirmDelete = async () => {
     if (!deleteId) return;
 
-    setLoading(true);
+    const result = await dispatch(deleteBanner(deleteId));
 
-    try {
-      await FetchApi({
-        endpoint: `/banners/${deleteId}`,
-        method: "DELETE",
-        token: accessToken,
-      });
-
+    if (deleteBanner.fulfilled.match(result)) {
       dispatch(
         addToast({
           type: "success",
           text: "Banner deleted successfully",
         }),
       );
-
       setDeleteId(null);
-
-      await fetchBanners();
-    } catch (err: any) {
-      dispatch(
-        addToast({
-          type: "error",
-          text: err?.message || "Failed to delete banner",
-        }),
-      );
-    } finally {
-      setLoading(false);
+      dispatch(getAllBanners());
     }
   };
 

@@ -8,7 +8,9 @@ import usersReducer from "./slice/usersSlice";
 import statsReducer from "./slice/statsSlice";
 import getNotificationReducer from "./slice/getNotificationSlice";
 import contactSupportReducer from "./slice/contactSupportSlice";
-import categoryReducer from "./slice/categorySlice";
+import parentCategoryReducer from "./slice/parentCategorySlice";
+import subCategoryReducer from "./slice/subCategorySlice";
+import bannerReducer from "./slice/bannerSlice";
 
 const rootReducer = combineReducers({
   auth: authReducer,
@@ -20,7 +22,9 @@ const rootReducer = combineReducers({
   stats: statsReducer,
   getNotifications: getNotificationReducer,
   contactSupport: contactSupportReducer,
-  category: categoryReducer,
+  parentCategories: parentCategoryReducer,
+  subCategories: subCategoryReducer,
+  banner: bannerReducer,
 });
 
 export default rootReducer;

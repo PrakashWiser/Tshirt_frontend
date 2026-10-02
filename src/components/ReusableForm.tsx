@@ -64,6 +64,7 @@ export interface FormField {
   placeholder?: string;
   fullWidth?: boolean;
   required?: boolean;
+  clearOnChange?: string[];
   options?: FieldOption[];
   suggestions?: string[];
   schema?: SchemaField[];
@@ -367,9 +368,9 @@ export default function ReusableForm({
         [name]: value,
       };
 
-      if (name === "locationId") {
-        updated.subLocationId = "";
-      }
+      field?.clearOnChange?.forEach((fieldName) => {
+        updated[fieldName] = "";
+      });
 
       if (name === "stayType") {
         updated.hourlyStay = {

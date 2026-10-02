@@ -30,7 +30,12 @@ const OffersPromotionSection = React.lazy(
   () => import("../pages/OffersPromotionSection/OffersPromotionSection"),
 );
 const Contact = React.lazy(() => import("../pages/Contact/Contact"));
-const CategoryPage = React.lazy(() => import("../pages/Category/CategoryPage"));
+const ParentCategoryPage = React.lazy(
+  () => import("../pages/Category/ParentCategoryPage"),
+);
+const SubCategoryPage = React.lazy(
+  () => import("../pages/Category/SubCategoryPage"),
+);
 const ProductPage = React.lazy(() => import("../pages/Product/ProductPage"));
 const BannerPage = React.lazy(() => import("../pages/Banner/BannerPage"));
 const PaymentSection = React.lazy(
@@ -101,7 +106,11 @@ export default function AppRoutes() {
               <Route path="/offers" element={<OffersPromotionSection />} />
               <Route path="/users" element={<UserSection />} />
               <Route path="/products" element={<ProductPage />} />
-              <Route path="/categories" element={<CategoryPage />} />
+              <Route
+                path="/parent-categories"
+                element={<ParentCategoryPage />}
+              />
+              <Route path="/sub-categories" element={<SubCategoryPage />} />
               <Route path="/banners" element={<BannerPage />} />
               <Route path="/payments" element={<PaymentSection />} />
               <Route path="/profile" element={<ProfilePage />} />

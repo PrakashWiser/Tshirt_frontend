@@ -23,10 +23,12 @@ import {
   Pie,
   Cell,
 } from "recharts";
-import { useSelector } from "react-redux";
 import { setBreadcrumbs } from "../../store/slice/uiSlice";
 import { useAppDispatch, useAppSelector } from "../../hooks/hooks";
-import { getDashboardStats } from "../../store/slice/statsSlice";
+import {
+  getDashboardStats,
+  type DashboardProduct,
+} from "../../store/slice/statsSlice";
 import CustomImage from "../../components/Image";
 
 const CHART_DATA = [
@@ -38,7 +40,7 @@ const CHART_DATA = [
   { month: "Jun", revenue: 42000, orders: 260 },
 ];
 
-const TOP_PRODUCTS = [
+const TOP_PRODUCTS: DashboardProduct[] = [
   {
     id: 1,
     name: "Classic Black Tee",
@@ -91,8 +93,8 @@ const COLORS = [
 
 export default function DashboardHome() {
   const dispatch = useAppDispatch();
-  const { stats } = useAppSelector((state: any) => state.stats);
-  const { darkMode } = useSelector((state: any) => state.ui);
+  const { stats } = useAppSelector((state) => state.stats);
+  const { darkMode } = useAppSelector((state) => state.ui);
 
   useEffect(() => {
     dispatch(getDashboardStats());
@@ -109,10 +111,10 @@ export default function DashboardHome() {
   const topPerforming = stats?.topPerforming?.properties || [];
   const recentProperties = stats?.recentActivities?.properties || [];
 
-  const totalRevenue = summary.totalRevenue || 0;
-  const totalProducts = summary.totalProperties || 0;
-  const totalUsers = summary.totalUsers || 0;
-  const totalOrders = summary.totalBookings || 0;
+  const totalRevenue = summary.totalRevenue ?? stats?.totalRevenue ?? 0;
+  const totalProducts = summary.totalProperties ?? stats?.totalProperties ?? 0;
+  const totalUsers = summary.totalUsers ?? stats?.totalUsers ?? 0;
+  const totalOrders = summary.totalBookings ?? stats?.totalBookings ?? 0;
 
   const formatCurrency = (amount: number): string => {
     if (amount >= 1000000) {
@@ -123,14 +125,14 @@ export default function DashboardHome() {
 
   const categoryData =
     propertyTypes.length > 0
-      ? propertyTypes.map((item: any) => ({
+      ? propertyTypes.map((item) => ({
           name: item._id,
           value: item.count,
         }))
       : CATEGORY_DATA;
   const monthlyData =
     monthlyStats.length > 0
-      ? monthlyStats.map((item: any) => ({
+      ? monthlyStats.map((item) => ({
           month: `${item._id.month}/${item._id.year}`,
           revenue: item.count,
         }))
@@ -286,7 +288,7 @@ export default function DashboardHome() {
                   paddingAngle={2}
                   dataKey="value"
                 >
-                  {categoryData.map((entry: any, index: number) => (
+                  {categoryData.map((entry, index) => (
                     <Cell
                       key={`cell-${entry.name || index}`}
                       fill={COLORS[index % COLORS.length]}
@@ -379,7 +381,7 @@ export default function DashboardHome() {
           <div className="space-y-4">
             {(topPerforming.length > 0 ? topPerforming : TOP_PRODUCTS)
               .slice(0, 4)
-              .map((product: any, index: number) => (
+              .map((product, index) => (
                 <div
                   key={product._id || index}
                   className="flex items-center justify-between gap-3 rounded-xl border border-slate-200 p-3 dark:border-slate-800"
@@ -429,7 +431,7 @@ export default function DashboardHome() {
         <div className="space-y-4">
           {(recentProperties.length > 0 ? recentProperties : TOP_PRODUCTS)
             .slice(0, 4)
-            .map((item: any, index: number) => (
+            .map((item, index) => (
               <div
                 key={item._id || index}
                 className="flex items-center justify-between rounded-xl border border-slate-200 p-3 dark:border-slate-800"

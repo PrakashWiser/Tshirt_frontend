@@ -64,7 +64,7 @@ export default function ProductDetailsPage() {
   const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
-  const { accessToken } = useAppSelector((state: any) => state.auth);
+  const { accessToken } = useAppSelector((state) => state.auth);
 
   const [product, setProduct] = useState<ProductItem | null>(null);
   const [loading, setLoading] = useState(false);

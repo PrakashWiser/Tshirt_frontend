@@ -9,6 +9,7 @@ import {
   FolderTree,
   Image,
   TicketPercent,
+  Tags,
   ClipboardList,
   Shield,
   CreditCard,
@@ -26,7 +27,7 @@ const MOBILE_BREAKPOINT = 1024;
 export default function Sidebar({ sidebarOpen, setSidebarOpen }: SidebarProps) {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
-  const { user } = useAppSelector((state: any) => state.auth);
+  const { user } = useAppSelector((state) => state.auth);
   const [hoveredItem, setHoveredItem] = useState<string | null>(null);
   const [tooltipPosition, setTooltipPosition] = useState({ x: 0, y: 0 });
 
@@ -50,11 +51,15 @@ export default function Sidebar({ sidebarOpen, setSidebarOpen }: SidebarProps) {
           icon: Image,
         },
         {
-          label: "Categories",
-          path: "/categories",
+          label: "Parent Categories",
+          path: "/parent-categories",
           icon: FolderTree,
         },
-
+        {
+          label: "Sub Categories",
+          path: "/sub-categories",
+          icon: Tags,
+        },
         {
           label: "Products",
           path: "/products",

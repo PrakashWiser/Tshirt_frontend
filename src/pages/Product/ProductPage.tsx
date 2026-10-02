@@ -12,13 +12,9 @@ import { DataTable } from "../../components/Table";
 import type { ColumnDef } from "../../components/TableTypes";
 import ReusableForm, { type FormField } from "../../components/ReusableForm";
 import { generateSku } from "../../utils/generateSku";
+import { getCategoryPath } from "../../utils/categoryHierarchy";
 import { useNavigate } from "react-router-dom";
-
-type CategoryOption = {
-  _id: string;
-  name: string;
-  slug?: string;
-};
+import type { SubCategory } from "../../types/category";
 
 type ProductVariant = {
   _id?: string;
@@ -37,7 +33,7 @@ type ProductItem = {
   name: string;
   slug?: string;
   description?: string;
-  category?: string | CategoryOption;
+  category?: string | SubCategory;
   images?: string[];
   variants: ProductVariant[];
   rating?: number;
@@ -98,10 +94,10 @@ const getFirstVariantImage = (product: ProductItem): string => {
 export default function ProductPage() {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
-  const { accessToken } = useAppSelector((state: any) => state.auth);
+  const { accessToken } = useAppSelector((state) => state.auth);
 
   const [products, setProducts] = useState<ProductItem[]>([]);
-  const [categories, setCategories] = useState<CategoryOption[]>([]);
+  const [categories, setCategories] = useState<SubCategory[]>([]);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);
@@ -114,14 +110,14 @@ export default function ProductPage() {
     if (!accessToken) return;
     try {
       const res: any = await FetchApi({
-        endpoint: "/categories",
+        endpoint: "/sub-categories?activeOnly=true",
         method: "GET",
         token: accessToken,
       });
       const items = Array.isArray(res?.data)
         ? res.data
         : (res?.categories ?? []);
-      setCategories(items as CategoryOption[]);
+      setCategories(items as SubCategory[]);
     } catch {
       setCategories([]);
     }
@@ -328,7 +324,7 @@ export default function ProductPage() {
       required: true,
       placeholder: "Select category",
       options: categories.map((c) => ({
-        label: c.name,
+        label: getCategoryPath(c),
         value: c._id,
       })),
     },

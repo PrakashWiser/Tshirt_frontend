@@ -1,12 +1,12 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { CheckCircle, AlertCircle, Info, X } from 'lucide-react';
 import { useEffect } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import { useAppDispatch, useAppSelector } from '../hooks/hooks';
 import { removeToast } from '../store/slice/uiSlice';
 
 export default function ToastContainer() {
-    const dispatch = useDispatch();
-    const { toasts } = useSelector((state: any) => state.ui);
+    const dispatch = useAppDispatch();
+    const { toasts } = useAppSelector((state) => state.ui);
 
     return (
         <div
@@ -14,7 +14,7 @@ export default function ToastContainer() {
             className="fixed bottom-5 right-5 z-55 flex flex-col gap-3 min-w-[280px] max-w-[360px]"
         >
             <AnimatePresence>
-                {toasts?.map((toast: any) => (
+                {toasts.map((toast) => (
                     <ToastCard key={toast.id} id={toast.id} type={toast.type} text={toast.text} onClose={(id) => dispatch(removeToast(id))} />
                 ))}
             </AnimatePresence>

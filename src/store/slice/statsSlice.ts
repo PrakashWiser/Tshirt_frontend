@@ -4,10 +4,45 @@ import { FetchApi } from "../../api/Fetch";
 import { USE_MOCK_MODULE_DATA, MOCK_STATS } from "../../utils/mockModuleData";
 
 export interface DashboardStats {
-  totalUsers: number;
-  totalProperties: number;
-  totalBookings: number;
-  totalRevenue: number;
+  totalUsers?: number;
+  totalProperties?: number;
+  totalBookings?: number;
+  totalRevenue?: number;
+  summary?: {
+    totalUsers?: number;
+    totalProperties?: number;
+    totalBookings?: number;
+    totalRevenue?: number;
+  };
+  distributions?: {
+    propertyTypes?: DashboardDistribution[];
+    propertyActions?: DashboardDistribution[];
+  };
+  monthlyStats?: DashboardMonthlyStat[];
+  topPerforming?: { properties?: DashboardProduct[] };
+  recentActivities?: { properties?: DashboardProduct[] };
+}
+
+interface DashboardDistribution {
+  _id: string;
+  count: number;
+}
+
+interface DashboardMonthlyStat {
+  _id: { month: number; year: number };
+  count: number;
+}
+
+export interface DashboardProduct {
+  id?: number;
+  _id?: string;
+  name?: string;
+  category?: string;
+  image?: string;
+  revenue?: string | number;
+  totalPrice?: number;
+  sales?: string | number;
+  visitCount?: number;
 }
 
 interface StatsResponse {
@@ -53,9 +88,11 @@ export const getDashboardStats = createAsyncThunk<
     });
 
     return response.data;
-  } catch (err: any) {
+  } catch (err: unknown) {
     return thunkAPI.rejectWithValue(
-      err?.message || "Failed to load dashboard statistics",
+      err instanceof Error
+        ? err.message
+        : "Failed to load dashboard statistics",
     );
   }
 });
