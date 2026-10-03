@@ -7,7 +7,7 @@ const AdminNotFound = () => {
             <div className="text-center max-w-md">
                 <div className="flex justify-center mb-6">
                     <div className="w-24 h-24 rounded-full bg-red-100 flex items-center justify-center">
-                        <AlertTriangle className="w-12 h-12 text-red-600" />
+                        <AlertTriangle className="w-12 h-12 text-[#003B1F]" />
                     </div>
                 </div>
                 <h1 className="text-7xl font-bold text-gray-900">404</h1>
@@ -20,7 +20,7 @@ const AdminNotFound = () => {
                 <div className="mt-8">
                     <Link
                         to="/"
-                        className="inline-flex items-center gap-2 px-6 py-3 bg-red-600 text-white rounded-lg font-medium hover:bg-red-700 transition-all"
+                        className="inline-flex items-center gap-2 px-6 py-3 bg-[#003B1F] text-white rounded-lg font-medium hover:bg-[#003B1F]/90 transition-all"
                     >
                         <Home size={18} />
                         Back to Dashboard

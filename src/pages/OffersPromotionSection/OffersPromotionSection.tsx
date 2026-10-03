@@ -239,7 +239,7 @@ export default function OffersPromotionSection() {
 
             <button
               onClick={handleCreate}
-              className="flex cursor-pointer items-center gap-2 px-4 py-2 bg-[#3A29AA] text-white rounded-md transition-colors text-sm font-medium shadow-sm hover:bg-[#2f218f] hover:shadow-md"
+              className="flex cursor-pointer items-center gap-2 px-4 py-2 bg-[#003B1F] text-white rounded-md transition-colors text-sm font-medium shadow-sm hover:bg-[#2f218f] hover:shadow-md"
             >
               <Plus size={18} />
               New Campaign

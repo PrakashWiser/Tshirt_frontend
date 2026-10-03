@@ -91,7 +91,7 @@ export const Pagination = memo(({
                             key={p}
                             onClick={() => onPageChange(p)}
                             className={`w-8 h-8 rounded-lg text-sm font-medium transition-colors ${p === page
-                                    ? "bg-[#3A29AA] text-white"
+                                    ? "bg-[#003B1F] text-white"
                                     : "hover:bg-slate-100 text-slate-600"
                                 }`}
                         >

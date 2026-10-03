@@ -194,7 +194,7 @@ export default function JsonObjectEditor({
                 <button
                     type="button"
                     onClick={addItem}
-                    className="flex items-center gap-2 px-4 py-2 text-sm text-white bg-[#3A29AA] cursor-pointer rounded-lg  transition-colors w-fit"
+                    className="flex items-center gap-2 px-4 py-2 text-sm text-white bg-[#003B1F] cursor-pointer rounded-lg  transition-colors w-fit"
                 >
                     <Plus size={16} />
                     Add {label || "Item"}

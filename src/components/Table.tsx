@@ -64,7 +64,7 @@
             "transition-colors duration-150",
             "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/40",
             active
-            ? "bg-[#3A29AA] text-white shadow-sm"
+            ? "bg-[#003B1F] text-white shadow-sm"
             : "text-slate-500 hover:text-slate-700 hover:bg-slate-100",
         ].join(" ")}
         >

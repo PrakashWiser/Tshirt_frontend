@@ -244,15 +244,6 @@ export default function ParentCategoryPage() {
         {!formOpen && (
           <div className="flex flex-wrap items-center gap-3 sm:ml-auto">
             <Button
-              onClick={() => {
-                setEditingId(null);
-                setFormOpen(true);
-              }}
-              className="flex items-center gap-2"
-            >
-              <Plus size={16} /> Add Parent Category
-            </Button>
-            <Button
               variant="outline"
               onClick={() =>
                 exportTableData(items, columns, "Parent Categories")
@@ -260,6 +251,15 @@ export default function ParentCategoryPage() {
               className="flex items-center gap-2"
             >
               <Download size={15} /> Export
+            </Button>
+            <Button
+              onClick={() => {
+                setEditingId(null);
+                setFormOpen(true);
+              }}
+              className="flex items-center gap-2"
+            >
+              <Plus size={16} /> Add Parent Category
             </Button>
           </div>
         )}

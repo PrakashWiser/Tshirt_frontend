@@ -144,7 +144,7 @@ function RepeatableGroupField({
         <button
           type="button"
           onClick={addItem}
-          className="flex items-center gap-2 rounded-xl bg-[#3A29AA] px-3 py-2 text-xs font-medium text-white"
+          className="flex items-center gap-2 rounded-xl bg-[#003B1F] px-3 py-2 text-xs font-medium text-white"
         >
           <Plus size={14} />
           {field.addLabel || "Add"}

@@ -165,7 +165,7 @@ export default function ImageUploadField({
                 onClick={() =>
                     inputRef.current?.click()
                 }
-                className="w-full border-2 border-dashed border-slate-300 rounded-2xl p-8 cursor-pointer hover:border-[#3A29AA] transition-colors"
+                className="w-full border-2 border-dashed border-slate-300 rounded-2xl p-8 cursor-pointer hover:border-[#003B1F] transition-colors"
             >
                 <div className="flex flex-col items-center">
                     <UploadCloud
@@ -295,7 +295,7 @@ export default function ImageUploadField({
                                                     )
                                                 }
                                                 placeholder="Enter video category"
-                                                className="w-full mt-2 px-3 py-2 text-sm border border-slate-300 rounded-lg outline-none focus:border-[#3A29AA] focus:ring-1 focus:ring-[#3A29AA]"
+                                                className="w-full mt-2 px-3 py-2 text-sm border border-slate-300 rounded-lg outline-none focus:border-[#003B1F] focus:ring-1 focus:ring-[#003B1F]"
                                             />
                                         </div>
                                     ) : (

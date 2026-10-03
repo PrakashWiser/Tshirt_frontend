@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { LogIn, Shirt } from "lucide-react";
+import { LogIn } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAppDispatch, useAppSelector } from "../../hooks/hooks";
 import InputField from "../../components/CommonInput";
@@ -69,7 +69,7 @@ function Login() {
         <div className="rounded-xl border border-white/20 bg-white/10 p-8 shadow-2xl backdrop-blur-xl">
           <div className="mb-8 flex flex-col items-center">
             <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-white/10 text-orange-400 shadow-lg ring-1 ring-white/20">
-              <Shirt size={32} />
+            <img src="/logo.png" alt="Tshirt Admin" className="h-full w-full object-cover" />
             </div>
             <h1 className="text-2xl font-bold text-white">Tshirt Admin</h1>
             <p className="mt-1 text-center text-sm text-slate-300">

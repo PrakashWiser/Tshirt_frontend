@@ -169,7 +169,7 @@ export default function UserSection() {
                                     className="w-10 h-10 rounded-full object-cover border border-slate-200"
                                 />
                             ) : (
-                                <div className="w-10 h-10 rounded-full bg-[#3A29AA] text-white flex items-center justify-center text-sm font-semibold">
+                                <div className="w-10 h-10 rounded-full bg-[#003B1F] text-white flex items-center justify-center text-sm font-semibold">
                                     {getInitials(user)}
                                 </div>
                             )}

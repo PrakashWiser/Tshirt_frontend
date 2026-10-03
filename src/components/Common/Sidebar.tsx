@@ -212,14 +212,14 @@ export default function Sidebar({ sidebarOpen, setSidebarOpen }: SidebarProps) {
                     : "-translate-x-full lg:translate-x-0"
                 } lg:relative`}
       >
-        <div className="h-20 px-6 flex items-center justify-between border-b border-slate-800">
-          <div className="flex items-center gap-5 overflow-hidden">
+        <div className="h-20  flex items-center justify-between border-b border-slate-800">
+          <div className="flex items-center  overflow-hidden">
             <motion.img
               src="/logo.png"
               alt="Tshirt Admin"
               className={
                 sidebarOpen
-                  ? "h-10 w-10 rounded-full object-contain"
+                  ? "h-20 w-20 rounded-full object-contain"
                   : "h-7 w-7 rounded-full object-contain"
               }
             />
@@ -276,10 +276,10 @@ export default function Sidebar({ sidebarOpen, setSidebarOpen }: SidebarProps) {
                       onMouseEnter={(e) => handleMouseEnter(e, item.label)}
                       onMouseLeave={handleMouseLeave}
                       className={({ isActive }) =>
-                        `flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-all relative
+                        `flex items-center gap-3 px-3 py-2 rounded-md text-sm transition-all relative
                                                 ${
                                                   isActive
-                                                    ? "bg-[#3A29AA] text-white shadow-sm ring-1 ring-[#3A29AA]/40"
+                                                    ? "bg-[#003B1F] text-white shadow-sm ring-1 ring-[#003B1F]/40"
                                                     : "text-slate-400 hover:bg-slate-800 hover:text-white"
                                                 }
                                                 ${
@@ -340,7 +340,7 @@ export default function Sidebar({ sidebarOpen, setSidebarOpen }: SidebarProps) {
 
                 <button
                   onClick={handleLogout}
-                  className="text-slate-400 hover:text-[#3A29AA] shrink-0"
+                  className="text-slate-400 hover:text-[#003B1F] shrink-0"
                 >
                   <LogOut size={18} />
                 </button>

@@ -27,9 +27,9 @@ const Button: React.FC<ButtonProps> = ({
 
     const variants: Record<"primary" | "outline", string> = {
         primary:
-            "bg-[#3A29AA] text-white hover:bg-[#2f218f] hover:shadow-md",
+            "bg-[#003B1F] text-white hover:bg-[#002a15] hover:shadow-md",
         outline:
-            "border border-[#3A29AA] bg-white text-[#3A29AA] hover:bg-[#3A29AA]/5 hover:shadow-md"
+            "border border-[#003B1F] bg-white text-[#003B1F] hover:bg-[#003B1F]/5 hover:shadow-md"
     };
 
     const disabledStyle =

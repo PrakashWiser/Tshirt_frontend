@@ -484,7 +484,7 @@ export default function BannerPage() {
               <Button
                 type="submit"
                 disabled={loading}
-                className="bg-[#3A29AA] hover:bg-[#2d1f81]"
+                className="bg-[#003B1F] hover:bg-[#2d1f81]"
               >
                 {loading
                   ? "Saving..."

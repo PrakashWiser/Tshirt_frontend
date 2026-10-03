@@ -107,7 +107,7 @@ export default function ProfilePage() {
             <button
               type="button"
               onClick={updatePhotoFromUrl}
-              className="absolute -bottom-1 -right-1 flex h-8 w-8 items-center justify-center rounded-full border border-white bg-[#3A29AA] text-white shadow-md"
+              className="absolute -bottom-1 -right-1 flex h-8 w-8 items-center justify-center rounded-full border border-white bg-[#003B1F] text-white shadow-md"
               aria-label="Update profile photo"
             >
               <Camera size={14} />
@@ -130,7 +130,7 @@ export default function ProfilePage() {
       <div className="grid gap-6 xl:grid-cols-[1.3fr_0.7fr]">
         <form onSubmit={handleProfileSubmit} className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
           <div className="mb-5 flex items-center gap-2">
-            <UserRound size={18} className="text-[#3A29AA]" />
+            <UserRound size={18} className="text-[#003B1F]" />
             <h2 className="text-lg font-semibold text-slate-900">Account details</h2>
           </div>
 
@@ -140,7 +140,7 @@ export default function ProfilePage() {
               <input
                 value={profileForm.name}
                 onChange={(e) => handleProfileChange("name", e.target.value)}
-                className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm text-slate-900 outline-none ring-0 transition focus:border-[#3A29AA] focus:bg-white"
+                className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm text-slate-900 outline-none ring-0 transition focus:border-[#003B1F] focus:bg-white"
               />
             </label>
 
@@ -152,7 +152,7 @@ export default function ProfilePage() {
                   type="email"
                   value={profileForm.email}
                   onChange={(e) => handleProfileChange("email", e.target.value)}
-                  className="w-full rounded-xl border border-slate-200 bg-slate-50 py-2.5 pl-9 pr-3 text-sm text-slate-900 outline-none transition focus:border-[#3A29AA] focus:bg-white"
+                  className="w-full rounded-xl border border-slate-200 bg-slate-50 py-2.5 pl-9 pr-3 text-sm text-slate-900 outline-none transition focus:border-[#003B1F] focus:bg-white"
                 />
               </div>
             </label>
@@ -164,7 +164,7 @@ export default function ProfilePage() {
                 <input
                   value={profileForm.mobile}
                   onChange={(e) => handleProfileChange("mobile", e.target.value)}
-                  className="w-full rounded-xl border border-slate-200 bg-slate-50 py-2.5 pl-9 pr-3 text-sm text-slate-900 outline-none transition focus:border-[#3A29AA] focus:bg-white"
+                  className="w-full rounded-xl border border-slate-200 bg-slate-50 py-2.5 pl-9 pr-3 text-sm text-slate-900 outline-none transition focus:border-[#003B1F] focus:bg-white"
                 />
               </div>
             </label>
@@ -179,7 +179,7 @@ export default function ProfilePage() {
 
         <form onSubmit={handlePasswordSubmit} className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
           <div className="mb-5 flex items-center gap-2">
-            <Lock size={18} className="text-[#3A29AA]" />
+            <Lock size={18} className="text-[#003B1F]" />
             <h2 className="text-lg font-semibold text-slate-900">Change password</h2>
           </div>
 
@@ -190,7 +190,7 @@ export default function ProfilePage() {
                 type="password"
                 value={passwordForm.currentPassword}
                 onChange={(e) => setPasswordForm((prev) => ({ ...prev, currentPassword: e.target.value }))}
-                className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm text-slate-900 outline-none transition focus:border-[#3A29AA] focus:bg-white"
+                className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm text-slate-900 outline-none transition focus:border-[#003B1F] focus:bg-white"
               />
             </label>
 
@@ -200,7 +200,7 @@ export default function ProfilePage() {
                 type="password"
                 value={passwordForm.newPassword}
                 onChange={(e) => setPasswordForm((prev) => ({ ...prev, newPassword: e.target.value }))}
-                className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm text-slate-900 outline-none transition focus:border-[#3A29AA] focus:bg-white"
+                className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm text-slate-900 outline-none transition focus:border-[#003B1F] focus:bg-white"
               />
             </label>
 
@@ -210,7 +210,7 @@ export default function ProfilePage() {
                 type="password"
                 value={passwordForm.confirmPassword}
                 onChange={(e) => setPasswordForm((prev) => ({ ...prev, confirmPassword: e.target.value }))}
-                className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm text-slate-900 outline-none transition focus:border-[#3A29AA] focus:bg-white"
+                className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm text-slate-900 outline-none transition focus:border-[#003B1F] focus:bg-white"
               />
             </label>
           </div>

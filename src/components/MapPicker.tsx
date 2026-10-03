@@ -180,7 +180,7 @@ export default function MapPicker({
                             event.stopPropagation();
                             handleSearch();
                         }}
-                        className="px-5 bg-[#3A29AA] text-white rounded hover:bg-gray-800 transition"
+                        className="px-5 bg-[#003B1F] text-white rounded hover:bg-gray-800 transition"
                     >
                         Search
                     </button>

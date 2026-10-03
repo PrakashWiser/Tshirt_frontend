@@ -669,7 +669,7 @@ export default function ProductPage() {
           );
         }
         return (
-          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-slate-100 text-sm font-bold text-[#3A29AA]">
+          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-slate-100 text-sm font-bold text-[#003B1F]">
             {row.name?.charAt(0)?.toUpperCase() || "P"}
           </div>
         );
@@ -836,7 +836,7 @@ export default function ProductPage() {
                         className="h-11 w-11 rounded-xl border border-slate-200 object-cover"
                       />
                     ) : (
-                      <div className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-gradient-to-br from-indigo-100 to-violet-100 text-lg font-bold text-[#3A29AA]">
+                      <div className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-gradient-to-br from-indigo-100 to-violet-100 text-lg font-bold text-[#003B1F]">
                         {product.name?.charAt(0)?.toUpperCase() || "P"}
                       </div>
                     )}
@@ -877,7 +877,7 @@ export default function ProductPage() {
                   ))}
 
                   {variantCount > 5 && (
-                    <span className="rounded-full bg-indigo-50 px-2.5 py-1 text-xs font-medium text-[#3A29AA]">
+                    <span className="rounded-full bg-indigo-50 px-2.5 py-1 text-xs font-medium text-[#003B1F]">
                       +{variantCount - 5} more
                     </span>
                   )}

@@ -137,7 +137,7 @@ export default function ProductDetailsPage() {
   if (loading) {
     return (
       <div className="flex min-h-[60vh] items-center justify-center">
-        <div className="h-8 w-8 animate-spin rounded-full border-2 border-[#3A29AA] border-t-transparent" />
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-[#003B1F] border-t-transparent" />
       </div>
     );
   }
@@ -174,7 +174,7 @@ export default function ProductDetailsPage() {
                 className="h-[420px] w-full object-contain rounded-2xl"
               />
             ) : (
-              <div className="flex h-[420px] w-full items-center justify-center text-5xl font-bold text-[#3A29AA]">
+              <div className="flex h-[420px] w-full items-center justify-center text-5xl font-bold text-[#003B1F]">
                 {product.name?.charAt(0)?.toUpperCase() || "P"}
               </div>
             )}
@@ -189,7 +189,7 @@ export default function ProductDetailsPage() {
                   onClick={() => setActiveImageIndex(index)}
                   className={`overflow-hidden rounded-xl border ${
                     activeImageIndex === index
-                      ? "border-[#3A29AA] ring-2 ring-[#3A29AA]/30"
+                      ? "border-[#003B1F] ring-2 ring-[#003B1F]/30"
                       : "border-slate-200"
                   }`}
                 >
@@ -206,7 +206,7 @@ export default function ProductDetailsPage() {
 
         <div className="space-y-3">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-wide text-[#3A29AA]">
+            <p className="text-xs font-semibold uppercase tracking-wide text-[#003B1F]">
               {getCategoryName(product.category)}
             </p>
             <h1 className="mt-1 text-2xl font-extrabold text-slate-900 md:text-3xl">
@@ -290,7 +290,7 @@ export default function ProductDetailsPage() {
                     onClick={() => handleVariantChange(index)}
                     className={`rounded-xl border px-3 py-2 text-xs font-medium transition ${
                       isActive
-                        ? "border-[#3A29AA] bg-[#3A29AA] text-white"
+                        ? "border-[#003B1F] bg-[#003B1F] text-white"
                         : "border-slate-200 bg-white text-slate-700 hover:border-slate-300"
                     }`}
                   >

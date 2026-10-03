@@ -5,7 +5,7 @@ import type { RootState } from "../store/store";
 
 const ProtectedRoute = () => {
   const { isAuthenticated, isLoading } = useAppSelector(
-    (state: RootState) => state.auth
+    (state: RootState) => state.auth,
   );
 
   if (isLoading) {
@@ -15,11 +15,11 @@ const ProtectedRoute = () => {
           src="/logo.png"
           alt="Tshirt Admin"
           className="h-16 w-16 rounded-full"
-          animate={{ rotate: 360 }}
+          animate={{ scale: [1, 1.15, 1] }}
           transition={{
-            duration: 2,
+            duration: 1.5,
             repeat: Infinity,
-            ease: "linear",
+            ease: "easeInOut",
           }}
         />
 

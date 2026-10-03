@@ -109,7 +109,7 @@ export default function Roles() {
                 </div>
                 <Button
                     onClick={() => setOpen(true)}
-                    className="flex items-center gap-2 px-4 py-2 bg-[#3A29AA] hover:bg-[#2f218f] text-white rounded-md text-sm font-medium transition-colors">
+                    className="flex items-center gap-2 px-4 py-2 bg-[#003B1F] hover:bg-[#2f218f] text-white rounded-md text-sm font-medium transition-colors">
                     <Plus className="w-4 h-4" />
                     New Role
                 </Button>
