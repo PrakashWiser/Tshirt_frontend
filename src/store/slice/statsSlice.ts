@@ -1,53 +1,69 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import type { RootState } from "../store";
 import { FetchApi } from "../../api/Fetch";
-import { USE_MOCK_MODULE_DATA, MOCK_STATS } from "../../utils/mockModuleData";
 
-export interface DashboardStats {
-  totalUsers?: number;
-  totalProperties?: number;
-  totalBookings?: number;
-  totalRevenue?: number;
-  summary?: {
-    totalUsers?: number;
-    totalProperties?: number;
-    totalBookings?: number;
-    totalRevenue?: number;
-  };
-  distributions?: {
-    propertyTypes?: DashboardDistribution[];
-    propertyActions?: DashboardDistribution[];
-  };
-  monthlyStats?: DashboardMonthlyStat[];
-  topPerforming?: { properties?: DashboardProduct[] };
-  recentActivities?: { properties?: DashboardProduct[] };
-}
-
-interface DashboardDistribution {
+export interface DashboardDistribution {
   _id: string;
   count: number;
 }
 
-interface DashboardMonthlyStat {
-  _id: { month: number; year: number };
-  count: number;
+export interface DashboardMonthlyStat {
+  year: number;
+  month: number;
+  orders: number;
+  revenue: number;
 }
 
 export interface DashboardProduct {
-  id?: number;
-  _id?: string;
-  name?: string;
-  category?: string;
+  _id: string;
+  name: string;
   image?: string;
-  revenue?: string | number;
-  totalPrice?: number;
-  sales?: string | number;
-  visitCount?: number;
+  revenue: number;
+  quantitySold: number;
+}
+
+export interface DashboardActivity {
+  type: string;
+  action: string;
+  description: string;
+  createdAt: string;
+  image?: string;
+  actor?: {
+    name?: string;
+    email?: string;
+  } | null;
+  resourceId?: string;
+  metadata: Record<string, unknown>;
+}
+
+export interface DashboardStats {
+  totalUsers: number;
+  totalProducts: number;
+  totalOrders: number;
+  totalRevenue: number;
+  totalEnquiries: number;
+  summary: {
+    totalUsers: number;
+    totalProducts: number;
+    totalOrders: number;
+    totalRevenue: number;
+    totalEnquiries: number;
+  };
+  distributions: {
+    productTypes: DashboardDistribution[];
+  };
+  monthlyStats: DashboardMonthlyStat[];
+  topPerforming: {
+    products: DashboardProduct[];
+  };
+  topProducts: DashboardProduct[];
+  recentActivities: {
+    activities: DashboardActivity[];
+  };
 }
 
 interface StatsResponse {
   success: boolean;
-  statusCode: number;
   message: string;
   data: DashboardStats;
 }
@@ -77,10 +93,6 @@ export const getDashboardStats = createAsyncThunk<
   const token = thunkAPI.getState().auth.accessToken;
 
   try {
-    if (USE_MOCK_MODULE_DATA) {
-      return MOCK_STATS as DashboardStats;
-    }
-
     const response = await FetchApi<StatsResponse>({
       endpoint: "/admin/stats",
       method: "GET",

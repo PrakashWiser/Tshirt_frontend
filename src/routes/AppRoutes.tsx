@@ -42,6 +42,7 @@ const PaymentSection = React.lazy(
   () => import("../pages/PaymentSection/PaymentSection"),
 );
 const ProfilePage = React.lazy(() => import("../pages/Profile/ProfilePage"));
+const AuditLogsPage = React.lazy(() => import("../pages/AuditLogs/AuditLogs"));
 
 function ViewportSpinner() {
   return (
@@ -106,6 +107,7 @@ export default function AppRoutes() {
               <Route path="/offers" element={<OffersPromotionSection />} />
               <Route path="/users" element={<UserSection />} />
               <Route path="/products" element={<ProductPage />} />
+              <Route path="/audit-logs" element={<AuditLogsPage />} />
               <Route
                 path="/parent-categories"
                 element={<ParentCategoryPage />}

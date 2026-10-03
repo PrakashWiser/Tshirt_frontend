@@ -10,34 +10,29 @@ import Button from "../../components/Button";
 function Login() {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
-  const { isLoading, message, error } = useAppSelector(
-    (state) => state.auth
-  );
+
+  const { isLoading, message, error } = useAppSelector((state) => state.auth);
 
   const [formData, setFormData] = useState({
     email: "",
     password: "",
   });
 
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement>
-  ) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData((prev) => ({
       ...prev,
       [e.target.name]: e.target.value,
     }));
   };
 
-  const handleSubmit = async (
-    e: React.FormEvent<HTMLFormElement>
-  ) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     await dispatch(
       loginUser({
         email: formData.email,
         password: formData.password,
-      })
+      }),
     );
   };
 
@@ -47,8 +42,9 @@ function Login() {
         addToast({
           type: "success",
           text: message,
-        })
+        }),
       );
+
       navigate("/");
       dispatch(clearAuthError());
     }
@@ -58,61 +54,57 @@ function Login() {
         addToast({
           type: "error",
           text: error,
-        })
+        }),
       );
+
       dispatch(clearAuthError());
     }
   }, [message, error, dispatch, navigate]);
 
   return (
-    <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-[#f8f3ee]">
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(249,115,22,0.2),transparent_38%),linear-gradient(135deg,_#fff7ed_0%,_#fff_35%,_#f9fafb_100%)]" />
-
-      <div className="relative z-10 w-full max-w-xl px-5">
-        <div className="rounded-[28px] border border-orange-100 bg-white/90 p-8 shadow-[0_30px_80px_rgba(15,23,42,0.12)] backdrop-blur-xl ring-1 ring-slate-200">
+    <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-slate-950">
+      <div className="absolute inset-0 bg-[url('https://assets.webdads2u.com/images/1786538115762-rectangle-1.png')] bg-cover bg-center" />
+      <div className="absolute inset-0 bg-black/60 backdrop-blur-xs" />
+      <div className="relative z-10 w-full max-w-lg px-5">
+        <div className="rounded-xl border border-white/20 bg-white/10 p-8 shadow-2xl backdrop-blur-xl">
           <div className="mb-8 flex flex-col items-center">
-            <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-[#111827] text-orange-400 shadow-lg shadow-orange-200/80">
+            <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-white/10 text-orange-400 shadow-lg ring-1 ring-white/20">
               <Shirt size={32} />
             </div>
-            <h1 className="text-3xl font-black tracking-tight text-slate-900">
-              Tshirt Admin
-            </h1>
-            <p className="mt-2 text-center text-sm text-slate-600">
+            <h1 className="text-2xl font-bold text-white">Tshirt Admin</h1>
+            <p className="mt-1 text-center text-sm text-slate-300">
               Manage products, orders, customers and store performance
             </p>
           </div>
-
           <form onSubmit={handleSubmit} className="space-y-5">
             <div>
               <InputField
                 type="email"
                 name="email"
                 placeholder="admin@tshirtstore.com"
-                className="text-slate-900"
+                className="text-white"
                 value={formData.email}
                 onChange={handleChange}
                 required
               />
             </div>
-
             <div>
               <InputField
                 type="password"
                 name="password"
                 placeholder="Enter password"
-                className="text-slate-900"
+                className="text-white"
                 value={formData.password}
                 onChange={handleChange}
                 required
               />
             </div>
-
             <Button
               type="submit"
               full
               leftIcon={!isLoading ? <LogIn size={18} /> : undefined}
               disabled={isLoading}
-              className="flex items-center justify-center bg-[#111827] py-3 text-base font-semibold text-white hover:bg-[#1f2937]"
+              className="flex items-center justify-center py-3 text-base font-semibold"
             >
               {isLoading ? (
                 <div className="flex items-center gap-2">

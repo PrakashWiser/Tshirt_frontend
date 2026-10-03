@@ -105,7 +105,7 @@ export default function AuditLogs() {
                     notification.category
                         ?.toLowerCase()
                         .includes(search) ||
-                    notification.propertyId
+                    notification.resourceId
                         ?.toLowerCase()
                         .includes(search);
 
@@ -248,6 +248,7 @@ export default function AuditLogs() {
                         "INFO",
                         "WARNING",
                         "CRITICAL",
+                        "SUCCESS",
                     ].map((severity) => (
                         <button
                             key={severity}
@@ -385,27 +386,10 @@ export default function AuditLogs() {
                                                         </span>
                                                     )}
 
-                                                    <span
-                                                        className={`px-1.5 py-0.5 rounded text-[10px] font-medium ${notification.isRead
-                                                            ? "bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400"
-                                                            : "bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400"
-                                                            }`}
-                                                    >
-                                                        {notification.isRead
-                                                            ? "Read"
-                                                            : "Unread"}
+                                                    <span className="px-1.5 py-0.5 rounded text-[10px] font-medium bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+                                                        {notification.action}
                                                     </span>
                                                 </div>
-                                                {notification.specialRequest && (
-                                                    <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">
-                                                        <span className="font-medium">
-                                                            Request:
-                                                        </span>{" "}
-                                                        {
-                                                            notification.specialRequest
-                                                        }
-                                                    </p>
-                                                )}
                                             </div>
                                             <SeverityIcon
                                                 className={`w-4 h-4 flex-shrink-0 mt-0.5 ${severity ===
@@ -468,6 +452,14 @@ export default function AuditLogs() {
 
                         CRITICAL (
                         {severityCounts.CRITICAL ||
+                            0}
+                        )
+                    </span>
+                    <span className="flex items-center gap-1">
+                        <span className="w-2 h-2 rounded-full bg-emerald-500" />
+
+                        SUCCESS (
+                        {severityCounts.SUCCESS ||
                             0}
                         )
                     </span>
