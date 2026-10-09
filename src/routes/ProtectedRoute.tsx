@@ -10,30 +10,20 @@ const ProtectedRoute = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center gap-4">
+      <div className="flex min-h-screen w-full items-center justify-center">
         <motion.img
-          src="/logo.png"
+          src="/fav.jpeg"
           alt="Tshirt Admin"
-          className="h-16 w-16 rounded-full"
-          animate={{ scale: [1, 1.15, 1] }}
+          className="block h-20 w-20 rounded-full object-cover"
+          animate={{
+            scale: [1, 1.15, 1],
+          }}
           transition={{
             duration: 1.5,
             repeat: Infinity,
             ease: "easeInOut",
           }}
         />
-
-        <motion.span
-          className="text-xl font-bold tracking-tight"
-          animate={{ opacity: [1, 0.5, 1] }}
-          transition={{
-            duration: 1.5,
-            repeat: Infinity,
-            ease: "easeInOut",
-          }}
-        >
-          Tshirt Admin
-        </motion.span>
       </div>
     );
   }
