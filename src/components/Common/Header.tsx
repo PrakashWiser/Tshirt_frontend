@@ -21,7 +21,6 @@ function Header({ sidebarOpen, setSidebarOpen }: HeaderProps) {
   const { notifications, unreadCount, markAsRead, markAllRead } =
     useAdminNotifications();
 
-  console.log(notifications);
 
   const [profileOpen, setProfileOpen] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);

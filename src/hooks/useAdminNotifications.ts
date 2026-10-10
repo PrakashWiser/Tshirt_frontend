@@ -16,12 +16,20 @@ const useAdminNotifications = () => {
   const notifications = useAppSelector(
     (state: RootState) => state.notifications.list,
   );
-  
+
   const unreadCount = useAppSelector(
-    (state) => state.notifications.unreadCount,
+    (state: RootState) => state.notifications.unreadCount,
+  );
+
+  const accessToken = useAppSelector(
+    (state: RootState) => state.auth.accessToken,
   );
 
   useEffect(() => {
+    if (!accessToken) {
+      return;
+    }
+
     const handleConnect = () => {
       console.log("✅ SOCKET CONNECTED:", socket.id);
       socket.emit("join-admin");
@@ -29,25 +37,28 @@ const useAdminNotifications = () => {
 
     const handleConnectError = (error: Error) => {
       console.error("❌ SOCKET CONNECTION ERROR:", error.message);
-      console.error("❌ SOCKET ERROR:", error);
     };
 
     const handleDisconnect = (reason: string) => {
       console.warn("🔌 SOCKET DISCONNECTED:", reason);
     };
+
     const handleAdminNotification = (data: any) => {
       console.log("🔔 NEW NOTIFICATION RECEIVED:", data);
 
       const notification = data?.notification;
+
       if (!notification) {
-        console.warn("⚠️ Notification data not found:", data);
         return;
       }
+
       const audio = new Audio("/sounds/notification.mp3");
       audio.volume = 0.7;
+
       audio.play().catch((error) => {
         console.warn("Notification sound blocked:", error);
       });
+
       dispatch(
         addNotification({
           id: notification?._id || notification?.id || `${Date.now()}`,
@@ -72,23 +83,21 @@ const useAdminNotifications = () => {
     socket.on("new_notification", handleAdminNotification);
     socket.on("new-message", handleNewMessage);
 
-    if (socket.connected) {
-      console.log("✅ SOCKET ALREADY CONNECTED:", socket.id);
-      socket.emit("join-admin");
-    } else {
-      console.log("⏳ Connecting socket...");
-      socket.connect();
-    }
+    socket.auth = {
+      token: accessToken,
+    };
+
+    socket.connect();
 
     return () => {
-      console.log("🧹 Cleaning admin socket listeners");
       socket.off("connect", handleConnect);
       socket.off("connect_error", handleConnectError);
       socket.off("disconnect", handleDisconnect);
       socket.off("new_notification", handleAdminNotification);
       socket.off("new-message", handleNewMessage);
+      socket.disconnect();
     };
-  }, [dispatch]);
+  }, [dispatch, accessToken]);
 
   const addAdminNotification = useCallback(
     (notification: Notification) => {

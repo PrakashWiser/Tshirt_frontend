@@ -13,6 +13,7 @@ export interface ClientToServerEvents {
 }
 
 export const socket: Socket<ServerToClientEvents, ClientToServerEvents> = io(
+  
   SOCKET_URL,
   {
     path: "/socket.io",
